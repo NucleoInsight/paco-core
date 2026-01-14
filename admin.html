@@ -3,39 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PACO - Central de Comando</title>
+    <title>PACO - Consultor Automático</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #e0e0e0; margin: 0; padding: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; padding: 20px; }
         .container { max-width: 1000px; margin: 0 auto; }
         
         /* Login */
         #login-screen { text-align: center; margin-top: 100px; }
-        input.login-input { padding: 15px; margin: 5px; border-radius: 5px; border: none; width: 250px; background: #333; color: white; }
+        input.login-input { padding: 15px; margin: 5px; border-radius: 5px; border: none; width: 250px; background: #1e293b; color: white; }
         button { padding: 10px 20px; cursor: pointer; font-weight: bold; border: none; border-radius: 5px; transition: 0.2s; }
-        button:hover { opacity: 0.9; }
-        .btn-green { background: #27ae60; color: white; }
-        .btn-red { background: #c0392b; color: white; }
-        .btn-blue { background: #2980b9; color: white; }
-        .btn-gray { background: #7f8c8d; color: white; font-size: 11px; padding: 5px 10px;}
+        button:hover { filter: brightness(1.1); }
+        .btn-green { background: #10b981; color: white; }
+        .btn-red { background: #ef4444; color: white; }
+        .btn-blue { background: #3b82f6; color: white; }
+        .btn-gray { background: #475569; color: white; font-size: 11px; padding: 5px 10px;}
 
         /* Card da Oferta */
-        .card { background: #1e1e1e; padding: 25px; margin-bottom: 25px; border-radius: 8px; border-left: 5px solid gray; box-shadow: 0 4px 10px rgba(0,0,0,0.3); position: relative; }
-        .card.verde { border-left-color: #27ae60; }
-        .card.vermelho { border-left-color: #c0392b; }
-        .card.cinza { border-left-color: #f1c40f; }
+        .card { background: #1e293b; padding: 25px; margin-bottom: 25px; border-radius: 12px; border-left: 6px solid gray; box-shadow: 0 4px 15px rgba(0,0,0,0.3); position: relative; }
+        .card.verde { border-left-color: #10b981; }
+        .card.vermelho { border-left-color: #ef4444; }
+        .card.cinza { border-left-color: #f59e0b; }
 
-        /* Campos Editáveis */
-        label { display: block; font-size: 11px; color: #aaa; margin-bottom: 3px; margin-top: 10px; }
-        input.edit-field { 
-            background: #2d2d2d; border: 1px solid #444; color: white; padding: 8px; 
-            border-radius: 4px; width: 95%; font-family: sans-serif;
+        /* Diagnóstico Box (NOVO) */
+        .diagnosis-box {
+            background: #334155;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border: 1px dashed #64748b;
         }
-        input.edit-field:focus { border-color: #2980b9; outline: none; }
+        .diagnosis-title { font-size: 10px; text-transform: uppercase; color: #94a3b8; letter-spacing: 1px; }
+        .diagnosis-text { font-size: 16px; font-weight: bold; color: #fff; margin: 5px 0; }
+        .diagnosis-action { font-size: 14px; color: #38bdf8; font-weight: 600; }
+
+        /* Inputs */
+        label { display: block; font-size: 11px; color: #94a3b8; margin-bottom: 3px; margin-top: 10px; }
+        input.edit-field { 
+            background: #0f172a; border: 1px solid #334155; color: white; padding: 10px; 
+            border-radius: 6px; width: 95%; font-family: sans-serif;
+        }
+        input.edit-field:focus { border-color: #3b82f6; outline: none; }
         
         .row { display: flex; gap: 15px; }
         .col { flex: 1; }
 
-        .header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 15px; }
+        .header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 15px; margin-bottom: 15px; }
         .status-badge { padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
         
         .hidden { display: none; }
@@ -45,26 +57,26 @@
 
     <div class="container">
         <div id="login-screen">
-            <h2 style="color:#27ae60;">PACO V3</h2>
+            <h2 style="color:#10b981;">PACO V4 (Smart)</h2>
             <input type="email" id="email" class="login-input" placeholder="Email de Admin">
             <br>
             <input type="password" id="password" class="login-input" placeholder="Senha">
             <br><br>
             <button onclick="fazerLogin()" class="btn-green">ENTRAR</button>
-            <p id="msg-login" style="color: #e74c3c; margin-top: 10px;"></p>
+            <p id="msg-login" style="color: #ef4444; margin-top: 10px;"></p>
         </div>
 
         <div id="dashboard" class="hidden">
             <div class="header-row">
                 <div>
-                    <h1>Central de Comando</h1>
-                    <button onclick="criarNovaOferta()" class="btn-green" style="margin-top:10px;">+ CRIAR NOVA OFERTA</button>
+                    <h1>Central de Inteligência</h1>
+                    <button onclick="criarNovaOferta()" class="btn-green" style="margin-top:10px;">+ NOVA OFERTA</button>
                 </div>
                 <button onclick="logout()" class="btn-red">Sair</button>
             </div>
             
             <div id="lista-ofertas">
-                <p>Carregando máquina de vendas...</p>
+                <p>Carregando análises...</p>
             </div>
         </div>
     </div>
@@ -94,7 +106,7 @@
             try {
                 await signInWithEmailAndPassword(auth, email, pass);
             } catch (error) {
-                document.getElementById('msg-login').innerText = "Acesso Negado: " + error.message;
+                document.getElementById('msg-login').innerText = "Erro: " + error.message;
             }
         }
         window.logout = () => signOut(auth);
@@ -107,66 +119,59 @@
             }
         });
 
-        // --- FUNCIONALIDADES NOVAS ---
-        
-        // 1. CRIAR OFERTA
+        // --- LÓGICA INTELIGENTE (O CÉREBRO) ---
+        function analisarOferta(views, sales, currentStatus) {
+            // Se já foi validada manualmente, respeita
+            if (currentStatus === 'verde') return { text: "OFERTA VALIDADA", action: "🚀 Focar em Escala e Upsell", color: "#10b981" };
+            if (currentStatus === 'vermelho') return { text: "OFERTA REPROVADA", action: "🗑️ Arquivar ou Excluir", color: "#ef4444" };
+
+            // Lógica para ofertas em teste (Cinza/Amarelo)
+            const conversion = views > 0 ? (sales / views) * 100 : 0;
+
+            if (sales >= 3) {
+                return { text: "BATEU A META DE VENDAS!", action: "✅ Mude o status para VERDE agora!", color: "#10b981" };
+            }
+            if (views < 50) {
+                return { text: "FANTASMA (Poucos Dados)", action: "📢 Precisa de mais tráfego (anuncie ou divulgue)", color: "#94a3b8" };
+            }
+            if (views > 100 && sales === 0) {
+                return { text: "HEMORRAGIA (Tráfego sem Venda)", action: "💀 A Headline é fraca. Mude a promessa.", color: "#ef4444" };
+            }
+            if (sales > 0 && conversion < 1.0) {
+                return { text: "VENDE, MAS POUCO", action: "🔧 Ajuste preço ou melhore a garantia.", color: "#f59e0b" };
+            }
+            
+            return { text: "EM ANÁLISE", action: "👀 Continue observando", color: "#f59e0b" };
+        }
+
+        // --- CORE ---
         window.criarNovaOferta = async () => {
-            const confirmacao = confirm("Criar uma nova oferta rascunho?");
-            if(!confirmacao) return;
-
+            if(!confirm("Criar nova oferta?")) return;
             try {
-                // Cria documento na coleção OFFERS
                 const offerRef = await addDoc(collection(db, "offers"), {
-                    headline: "Nova Oferta (Edite Aqui)",
-                    name: "Subtítulo da oferta",
-                    price: "0,00",
-                    createdAt: serverTimestamp()
+                    headline: "Nova Oferta (Edite Aqui)", name: "Subtítulo", price: "0,00", createdAt: serverTimestamp()
                 });
-
-                // Cria documento na coleção METRICS ligado à oferta
                 await addDoc(collection(db, "metrics"), {
-                    offerId: offerRef.id,
-                    sales: 0,
-                    revenue: 0,
-                    views: 0,
-                    statusVisual: "cinza"
+                    offerId: offerRef.id, sales: 0, revenue: 0, views: 0, statusVisual: "cinza"
                 });
-
-                alert("Nova oferta criada! Role para baixo.");
                 carregarPainel();
-
-            } catch (e) {
-                alert("Erro ao criar: " + e.message);
-            }
+            } catch (e) { alert("Erro: " + e.message); }
         }
 
-        // 2. EXCLUIR OFERTA
-        window.excluirOferta = async (metricId, offerId) => {
-            const certeza = confirm("TEM CERTEZA? Isso apaga a oferta e as métricas para sempre.");
-            if(!certeza) return;
-
-            try {
-                await deleteDoc(doc(db, "metrics", metricId));
-                // Opcional: apagar a oferta também, ou manter como histórico
-                // await deleteDoc(doc(db, "offers", offerId)); 
-                
-                alert("Oferta removida do painel.");
-                carregarPainel();
-            } catch (e) {
-                alert("Erro ao excluir: " + e.message);
-            }
+        window.excluirOferta = async (metricId) => {
+            if(!confirm("Apagar para sempre?")) return;
+            try { await deleteDoc(doc(db, "metrics", metricId)); carregarPainel(); } 
+            catch (e) { alert("Erro: " + e.message); }
         }
 
-        // --- CORE DO PAINEL ---
         async function carregarPainel() {
             const container = document.getElementById('lista-ofertas');
             container.innerHTML = ""; 
 
-            // Busca Métricas
             const metricsSnap = await getDocs(collection(db, "metrics"));
 
             if (metricsSnap.empty) {
-                container.innerHTML = "<p>Nenhuma oferta encontrada. Crie a primeira acima!</p>";
+                container.innerHTML = "<p>Nenhuma oferta ativa.</p>";
                 return;
             }
 
@@ -174,72 +179,73 @@
                 const mData = metricDoc.data();
                 const offerId = mData.offerId;
                 
-                // Busca Dados da Oferta
-                let offerData = { headline: "Carregando...", price: "..." };
+                let offerData = { headline: "...", price: "..." };
                 try {
                     const offerSnap = await getDoc(doc(db, "offers", offerId));
                     if (offerSnap.exists()) offerData = offerSnap.data();
-                } catch(e) { console.error(e); }
+                } catch(e) {}
 
-                // HTML do Card
+                // RODA A ANÁLISE
+                const views = mData.views || 0; // Garantir que não seja undefined
+                const sales = mData.sales || 0;
+                const analise = analisarOferta(views, sales, mData.statusVisual);
+
                 const html = `
                     <div class="card ${mData.statusVisual}">
-                        <div style="display:flex; justify-content:space-between; align-items: flex-start;">
+                        <div style="display:flex; justify-content:space-between;">
                             <div>
-                                <h3 style="margin:0; color:#27ae60;">OFERTA</h3>
-                                <small style="color:#666; font-family:monospace;">ID: ${offerId}</small>
+                                <h3 style="margin:0; color:#fff;">OFERTA</h3>
+                                <small style="color:#64748b; font-family:monospace;">ID: ${offerId}</small>
                             </div>
                             <div style="text-align:right;">
                                 <span class="status-badge" style="background:${getStatusColor(mData.statusVisual)}">
                                     ${mData.statusVisual.toUpperCase()}
                                 </span>
                                 <br>
-                                <button class="btn-gray" style="margin-top:5px; background:#444;" onclick="excluirOferta('${metricDoc.id}', '${offerId}')">🗑️ Excluir</button>
+                                <button class="btn-gray" style="margin-top:5px; background:#334155;" onclick="excluirOferta('${metricDoc.id}')">🗑️</button>
                             </div>
                         </div>
 
-                        <div style="margin-top:20px; padding-bottom:15px; border-bottom:1px solid #333;">
-                            <strong style="color:#aaa;">SITE (Cliente Vê)</strong>
-                            <label>Headline</label>
-                            <input type="text" class="edit-field" id="headline-${offerId}" value="${offerData.headline}">
-                            
-                            <div class="row">
-                                <div class="col">
-                                    <label>Preço</label>
-                                    <input type="text" class="edit-field" id="price-${offerId}" value="${offerData.price}">
-                                </div>
-                                <div class="col">
-                                    <label>Subtítulo</label>
-                                    <input type="text" class="edit-field" id="sub-${offerId}" value="${offerData.name || ''}">
-                                </div>
-                            </div>
+                        <div class="diagnosis-box" style="border-color:${analise.color}">
+                            <div class="diagnosis-title">🤖 PACO AI DIAGNOSTIC</div>
+                            <div class="diagnosis-text" style="color:${analise.color}">${analise.text}</div>
+                            <div class="diagnosis-action">👉 ${analise.action}</div>
                         </div>
 
-                        <div style="margin-top:15px;">
-                            <strong style="color:#aaa;">PAINEL (Você Vê)</strong>
-                            <div class="row">
-                                <div class="col">
-                                    <label>Vendas</label>
-                                    <input type="number" class="edit-field" id="sales-${metricDoc.id}" value="${mData.sales}">
+                        <div style="margin-top:20px; display:flex; gap:20px;">
+                            <div style="flex:1;">
+                                <strong style="color:#94a3b8;">SITE</strong>
+                                <label>Headline</label>
+                                <input type="text" class="edit-field" id="headline-${offerId}" value="${offerData.headline}">
+                                <div class="row">
+                                    <div class="col"><label>Preço</label><input type="text" class="edit-field" id="price-${offerId}" value="${offerData.price}"></div>
+                                    <div class="col"><label>Sub</label><input type="text" class="edit-field" id="sub-${offerId}" value="${offerData.name || ''}"></div>
                                 </div>
-                                <div class="col">
-                                    <label>Receita (R$)</label>
-                                    <input type="number" class="edit-field" id="revenue-${metricDoc.id}" value="${mData.revenue}">
+                            </div>
+
+                            <div style="flex:1; border-left:1px solid #334155; padding-left:20px;">
+                                <strong style="color:#94a3b8;">MÉTRICAS</strong>
+                                <div class="row">
+                                    <div class="col"><label>Vendas</label><input type="number" class="edit-field" id="sales-${metricDoc.id}" value="${mData.sales}"></div>
+                                    <div class="col"><label>Views (Tráfego)</label><input type="number" class="edit-field" id="views-${metricDoc.id}" value="${views}"></div>
                                 </div>
-                                <div class="col">
-                                    <label>Status</label>
-                                    <select id="status-${metricDoc.id}" class="edit-field">
-                                        <option value="cinza" ${mData.statusVisual === 'cinza' ? 'selected' : ''}>🟡 Testando</option>
-                                        <option value="verde" ${mData.statusVisual === 'verde' ? 'selected' : ''}>🟢 Validada</option>
-                                        <option value="vermelho" ${mData.statusVisual === 'vermelho' ? 'selected' : ''}>🔴 Reprovada</option>
-                                    </select>
+                                <div class="row">
+                                    <div class="col"><label>Receita</label><input type="number" class="edit-field" id="revenue-${metricDoc.id}" value="${mData.revenue}"></div>
+                                    <div class="col">
+                                        <label>Status</label>
+                                        <select id="status-${metricDoc.id}" class="edit-field">
+                                            <option value="cinza" ${mData.statusVisual === 'cinza' ? 'selected' : ''}>🟡 Testando</option>
+                                            <option value="verde" ${mData.statusVisual === 'verde' ? 'selected' : ''}>🟢 Validada</option>
+                                            <option value="vermelho" ${mData.statusVisual === 'vermelho' ? 'selected' : ''}>🔴 Reprovada</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <div style="margin-top:20px; text-align:right;">
-                            <a href="./?id=${offerId}" target="_blank" style="color:#aaa; text-decoration:none; margin-right:15px; font-size:12px;">Ver Link da Página ↗</a>
-                            <button class="btn-blue" onclick="salvarTudo('${offerId}', '${metricDoc.id}')">💾 SALVAR ALTERAÇÕES</button>
+                            <a href="./?id=${offerId}" target="_blank" style="color:#94a3b8; text-decoration:none; margin-right:15px; font-size:12px;">Ver Link ↗</a>
+                            <button class="btn-blue" onclick="salvarTudo('${offerId}', '${metricDoc.id}')">💾 ATUALIZAR DADOS</button>
                         </div>
                     </div>
                 `;
@@ -255,32 +261,22 @@
                 
                 const newSales = Number(document.getElementById(`sales-${metricId}`).value);
                 const newRevenue = Number(document.getElementById(`revenue-${metricId}`).value);
+                const newViews = Number(document.getElementById(`views-${metricId}`).value);
                 const newStatus = document.getElementById(`status-${metricId}`).value;
 
-                await updateDoc(doc(db, "offers", offerId), {
-                    headline: newHeadline,
-                    price: newPrice,
-                    name: newSub
-                });
+                await updateDoc(doc(db, "offers", offerId), { headline: newHeadline, price: newPrice, name: newSub });
+                await updateDoc(doc(db, "metrics", metricId), { sales: newSales, revenue: newRevenue, views: newViews, statusVisual: newStatus });
 
-                await updateDoc(doc(db, "metrics", metricId), {
-                    sales: newSales,
-                    revenue: newRevenue,
-                    statusVisual: newStatus
-                });
-
-                alert("✅ Salvo com sucesso!");
+                alert("✅ Dados salvos! O algoritmo vai recalcular.");
                 carregarPainel();
 
-            } catch (e) {
-                alert("❌ Erro: " + e.message);
-            }
+            } catch (e) { alert("Erro: " + e.message); }
         }
 
         function getStatusColor(status) {
-            if(status === 'verde') return '#27ae60';
-            if(status === 'vermelho') return '#c0392b';
-            return '#f1c40f'; // cinza/amarelo
+            if(status === 'verde') return '#10b981';
+            if(status === 'vermelho') return '#ef4444';
+            return '#f59e0b';
         }
     </script>
 </body>
