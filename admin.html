@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PACO - Painel de Validação</title>
+    <style>
+        body { font-family: sans-serif; background: #1e1e1e; color: #fff; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { border-bottom: 1px solid #333; padding-bottom: 10px; }
+        
+        /* Login */
+        #login-screen { text-align: center; margin-top: 100px; }
+        input { padding: 10px; margin: 5px; border-radius: 5px; border: none; }
+        button { padding: 10px 20px; cursor: pointer; font-weight: bold; border: none; border-radius: 5px; }
+        .btn-green { background: #27ae60; color: white; }
+        .btn-red { background: #c0392b; color: white; }
+
+        /* Tabela do Painel */
+        .card { background: #2d2d2d; padding: 20px; margin-bottom: 20px; border-radius: 8px; border-left: 5px solid gray; }
+        .card.verde { border-left-color: #27ae60; }
+        .card.vermelho { border-left-color: #c0392b; }
+        .card.cinza { border-left-color: #7f8c8d; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 15px 0; }
+        .stat-box { background: #333; padding: 10px; text-align: center; border-radius: 5px; }
+        .stat-val { font-size: 20px; font-weight: bold; display: block; }
+        .stat-label { font-size: 12px; color: #aaa; }
+
+        .actions { display: flex; gap: 10px; justify-content: flex-end; align-items: center; border-top: 1px solid #444; padding-top: 10px; }
+        select { padding: 5px; background: #444; color: white; border: none; }
+        
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="login-screen">
+            <h2>PACO Login</h2>
+            <input type="email" id="email" placeholder="Email">
+            <input type="password" id="password" placeholder="Senha">
+            <br><br>
+            <button onclick="fazerLogin()" class="btn-green">ENTRAR NO SISTEMA</button>
+            <p id="msg-login" style="color: yellow;"></p>
+        </div>
+
+        <div id="dashboard" class="hidden">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h1>Painel de Controle (PVO)</h1>
+                <button onclick="logout()" class="btn-red" style="font-size:12px;">Sair</button>
+            </div>
+            <p>Gerenciamento de Ofertas e Validação</p>
+            <div id="lista-ofertas">
+                <p>Carregando dados do Firebase...</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg",
+            authDomain: "paco-core.firebaseapp.com",
+            projectId: "paco-core",
+            storageBucket: "paco-core.firebasestorage.app",
+            messagingSenderId: "88467987691",
+            appId: "1:88467987691:web:85892f360253aa957c72ae"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // --- SISTEMA DE LOGIN ---
+        window.fazerLogin = async () => {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+            } catch (error) {
+                document.getElementById('msg-login').innerText = "Erro: " + error.message;
+            }
+        }
+
+        window.logout = () => signOut(auth);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('dashboard').classList.remove('hidden');
+                carregarPainel();
+            } else {
+                document.getElementById('login-screen').classList.remove('hidden');
+                document.getElementById('dashboard').classList.add('hidden');
+            }
+        });
+
+        // --- LÓGICA DO PAINEL ---
+        async function carregarPainel() {
+            const container = document.getElementById('lista-ofertas');
+            container.innerHTML = ""; // Limpa
+
+            // 1. Busca Métricas (Painel Manual + Auto)
+            const querySnapshot = await getDocs(collection(db, "metrics"));
+
+            querySnapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                const docId = docSnap.id; // ID do documento metrics (6qT...)
+
+                // Cria o HTML do Card da Oferta
+                const html = `
+                    <div class="card ${data.statusVisual}">
+                        <h3 style="margin:0;">Oferta ID: ${data.offerId}</h3>
+                        <p style="font-size:12px; color:#aaa; margin-top:5px;">Status: <strong>${data.statusVisual.toUpperCase()}</strong></p>
+                        
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <span class="stat-val">${data.views || 0}</span>
+                                <span class="stat-label">👀 Views</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-val">${data.sales || 0}</span>
+                                <span class="stat-label">💰 Vendas (Man)</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-val">R$ ${data.revenue || 0}</span>
+                                <span class="stat-label">💵 Receita</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-val" style="color:${data.sales >= 3 ? '#2ecc71' : '#e74c3c'}">
+                                    ${data.sales >= 3 ? 'VALIDADA?' : 'TESTANDO'}
+                                </span>
+                                <span class="stat-label">Diagnóstico</span>
+                            </div>
+                        </div>
+
+                        <div class="actions">
+                            <label>Alterar Status:</label>
+                            <select id="status-${docId}">
+                                <option value="cinza" ${data.statusVisual === 'cinza' ? 'selected' : ''}>🟡 Em Validação</option>
+                                <option value="verde" ${data.statusVisual === 'verde' ? 'selected' : ''}>🟢 Validada</option>
+                                <option value="vermelho" ${data.statusVisual === 'vermelho' ? 'selected' : ''}>🔴 Reprovada</option>
+                            </select>
+                            
+                            <button class="btn-green" style="padding:5px 10px; font-size:12px;" onclick="atualizarStatus('${docId}')">Salvar</button>
+                            <a href="./?id=${data.offerId}" target="_blank" style="margin-left:10px; color:#fff;">Ver Oferta ↗</a>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += html;
+            });
+        }
+
+        window.atualizarStatus = async (docId) => {
+            const novoStatus = document.getElementById(`status-${docId}`).value;
+            try {
+                // Atualiza no Firebase
+                const metricRef = doc(db, "metrics", docId);
+                await updateDoc(metricRef, {
+                    statusVisual: novoStatus
+                });
+                alert("Status atualizado! Recarregando...");
+                carregarPainel();
+            } catch (e) {
+                alert("Erro ao atualizar: " + e.message);
+            }
+        }
+    </script>
+</body>
+</html>
