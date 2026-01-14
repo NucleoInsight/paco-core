@@ -16,9 +16,10 @@
         .btn-green { background: #27ae60; color: white; }
         .btn-red { background: #c0392b; color: white; }
         .btn-blue { background: #2980b9; color: white; }
+        .btn-gray { background: #7f8c8d; color: white; font-size: 11px; padding: 5px 10px;}
 
         /* Card da Oferta */
-        .card { background: #1e1e1e; padding: 25px; margin-bottom: 25px; border-radius: 8px; border-left: 5px solid gray; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .card { background: #1e1e1e; padding: 25px; margin-bottom: 25px; border-radius: 8px; border-left: 5px solid gray; box-shadow: 0 4px 10px rgba(0,0,0,0.3); position: relative; }
         .card.verde { border-left-color: #27ae60; }
         .card.vermelho { border-left-color: #c0392b; }
         .card.cinza { border-left-color: #f1c40f; }
@@ -44,7 +45,7 @@
 
     <div class="container">
         <div id="login-screen">
-            <h2 style="color:#27ae60;">PACO V2</h2>
+            <h2 style="color:#27ae60;">PACO V3</h2>
             <input type="email" id="email" class="login-input" placeholder="Email de Admin">
             <br>
             <input type="password" id="password" class="login-input" placeholder="Senha">
@@ -55,7 +56,10 @@
 
         <div id="dashboard" class="hidden">
             <div class="header-row">
-                <h1>Central de Comando</h1>
+                <div>
+                    <h1>Central de Comando</h1>
+                    <button onclick="criarNovaOferta()" class="btn-green" style="margin-top:10px;">+ CRIAR NOVA OFERTA</button>
+                </div>
                 <button onclick="logout()" class="btn-red">Sair</button>
             </div>
             
@@ -67,7 +71,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, addDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -103,43 +107,105 @@
             }
         });
 
-        // --- CORE ---
+        // --- FUNCIONALIDADES NOVAS ---
+        
+        // 1. CRIAR OFERTA
+        window.criarNovaOferta = async () => {
+            const confirmacao = confirm("Criar uma nova oferta rascunho?");
+            if(!confirmacao) return;
+
+            try {
+                // Cria documento na coleção OFFERS
+                const offerRef = await addDoc(collection(db, "offers"), {
+                    headline: "Nova Oferta (Edite Aqui)",
+                    name: "Subtítulo da oferta",
+                    price: "0,00",
+                    createdAt: serverTimestamp()
+                });
+
+                // Cria documento na coleção METRICS ligado à oferta
+                await addDoc(collection(db, "metrics"), {
+                    offerId: offerRef.id,
+                    sales: 0,
+                    revenue: 0,
+                    views: 0,
+                    statusVisual: "cinza"
+                });
+
+                alert("Nova oferta criada! Role para baixo.");
+                carregarPainel();
+
+            } catch (e) {
+                alert("Erro ao criar: " + e.message);
+            }
+        }
+
+        // 2. EXCLUIR OFERTA
+        window.excluirOferta = async (metricId, offerId) => {
+            const certeza = confirm("TEM CERTEZA? Isso apaga a oferta e as métricas para sempre.");
+            if(!certeza) return;
+
+            try {
+                await deleteDoc(doc(db, "metrics", metricId));
+                // Opcional: apagar a oferta também, ou manter como histórico
+                // await deleteDoc(doc(db, "offers", offerId)); 
+                
+                alert("Oferta removida do painel.");
+                carregarPainel();
+            } catch (e) {
+                alert("Erro ao excluir: " + e.message);
+            }
+        }
+
+        // --- CORE DO PAINEL ---
         async function carregarPainel() {
             const container = document.getElementById('lista-ofertas');
             container.innerHTML = ""; 
 
-            // 1. Busca Métricas
+            // Busca Métricas
             const metricsSnap = await getDocs(collection(db, "metrics"));
+
+            if (metricsSnap.empty) {
+                container.innerHTML = "<p>Nenhuma oferta encontrada. Crie a primeira acima!</p>";
+                return;
+            }
 
             for (const metricDoc of metricsSnap.docs) {
                 const mData = metricDoc.data();
                 const offerId = mData.offerId;
                 
-                // 2. Busca Dados da Oferta (Headline, Preço) para editar
-                let offerData = { headline: "Erro ao carregar", price: "0" };
+                // Busca Dados da Oferta
+                let offerData = { headline: "Carregando...", price: "..." };
                 try {
                     const offerSnap = await getDoc(doc(db, "offers", offerId));
                     if (offerSnap.exists()) offerData = offerSnap.data();
                 } catch(e) { console.error(e); }
 
-                // HTML do Card com INPUTS
+                // HTML do Card
                 const html = `
                     <div class="card ${mData.statusVisual}">
-                        <div style="display:flex; justify-content:space-between;">
-                            <h3 style="margin:0; color:#27ae60;">OFERTA: ${offerId}</h3>
-                            <span class="status-badge" style="background:${getStatusColor(mData.statusVisual)}">
-                                ${mData.statusVisual.toUpperCase()}
-                            </span>
+                        <div style="display:flex; justify-content:space-between; align-items: flex-start;">
+                            <div>
+                                <h3 style="margin:0; color:#27ae60;">OFERTA</h3>
+                                <small style="color:#666; font-family:monospace;">ID: ${offerId}</small>
+                            </div>
+                            <div style="text-align:right;">
+                                <span class="status-badge" style="background:${getStatusColor(mData.statusVisual)}">
+                                    ${mData.statusVisual.toUpperCase()}
+                                </span>
+                                <br>
+                                <button class="btn-gray" style="margin-top:5px; background:#444;" onclick="excluirOferta('${metricDoc.id}', '${offerId}')">🗑️ Excluir</button>
+                            </div>
                         </div>
 
                         <div style="margin-top:20px; padding-bottom:15px; border-bottom:1px solid #333;">
-                            <strong style="color:#aaa;">EDITAR SITE (O que o cliente vê)</strong>
-                            <label>Headline (Promessa)</label>
+                            <strong style="color:#aaa;">SITE (Cliente Vê)</strong>
+                            <label>Headline</label>
                             <input type="text" class="edit-field" id="headline-${offerId}" value="${offerData.headline}">
                             
                             <div class="row">
                                 <div class="col">
-                                    <label>Preço (R$)</label>
+                                    <label>Preço</label>
                                     <input type="text" class="edit-field" id="price-${offerId}" value="${offerData.price}">
                                 </div>
                                 <div class="col">
@@ -150,29 +216,29 @@
                         </div>
 
                         <div style="margin-top:15px;">
-                            <strong style="color:#aaa;">REGISTRO DE VENDAS (Manual)</strong>
+                            <strong style="color:#aaa;">PAINEL (Você Vê)</strong>
                             <div class="row">
                                 <div class="col">
-                                    <label>Vendas Totais</label>
+                                    <label>Vendas</label>
                                     <input type="number" class="edit-field" id="sales-${metricDoc.id}" value="${mData.sales}">
                                 </div>
                                 <div class="col">
-                                    <label>Faturamento Total (R$)</label>
+                                    <label>Receita (R$)</label>
                                     <input type="number" class="edit-field" id="revenue-${metricDoc.id}" value="${mData.revenue}">
                                 </div>
                                 <div class="col">
                                     <label>Status</label>
                                     <select id="status-${metricDoc.id}" class="edit-field">
-                                        <option value="cinza" ${mData.statusVisual === 'cinza' ? 'selected' : ''}>🟡 Em Teste</option>
+                                        <option value="cinza" ${mData.statusVisual === 'cinza' ? 'selected' : ''}>🟡 Testando</option>
                                         <option value="verde" ${mData.statusVisual === 'verde' ? 'selected' : ''}>🟢 Validada</option>
-                                        <option value="vermelho" ${mData.statusVisual === 'vermelho' ? 'selected' : ''}>🔴 Morta</option>
+                                        <option value="vermelho" ${mData.statusVisual === 'vermelho' ? 'selected' : ''}>🔴 Reprovada</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
 
                         <div style="margin-top:20px; text-align:right;">
-                            <a href="./?id=${offerId}" target="_blank" style="color:#aaa; text-decoration:none; margin-right:15px; font-size:12px;">Ver Página ↗</a>
+                            <a href="./?id=${offerId}" target="_blank" style="color:#aaa; text-decoration:none; margin-right:15px; font-size:12px;">Ver Link da Página ↗</a>
                             <button class="btn-blue" onclick="salvarTudo('${offerId}', '${metricDoc.id}')">💾 SALVAR ALTERAÇÕES</button>
                         </div>
                     </div>
@@ -183,7 +249,6 @@
 
         window.salvarTudo = async (offerId, metricId) => {
             try {
-                // 1. Pega valores dos inputs
                 const newHeadline = document.getElementById(`headline-${offerId}`).value;
                 const newPrice = document.getElementById(`price-${offerId}`).value;
                 const newSub = document.getElementById(`sub-${offerId}`).value;
@@ -192,33 +257,30 @@
                 const newRevenue = Number(document.getElementById(`revenue-${metricId}`).value);
                 const newStatus = document.getElementById(`status-${metricId}`).value;
 
-                // 2. Atualiza OFERTA (Site)
                 await updateDoc(doc(db, "offers", offerId), {
                     headline: newHeadline,
                     price: newPrice,
                     name: newSub
                 });
 
-                // 3. Atualiza MÉTRICAS (Painel)
                 await updateDoc(doc(db, "metrics", metricId), {
                     sales: newSales,
                     revenue: newRevenue,
                     statusVisual: newStatus
                 });
 
-                alert("✅ Tudo atualizado! O site e o painel já mudaram.");
-                carregarPainel(); // Recarrega para confirmar
+                alert("✅ Salvo com sucesso!");
+                carregarPainel();
 
             } catch (e) {
-                alert("❌ Erro ao salvar: " + e.message);
-                console.error(e);
+                alert("❌ Erro: " + e.message);
             }
         }
 
         function getStatusColor(status) {
             if(status === 'verde') return '#27ae60';
             if(status === 'vermelho') return '#c0392b';
-            return '#f1c40f';
+            return '#f1c40f'; // cinza/amarelo
         }
     </script>
 </body>
