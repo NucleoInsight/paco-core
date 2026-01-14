@@ -3,53 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PACO - Consultor Automático</title>
+    <title>PACO - Central de Comando V5</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; padding: 20px; }
         .container { max-width: 1000px; margin: 0 auto; }
         
-        /* Login */
         #login-screen { text-align: center; margin-top: 100px; }
-        input.login-input { padding: 15px; margin: 5px; border-radius: 5px; border: none; width: 250px; background: #1e293b; color: white; }
-        button { padding: 10px 20px; cursor: pointer; font-weight: bold; border: none; border-radius: 5px; transition: 0.2s; }
-        button:hover { filter: brightness(1.1); }
+        input.login-input { padding: 15px; background: #1e293b; color: white; border: none; margin-bottom: 10px; }
+        button { padding: 10px 20px; cursor: pointer; font-weight: bold; border: none; border-radius: 5px; }
         .btn-green { background: #10b981; color: white; }
         .btn-red { background: #ef4444; color: white; }
         .btn-blue { background: #3b82f6; color: white; }
-        .btn-gray { background: #475569; color: white; font-size: 11px; padding: 5px 10px;}
+        .btn-gray { background: #475569; color: white; font-size: 11px; padding: 5px;}
 
-        /* Card da Oferta */
-        .card { background: #1e293b; padding: 25px; margin-bottom: 25px; border-radius: 12px; border-left: 6px solid gray; box-shadow: 0 4px 15px rgba(0,0,0,0.3); position: relative; }
+        .card { background: #1e293b; padding: 25px; margin-bottom: 25px; border-radius: 12px; border-left: 6px solid gray; }
         .card.verde { border-left-color: #10b981; }
         .card.vermelho { border-left-color: #ef4444; }
-        .card.cinza { border-left-color: #f59e0b; }
-
-        /* Diagnóstico Box (NOVO) */
-        .diagnosis-box {
-            background: #334155;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 8px;
-            border: 1px dashed #64748b;
-        }
-        .diagnosis-title { font-size: 10px; text-transform: uppercase; color: #94a3b8; letter-spacing: 1px; }
-        .diagnosis-text { font-size: 16px; font-weight: bold; color: #fff; margin: 5px 0; }
-        .diagnosis-action { font-size: 14px; color: #38bdf8; font-weight: 600; }
-
-        /* Inputs */
+        
+        /* DIAGNÓSTICO */
+        .diagnosis-box { background: #334155; padding: 15px; margin: 15px 0; border-radius: 8px; border: 1px dashed #64748b; }
+        .diagnosis-text { font-size: 16px; font-weight: bold; color: #fff; }
+        
+        /* INPUTS */
         label { display: block; font-size: 11px; color: #94a3b8; margin-bottom: 3px; margin-top: 10px; }
-        input.edit-field { 
+        input.edit-field, textarea.edit-field { 
             background: #0f172a; border: 1px solid #334155; color: white; padding: 10px; 
             border-radius: 6px; width: 95%; font-family: sans-serif;
         }
-        input.edit-field:focus { border-color: #3b82f6; outline: none; }
+        textarea.edit-field { height: 60px; resize: vertical; }
         
         .row { display: flex; gap: 15px; }
         .col { flex: 1; }
-
-        .header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 15px; margin-bottom: 15px; }
-        .status-badge { padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
-        
         .hidden { display: none; }
     </style>
 </head>
@@ -57,27 +41,21 @@
 
     <div class="container">
         <div id="login-screen">
-            <h2 style="color:#10b981;">PACO V4 (Smart)</h2>
-            <input type="email" id="email" class="login-input" placeholder="Email de Admin">
-            <br>
-            <input type="password" id="password" class="login-input" placeholder="Senha">
-            <br><br>
+            <h2 style="color:#10b981;">PACO V5 (Controle Total)</h2>
+            <input type="email" id="email" class="login-input" placeholder="Email"><br>
+            <input type="password" id="password" class="login-input" placeholder="Senha"><br>
             <button onclick="fazerLogin()" class="btn-green">ENTRAR</button>
-            <p id="msg-login" style="color: #ef4444; margin-top: 10px;"></p>
         </div>
 
         <div id="dashboard" class="hidden">
-            <div class="header-row">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:15px;">
+                <h1>Gerenciador de Ofertas</h1>
                 <div>
-                    <h1>Central de Inteligência</h1>
-                    <button onclick="criarNovaOferta()" class="btn-green" style="margin-top:10px;">+ NOVA OFERTA</button>
+                    <button onclick="criarNovaOferta()" class="btn-green">+ NOVA OFERTA</button>
+                    <button onclick="logout()" class="btn-red">Sair</button>
                 </div>
-                <button onclick="logout()" class="btn-red">Sair</button>
             </div>
-            
-            <div id="lista-ofertas">
-                <p>Carregando análises...</p>
-            </div>
+            <div id="lista-ofertas">Carregando...</div>
         </div>
     </div>
 
@@ -99,18 +77,12 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // --- AUTH ---
+        // LOGIN
         window.fazerLogin = async () => {
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('password').value;
-            try {
-                await signInWithEmailAndPassword(auth, email, pass);
-            } catch (error) {
-                document.getElementById('msg-login').innerText = "Erro: " + error.message;
-            }
+            try { await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); }
+            catch (e) { alert("Erro: " + e.message); }
         }
         window.logout = () => signOut(auth);
-
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('login-screen').classList.add('hidden');
@@ -119,164 +91,119 @@
             }
         });
 
-        // --- LÓGICA INTELIGENTE (O CÉREBRO) ---
+        // ALGORITMO
         function analisarOferta(views, sales, currentStatus) {
-            // Se já foi validada manualmente, respeita
-            if (currentStatus === 'verde') return { text: "OFERTA VALIDADA", action: "🚀 Focar em Escala e Upsell", color: "#10b981" };
-            if (currentStatus === 'vermelho') return { text: "OFERTA REPROVADA", action: "🗑️ Arquivar ou Excluir", color: "#ef4444" };
-
-            // Lógica para ofertas em teste (Cinza/Amarelo)
-            const conversion = views > 0 ? (sales / views) * 100 : 0;
-
-            if (sales >= 3) {
-                return { text: "BATEU A META DE VENDAS!", action: "✅ Mude o status para VERDE agora!", color: "#10b981" };
-            }
-            if (views < 50) {
-                return { text: "FANTASMA (Poucos Dados)", action: "📢 Precisa de mais tráfego (anuncie ou divulgue)", color: "#94a3b8" };
-            }
-            if (views > 100 && sales === 0) {
-                return { text: "HEMORRAGIA (Tráfego sem Venda)", action: "💀 A Headline é fraca. Mude a promessa.", color: "#ef4444" };
-            }
-            if (sales > 0 && conversion < 1.0) {
-                return { text: "VENDE, MAS POUCO", action: "🔧 Ajuste preço ou melhore a garantia.", color: "#f59e0b" };
-            }
-            
-            return { text: "EM ANÁLISE", action: "👀 Continue observando", color: "#f59e0b" };
+            if (currentStatus === 'verde') return { text: "VALIDADA", color: "#10b981" };
+            if (currentStatus === 'vermelho') return { text: "REPROVADA", color: "#ef4444" };
+            if (sales >= 3) return { text: "BATEU A META! PODE VALIDAR.", color: "#10b981" };
+            if (views > 100 && sales === 0) return { text: "NÃO VENDE. MUDE A HEADLINE.", color: "#ef4444" };
+            return { text: "COLETANDO DADOS...", color: "#f59e0b" };
         }
 
-        // --- CORE ---
+        // CRUD
         window.criarNovaOferta = async () => {
             if(!confirm("Criar nova oferta?")) return;
-            try {
-                const offerRef = await addDoc(collection(db, "offers"), {
-                    headline: "Nova Oferta (Edite Aqui)", name: "Subtítulo", price: "0,00", createdAt: serverTimestamp()
-                });
-                await addDoc(collection(db, "metrics"), {
-                    offerId: offerRef.id, sales: 0, revenue: 0, views: 0, statusVisual: "cinza"
-                });
-                carregarPainel();
-            } catch (e) { alert("Erro: " + e.message); }
+            const offerRef = await addDoc(collection(db, "offers"), {
+                headline: "Nova Promessa Matadora",
+                bodyText: "Escreva aqui o texto persuasivo que vai convencer o cliente.",
+                ctaText: "QUERO COMPRAR AGORA",
+                price: "4,99",
+                createdAt: serverTimestamp()
+            });
+            await addDoc(collection(db, "metrics"), { offerId: offerRef.id, sales: 0, revenue: 0, views: 0, statusVisual: "cinza" });
+            carregarPainel();
         }
 
-        window.excluirOferta = async (metricId) => {
-            if(!confirm("Apagar para sempre?")) return;
-            try { await deleteDoc(doc(db, "metrics", metricId)); carregarPainel(); } 
-            catch (e) { alert("Erro: " + e.message); }
+        window.salvarTudo = async (offerId, metricId) => {
+            try {
+                await updateDoc(doc(db, "offers", offerId), {
+                    headline: document.getElementById(`headline-${offerId}`).value,
+                    bodyText: document.getElementById(`body-${offerId}`).value,
+                    ctaText: document.getElementById(`cta-${offerId}`).value,
+                    price: document.getElementById(`price-${offerId}`).value
+                });
+                await updateDoc(doc(db, "metrics", metricId), {
+                    sales: Number(document.getElementById(`sales-${metricId}`).value),
+                    revenue: Number(document.getElementById(`rev-${metricId}`).value),
+                    views: Number(document.getElementById(`views-${metricId}`).value),
+                    statusVisual: document.getElementById(`status-${metricId}`).value
+                });
+                alert("✅ ATUALIZADO!");
+                carregarPainel();
+            } catch (e) { alert("Erro: " + e.message); }
         }
 
         async function carregarPainel() {
             const container = document.getElementById('lista-ofertas');
             container.innerHTML = ""; 
-
             const metricsSnap = await getDocs(collection(db, "metrics"));
 
-            if (metricsSnap.empty) {
-                container.innerHTML = "<p>Nenhuma oferta ativa.</p>";
-                return;
-            }
-
-            for (const metricDoc of metricsSnap.docs) {
+            metricsSnap.forEach(async (metricDoc) => {
                 const mData = metricDoc.data();
                 const offerId = mData.offerId;
+                let offerData = { headline: "...", bodyText: "...", ctaText: "...", price: "0" };
                 
-                let offerData = { headline: "...", price: "..." };
                 try {
                     const offerSnap = await getDoc(doc(db, "offers", offerId));
                     if (offerSnap.exists()) offerData = offerSnap.data();
                 } catch(e) {}
 
-                // RODA A ANÁLISE
-                const views = mData.views || 0; // Garantir que não seja undefined
-                const sales = mData.sales || 0;
-                const analise = analisarOferta(views, sales, mData.statusVisual);
+                const analise = analisarOferta(mData.views || 0, mData.sales || 0, mData.statusVisual);
 
                 const html = `
                     <div class="card ${mData.statusVisual}">
                         <div style="display:flex; justify-content:space-between;">
-                            <div>
-                                <h3 style="margin:0; color:#fff;">OFERTA</h3>
-                                <small style="color:#64748b; font-family:monospace;">ID: ${offerId}</small>
-                            </div>
-                            <div style="text-align:right;">
-                                <span class="status-badge" style="background:${getStatusColor(mData.statusVisual)}">
-                                    ${mData.statusVisual.toUpperCase()}
-                                </span>
-                                <br>
-                                <button class="btn-gray" style="margin-top:5px; background:#334155;" onclick="excluirOferta('${metricDoc.id}')">🗑️</button>
-                            </div>
+                            <h3 style="margin:0; color:#fff;">OFERTA: ${offerId}</h3>
+                            <span style="background:${analise.color}; padding:5px 10px; border-radius:4px; font-size:12px; font-weight:bold;">${mData.statusVisual.toUpperCase()}</span>
                         </div>
 
                         <div class="diagnosis-box" style="border-color:${analise.color}">
-                            <div class="diagnosis-title">🤖 PACO AI DIAGNOSTIC</div>
-                            <div class="diagnosis-text" style="color:${analise.color}">${analise.text}</div>
-                            <div class="diagnosis-action">👉 ${analise.action}</div>
+                            <div class="diagnosis-text" style="color:${analise.color}">🤖 ${analise.text}</div>
                         </div>
 
-                        <div style="margin-top:20px; display:flex; gap:20px;">
-                            <div style="flex:1;">
-                                <strong style="color:#94a3b8;">SITE</strong>
-                                <label>Headline</label>
+                        <div class="row">
+                            <div class="col" style="flex:2;">
+                                <strong style="color:#94a3b8;">EDITAR SITE</strong>
+                                <label>Headline (Título)</label>
                                 <input type="text" class="edit-field" id="headline-${offerId}" value="${offerData.headline}">
+                                
+                                <label>Texto do Corpo (A Dor e a Solução)</label>
+                                <textarea class="edit-field" id="body-${offerId}">${offerData.bodyText || ''}</textarea>
+                                
                                 <div class="row">
-                                    <div class="col"><label>Preço</label><input type="text" class="edit-field" id="price-${offerId}" value="${offerData.price}"></div>
-                                    <div class="col"><label>Sub</label><input type="text" class="edit-field" id="sub-${offerId}" value="${offerData.name || ''}"></div>
-                                </div>
-                            </div>
-
-                            <div style="flex:1; border-left:1px solid #334155; padding-left:20px;">
-                                <strong style="color:#94a3b8;">MÉTRICAS</strong>
-                                <div class="row">
-                                    <div class="col"><label>Vendas</label><input type="number" class="edit-field" id="sales-${metricDoc.id}" value="${mData.sales}"></div>
-                                    <div class="col"><label>Views (Tráfego)</label><input type="number" class="edit-field" id="views-${metricDoc.id}" value="${views}"></div>
-                                </div>
-                                <div class="row">
-                                    <div class="col"><label>Receita</label><input type="number" class="edit-field" id="revenue-${metricDoc.id}" value="${mData.revenue}"></div>
                                     <div class="col">
-                                        <label>Status</label>
-                                        <select id="status-${metricDoc.id}" class="edit-field">
-                                            <option value="cinza" ${mData.statusVisual === 'cinza' ? 'selected' : ''}>🟡 Testando</option>
-                                            <option value="verde" ${mData.statusVisual === 'verde' ? 'selected' : ''}>🟢 Validada</option>
-                                            <option value="vermelho" ${mData.statusVisual === 'vermelho' ? 'selected' : ''}>🔴 Reprovada</option>
-                                        </select>
+                                        <label>Texto do Botão</label>
+                                        <input type="text" class="edit-field" id="cta-${offerId}" value="${offerData.ctaText || 'QUERO COMPRAR'}">
+                                    </div>
+                                    <div class="col">
+                                        <label>Preço (R$)</label>
+                                        <input type="text" class="edit-field" id="price-${offerId}" value="${offerData.price}">
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
+                            <div class="col" style="border-left:1px solid #334155; padding-left:20px;">
+                                <strong style="color:#94a3b8;">EDITAR RESULTADOS</strong>
+                                <div class="row">
+                                    <div class="col"><label>Views</label><input type="number" class="edit-field" id="views-${metricDoc.id}" value="${mData.views || 0}"></div>
+                                    <div class="col"><label>Vendas</label><input type="number" class="edit-field" id="sales-${metricDoc.id}" value="${mData.sales || 0}"></div>
+                                </div>
+                                <label>Receita Total</label><input type="number" class="edit-field" id="rev-${metricDoc.id}" value="${mData.revenue || 0}">
+                                <label>Status</label>
+                                <select id="status-${metricDoc.id}" class="edit-field">
+                                    <option value="cinza" ${mData.statusVisual==='cinza'?'selected':''}>🟡 Testando</option>
+                                    <option value="verde" ${mData.statusVisual==='verde'?'selected':''}>🟢 Validada</option>
+                                    <option value="vermelho" ${mData.statusVisual==='vermelho'?'selected':''}>🔴 Reprovada</option>
+                                </select>
+                            </div>
+                        </div>
                         <div style="margin-top:20px; text-align:right;">
-                            <a href="./?id=${offerId}" target="_blank" style="color:#94a3b8; text-decoration:none; margin-right:15px; font-size:12px;">Ver Link ↗</a>
-                            <button class="btn-blue" onclick="salvarTudo('${offerId}', '${metricDoc.id}')">💾 ATUALIZAR DADOS</button>
+                            <a href="./?id=${offerId}" target="_blank" style="color:#aaa; font-size:12px; margin-right:15px;">Ver Página</a>
+                            <button class="btn-blue" onclick="salvarTudo('${offerId}', '${metricDoc.id}')">💾 SALVAR TUDO</button>
                         </div>
-                    </div>
-                `;
+                    </div>`;
                 container.innerHTML += html;
-            }
-        }
-
-        window.salvarTudo = async (offerId, metricId) => {
-            try {
-                const newHeadline = document.getElementById(`headline-${offerId}`).value;
-                const newPrice = document.getElementById(`price-${offerId}`).value;
-                const newSub = document.getElementById(`sub-${offerId}`).value;
-                
-                const newSales = Number(document.getElementById(`sales-${metricId}`).value);
-                const newRevenue = Number(document.getElementById(`revenue-${metricId}`).value);
-                const newViews = Number(document.getElementById(`views-${metricId}`).value);
-                const newStatus = document.getElementById(`status-${metricId}`).value;
-
-                await updateDoc(doc(db, "offers", offerId), { headline: newHeadline, price: newPrice, name: newSub });
-                await updateDoc(doc(db, "metrics", metricId), { sales: newSales, revenue: newRevenue, views: newViews, statusVisual: newStatus });
-
-                alert("✅ Dados salvos! O algoritmo vai recalcular.");
-                carregarPainel();
-
-            } catch (e) { alert("Erro: " + e.message); }
-        }
-
-        function getStatusColor(status) {
-            if(status === 'verde') return '#10b981';
-            if(status === 'vermelho') return '#ef4444';
-            return '#f59e0b';
+            });
         }
     </script>
 </body>
