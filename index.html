@@ -2,129 +2,42 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Validação de Ideia</title>
+    <title>Oferta Especial</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <style>
-        /* --- ESTILO (SEU DESIGN DARK MODE) --- */
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif; /* Fonte mais moderna */
-            background: #0f0f0f;
-            color: #ffffff;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh; /* Centraliza verticalmente */
-        }
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 40px 20px;
-            text-align: left; /* Alinhamento à esquerda lê melhor */
-        }
-        
-        /* Tipografia */
-        h1 {
-            font-size: 26px;
-            line-height: 1.3;
-            margin-bottom: 20px;
-            color: #fff;
-            font-weight: 700;
-        }
-        p {
-            font-size: 17px;
-            line-height: 1.6;
-            color: #b0b0b0; /* Cinza suave para leitura */
-            margin-bottom: 20px;
-        }
-        strong {
-            color: #fff;
-        }
-
-        /* Destaque do Preço */
-        .price-tag {
-            font-size: 32px;
-            color: #00ff88;
-            font-weight: bold;
-            display: block;
-            margin: 20px 0;
-        }
-
-        /* Botão CTA */
-        .cta { margin-top: 35px; }
-        .cta-button {
-            display: block;
-            width: 100%;
-            background: #00ff88;
-            color: #000;
-            text-align: center;
-            padding: 18px;
-            font-size: 18px;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 800;
-            cursor: pointer;
-            border: none;
-            transition: transform 0.2s, opacity 0.2s;
-            text-transform: uppercase;
-        }
-        .cta-button:hover {
-            opacity: 0.9;
-            transform: scale(1.02); /* Efeito de clique */
-        }
-
-        /* Rodapé */
-        .note {
-            margin-top: 25px;
-            font-size: 13px;
-            color: #555;
-            text-align: center;
-        }
-
-        /* Utilitários de Estado */
+        /* SEU ESTILO DARK MODE */
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #0f0f0f; color: #ffffff; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { max-width: 500px; margin: 0 auto; padding: 40px 20px; text-align: left; }
+        h1 { font-size: 26px; line-height: 1.3; margin-bottom: 20px; color: #fff; font-weight: 700; }
+        p { font-size: 17px; line-height: 1.6; color: #b0b0b0; margin-bottom: 20px; white-space: pre-wrap; }
+        .price-tag { font-size: 32px; color: #00ff88; font-weight: bold; display: block; margin: 20px 0; }
+        .cta-button { display: block; width: 100%; background: #00ff88; color: #000; text-align: center; padding: 18px; font-size: 18px; text-decoration: none; border-radius: 8px; font-weight: 800; cursor: pointer; border: none; text-transform: uppercase; transition: transform 0.2s; }
+        .cta-button:hover { transform: scale(1.02); opacity: 0.9; }
+        .note { margin-top: 25px; font-size: 13px; color: #555; text-align: center; }
         .hidden { display: none; }
         #loading { color: #00ff88; font-family: monospace; text-align: center; margin-top: 20%; }
-        .error { color: #ff4444; text-align: center; margin-top: 20px; }
+        .error { color: #ff4444; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div id="loading">Acessando banco de dados...</div>
+    <div id="loading">Carregando oferta...</div>
 
     <div id="app" class="container hidden">
-
-        <h1 id="headline">Carregando promessa...</h1>
-
-        <p id="sub">Carregando descrição...</p>
-
-        <div class="price-tag">
-            R$ <span id="price">...</span>
-        </div>
-
-        <p>
-            Sem promessas de renda. <br>
-            Sem curso. <br>
-            Sem enrolação.
-        </p>
-
+        <h1 id="headline">...</h1>
+        <p id="bodyText">...</p>
+        <div class="price-tag">R$ <span id="price">...</span></div>
         <div class="cta">
-            <button id="buyBtn" class="cta-button">QUERO DESCOBRIR AGORA</button>
+            <button id="buyBtn" class="cta-button">...</button>
         </div>
-
-        <div class="note">
-            * Se não fizer sentido pra você, simplesmente feche a página. <br>
-            Ambiente Seguro • PACO System
-        </div>
-
+        <div class="note">Compra Segura • Garantia PACO</div>
     </div>
 
     <script type="module">
+        // 1. IMPORTS CERTOS PARA GITHUB PAGES (Web SDK)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // SUA CONFIGURAÇÃO (Já ajustada)
         const firebaseConfig = {
             apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg",
             authDomain: "paco-core.firebaseapp.com",
@@ -138,68 +51,59 @@
         const db = getFirestore(app);
 
         async function init() {
+            // 2. AQUI ESTÁ A MÁGICA: Pega o ID da URL, não deixa fixo!
             const params = new URLSearchParams(window.location.search);
             const offerId = params.get('id');
 
-            // Se não tiver ID na URL, avisa erro
             if (!offerId) {
-                document.getElementById('loading').innerHTML = "<span class='error'>Erro: Link incompleto (falta ?id=...)</span>";
+                document.getElementById('loading').innerHTML = "<span class='error'>Link inválido. Use o painel para gerar o link.</span>";
                 return;
             }
 
             try {
-                // 1. Busca os dados no Firebase (Offers)
-                const docRef = doc(db, "offers", offerId);
-                const docSnap = await getDoc(docRef);
+                // Busca a oferta no banco
+                const docSnap = await getDoc(doc(db, "offers", offerId));
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
 
-                    // 2. Atualiza a tela com os textos do Painel
-                    document.getElementById('headline').innerText = data.headline || "Headline não definida";
-                    document.getElementById('sub').innerText = data.name || ""; // Usando o campo 'name' como subtítulo/descrição
+                    // Preenche a tela com os dados do Painel
+                    document.getElementById('headline').innerText = data.headline || "Sem Título";
+                    document.getElementById('bodyText').innerText = data.bodyText || "";
                     document.getElementById('price').innerText = data.price || "0,00";
+                    document.getElementById('buyBtn').innerText = data.ctaText || "COMPRAR";
 
-                    // 3. Mostra o site e esconde o loading
+                    // Mostra o site
                     document.getElementById('loading').classList.add('hidden');
                     document.getElementById('app').classList.remove('hidden');
 
-                    // 4. Conta +1 Visualização (View) na coleção 'metrics'
-                    // Nota: Para simplificar, estamos salvando eventos brutos.
-                    // O painel inteligente vai somar isso depois.
-                    await addDoc(collection(db, "events"), {
-                        offerId: offerId,
-                        type: "offer_view",
-                        userAgent: navigator.userAgent,
-                        createdAt: serverTimestamp()
+                    // Registra Visualização no Banco
+                    addDoc(collection(db, "metrics"), { // Salvando direto em metrics para facilitar contagem simples se quiser, ou events
+                         offerId: offerId, type: "view_auto", timestamp: serverTimestamp() 
                     });
+                    // Opcional: Atualizar contador de Views no documento da métrica (avançado, deixa pra depois)
 
-                    // 5. Configura o Clique do Botão
+                    // Configura o Botão
                     document.getElementById('buyBtn').onclick = async () => {
-                        const btn = document.getElementById('buyBtn');
-                        btn.innerText = "INICIANDO...";
-                        btn.style.background = "#fff";
+                        document.getElementById('buyBtn').innerText = "PROCESSANDO...";
                         
-                        // Registra o clique
+                        // Registra o Clique
                         await addDoc(collection(db, "events"), {
                             offerId: offerId,
                             type: "cta_click",
                             createdAt: serverTimestamp()
                         });
-
-                        // AQUI É ONDE VOCÊ COLOCARIA O LINK DO CHECKOUT REAL NO FUTURO
-                        // Por enquanto, apenas avisa:
-                        alert("✅ Clique registrado!\n\n(Como estamos em fase de validação, aqui você seria redirecionado para o Checkout ou WhatsApp).");
-                        btn.innerText = "QUERO DESCOBRIR AGORA";
-                        btn.style.background = "#00ff88";
+                        
+                        alert("✅ Clique registrado! (Aqui iria para o Checkout)");
+                        document.getElementById('buyBtn').innerText = data.ctaText;
                     };
 
                 } else {
-                    document.getElementById('loading').innerHTML = "<span class='error'>Oferta não encontrada no sistema.</span>";
+                    document.getElementById('loading').innerHTML = "<span class='error'>Oferta não encontrada (Erro 404).</span>";
                 }
             } catch (error) {
                 console.error(error);
-                document.getElementById('loading').innerHTML = "<span class='error'>Erro de conexão. Tente recarregar.</span>";
+                document.getElementById('loading').innerHTML = "<span class='error'>Erro de conexão.</span>";
             }
         }
 
