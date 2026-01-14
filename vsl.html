@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Apresentação Especial</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #000; color: #fff; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; text-align: center; }
+        
+        h1 { font-size: 24px; color: #ff0000; margin-bottom: 20px; text-transform: uppercase; }
+        .video-box { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; background: #222; border: 2px solid #333; margin-bottom: 30px;}
+        .video-box iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        
+        p { color: #ccc; font-size: 18px; line-height: 1.5; margin-bottom: 30px; }
+        
+        .cta-button { display: inline-block; background: #27ae60; color: #fff; padding: 20px 40px; font-size: 22px; font-weight: bold; text-decoration: none; border-radius: 5px; animation: pulse 2s infinite; border: none; cursor: pointer; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        
+        .hidden { display: none; }
+        #loading { color: yellow; text-align: center; margin-top: 50px; }
+    </style>
+</head>
+<body>
+
+    <div id="loading">Carregando VSL...</div>
+
+    <div id="app" class="container hidden">
+        <h1 id="headline">...</h1>
+
+        <div class="video-box">
+            <iframe id="videoFrame" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+
+        <p id="bodyText">...</p>
+
+        <button id="buyBtn" class="cta-button">...</button>
+        
+        <div style="margin-top:20px; font-size:12px; color:#555;">Preço: R$ <span id="price">...</span></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg",
+            authDomain: "paco-core.firebaseapp.com",
+            projectId: "paco-core",
+            storageBucket: "paco-core.firebasestorage.app",
+            messagingSenderId: "88467987691",
+            appId: "1:88467987691:web:85892f360253aa957c72ae"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function init() {
+            const params = new URLSearchParams(window.location.search);
+            const offerId = params.get('id');
+
+            if (!offerId) return;
+
+            const docSnap = await getDoc(doc(db, "offers", offerId));
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+
+                document.getElementById('headline').innerText = data.headline;
+                document.getElementById('bodyText').innerText = data.bodyText;
+                document.getElementById('buyBtn').innerText = data.ctaText;
+                document.getElementById('price').innerText = data.price;
+                
+                // SEGREDO DO VÍDEO: O Painel vai salvar o link, a gente pega aqui
+                // Se não tiver vídeo salvo, põe um padrão só pra não quebrar
+                const videoUrl = data.videoUrl || "https://www.youtube.com/embed/dQw4w9WgXcQ"; 
+                document.getElementById('videoFrame').src = videoUrl;
+
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('app').classList.remove('hidden');
+
+                await addDoc(collection(db, "events"), { offerId: offerId, type: "vsl_view", createdAt: serverTimestamp() });
+            }
+        }
+        init();
+    </script>
+</body>
+</html>
