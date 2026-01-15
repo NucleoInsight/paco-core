@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper PACO | V35 (Master)</title>
+    <title>Sniper PACO | V36 (FIXED)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -38,7 +38,6 @@
             .text-white { color: black !important; }
             .text-slate-400 { color: #666 !important; }
             canvas { max-height: 250px; }
-            input, select, textarea { border: 1px solid #ccc !important; color: black !important; background: white !important; }
         }
     </style>
 </head>
@@ -47,12 +46,9 @@
     <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#0b0c15]">
         <div class="glass-panel p-8 w-full max-w-md text-center">
             <h1 class="text-3xl font-black text-white tracking-tight mb-2">SNIPER <span class="text-indigo-500">PACO</span></h1>
-            <p class="text-xs text-slate-500 mb-6 font-mono">Central de Fusão</p>
-            
             <input type="email" id="email" class="glass-input mb-3" placeholder="Email" value="gilvanxavierborges@gmail.com">
             <input type="password" id="password" class="glass-input mb-6" placeholder="Senha">
-            
-            <button onclick="fazerLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-indigo-500/20">ACESSAR SISTEMA</button>
+            <button onclick="fazerLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition">ACESSAR SISTEMA</button>
             <p id="error-msg" class="text-red-400 text-xs mt-4"></p>
         </div>
     </div>
@@ -161,13 +157,12 @@
         import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, addDoc, deleteDoc, serverTimestamp, query, where, orderBy, limit, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // CONFIG PACO-CORE (A ÚNICA QUE FUNCIONA O LOGIN)
+        // CONFIG (PACO-CORE - CORRETO)
         const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
         
         const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
         let currentOfferId = "", unsubscribeFeed = null, myChart = null;
 
-        // LOGIN RESTAURADO
         window.fazerLogin = async () => { try { await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); } catch(e) { document.getElementById('error-msg').innerText = e.message; } }
         window.logout = () => signOut(auth);
         onAuthStateChanged(auth, (u) => { if(u) { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('dashboard').classList.remove('hidden'); iniciarSistema(); } });
@@ -211,9 +206,10 @@
                 feedDiv.innerHTML = "";
                 let events = [];
                 snapshot.forEach(doc => events.push(doc.data()));
-                const filtered = events.filter(e => !!e.isTest === isTest).sort((a,b) => b.createdAt - a.createdAt);
                 
+                const filtered = events.filter(e => !!e.isTest === isTest).sort((a,b) => b.createdAt - a.createdAt);
                 const sessions = {};
+                
                 filtered.forEach(e => {
                     const sid = e.sessionId || 'anon';
                     let source = e.campaign?.source || 'direto';
@@ -233,14 +229,13 @@
                 document.getElementById('kpi-unique').innerText = Object.keys(sessions).length;
                 document.getElementById('kpi-sales').innerText = clicks;
                 
-                // FEED ATUALIZADO
                 Object.values(sessions).sort((a,b) => b.time - a.time).slice(0,30).forEach(s => {
                     let origin = s.source + (s.campaign && s.campaign !== 'none' ? ` • ${s.campaign}` : '');
                     let details = s.events.map(e => {
                         let icon="🔹", txt=e.type, color="text-slate-400";
                         if(e.type==='cta_click'||(e.data?.label||'').toLowerCase().includes('comprar')) { icon="💰"; color="text-emerald-400 font-bold"; txt=`Checkout (${e.data?.label||'btn'})`; }
                         else if(e.type==='click') { icon="👆"; txt=`Click (${e.data?.label})`; }
-                        else if(e.type==='quiz_answer') { icon="💬"; color="text-pink-400"; txt=`Quiz: ${e.data?.answer}`; }
+                        else if(e.type==='quiz_answer') { icon="💬"; color="text-pink-400"; txt=`Quiz: "${e.data?.answer}"`; }
                         else if(e.type==='video_progress') { icon="⏳"; txt=`Vídeo: ${e.data?.percent}%`; }
                         else if(e.type==='video_complete') { icon="✅"; color="text-green-400"; txt="Viu Tudo"; }
                         else if(e.type==='video_start') { icon="🎥"; txt="Play"; }
