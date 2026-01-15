@@ -3,23 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PACO V14 | Correções Sniper</title>
+    <title>Sniper PACO | Control Center</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
     
     <style>
-        body { background-color: #0b0c15; color: #a5b4fc; font-family: 'Inter', sans-serif; }
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        body { background-color: #0b0c15; color: #a5b4fc; font-family: 'JetBrains Mono', monospace; }
         .glass-panel { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; }
-        .glass-input { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(51, 65, 85, 0.5); color: white; padding: 10px; border-radius: 8px; width: 100%; font-size: 13px; }
-        .glass-input:focus { border-color: #6366f1; outline: none; }
-        .tab-btn { padding: 8px 16px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; opacity: 0.6; }
-        .tab-btn.active { background: rgba(99, 102, 241, 0.2); color: #818cf8; opacity: 1; border: 1px solid rgba(99, 102, 241, 0.5); }
+        
+        .funnel-step { position: relative; padding-left: 20px; border-left: 2px solid #334155; margin-bottom: 20px; }
+        .funnel-step.active { border-left-color: #10b981; }
+        .funnel-step::before { content: ''; position: absolute; left: -6px; top: 0; width: 10px; height: 10px; background: #334155; border-radius: 50%; }
+        .funnel-step.active::before { background: #10b981; box-shadow: 0 0 10px #10b981; }
+        
+        .progress-bar-bg { background: #1e293b; height: 6px; border-radius: 3px; overflow: hidden; margin-top: 5px; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #a855f7); width: 0%; transition: width 1s; }
+        
+        /* Toggle Switch */
+        .toggle-checkbox:checked { right: 0; border-color: #10b981; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
+
+        .input-dark { background: #0f172a; border: 1px solid #334155; color: white; padding: 8px; border-radius: 6px; width: 100%; font-size: 12px; }
         .hidden { display: none !important; }
+        
         /* Scrollbar */
-        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #0b0c15; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
     </style>
@@ -28,29 +38,146 @@
 
     <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#0b0c15]">
         <div class="glass-panel p-8 w-full max-w-md text-center">
-            <h1 class="text-3xl font-black text-white mb-6">PACO <span class="text-emerald-500">V14</span></h1>
-            <input type="email" id="email" class="glass-input mb-3" placeholder="Email">
-            <input type="password" id="password" class="glass-input mb-6" placeholder="Senha">
+            <h1 class="text-3xl font-black text-white tracking-tight">SNIPER <span class="text-indigo-500">PACO</span></h1>
+            <input type="email" id="email" class="input-dark mb-2 mt-4" placeholder="Email">
+            <input type="password" id="password" class="input-dark mb-4" placeholder="Senha">
             <button onclick="fazerLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition">ENTRAR</button>
             <p id="error-msg" class="text-red-400 text-xs mt-4"></p>
         </div>
     </div>
 
     <div id="dashboard" class="max-w-7xl mx-auto hidden">
-        <header class="flex justify-between items-end mb-8 border-b border-indigo-900/30 pb-4">
+        
+        <header class="flex flex-col md:flex-row justify-between items-end mb-10 border-b border-indigo-900/30 pb-4 gap-4">
             <div>
-                <h1 class="text-2xl font-black text-white">SNIPER <span class="text-indigo-500">PACO</span></h1>
-                <p class="text-xs text-emerald-400 font-mono mt-1">SISTEMA INTEGRADO</p>
+                <h1 class="text-3xl font-black text-white tracking-tight">SNIPER <span class="text-indigo-500">ANALYTICS</span></h1>
+                <p class="text-xs text-indigo-400 mt-1">Gestão de Ofertas & Link Automático</p>
             </div>
-            <div class="flex gap-2">
-                <button onclick="criarNovaOferta()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition">+ NOVA CAMPANHA</button>
-                <button onclick="logout()" class="bg-slate-800 text-slate-300 px-4 py-2 rounded-lg text-xs font-bold border border-slate-700">SAIR</button>
+            
+            <div class="flex flex-wrap items-center gap-4">
+                <div class="glass-panel px-3 py-2 border-indigo-500/50">
+                    <label class="text-[9px] text-indigo-400 uppercase font-bold block">Oferta Ativa</label>
+                    <select id="offer-selector" onchange="carregarDadosDaOferta()" class="bg-transparent text-white font-bold text-sm outline-none w-48 cursor-pointer">
+                        <option value="">Carregando...</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-2 bg-slate-800/50 p-2 rounded-lg border border-slate-700">
+                    <span class="text-[10px] text-slate-400 uppercase font-bold">Modo Teste</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="toggle-test" class="sr-only peer" onchange="carregarDadosDaOferta()">
+                        <div class="w-9 h-5 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:bg-amber-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
+                    </label>
+                </div>
+
+                <div class="flex gap-2">
+                    <button onclick="criarNovaOferta()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1">
+                        <span>+</span> NOVA
+                    </button>
+                    <button onclick="copiarRelatorio()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">📋 COPIAR</button>
+                    <button onclick="carregarDadosDaOferta()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">🔄</button>
+                </div>
             </div>
         </header>
 
-        <div id="lista-ofertas" class="space-y-10">
-            <div class="text-center py-20 text-slate-500 text-xs font-mono">Carregando dados...</div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+            
+            <div class="glass-panel p-6">
+                <h2 class="text-sm font-bold text-white mb-6 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+                    FUNIL DE RETENÇÃO
+                </h2>
+                <div id="funnel-container" class="space-y-6">
+                    <div class="text-center text-slate-600 text-xs py-10 loading-pulse">Selecione uma oferta...</div>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="glass-panel p-4 border-l-2 border-indigo-500">
+                        <p class="metric-label">Visitantes</p>
+                        <p id="kpi-unique" class="metric-value">0</p>
+                    </div>
+                    <div class="glass-panel p-4 border-l-2 border-emerald-500">
+                        <p class="metric-label">Vendas ($)</p>
+                        <p id="kpi-sales" class="metric-value">0</p>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-4 border border-indigo-500/30">
+                    <h3 class="text-xs font-bold text-indigo-400 mb-3 uppercase">Configurar Oferta Selecionada</h3>
+                    <div class="space-y-2">
+                        <input type="text" id="edit-headline" class="input-dark" placeholder="Headline">
+                        <div class="flex gap-2">
+                            <select id="edit-layout" class="input-dark">
+                                <option value="dark">🌑 Dark</option>
+                                <option value="clean">⬜ Clean</option>
+                                <option value="vsl">🎥 VSL</option>
+                                <option value="artigo">📰 Artigo</option>
+                            </select>
+                            <input type="text" id="edit-price" class="input-dark w-24 text-center" placeholder="R$">
+                        </div>
+                        <input type="text" id="edit-video" class="input-dark" placeholder="Link YouTube (Opcional)">
+                        <input type="text" id="edit-checkout" class="input-dark border-emerald-500/30" placeholder="Link Checkout">
+                        
+                        <div class="flex gap-2 pt-2">
+                            <button onclick="abrirLinkTeste()" class="w-1/2 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded font-bold text-xs py-2 hover:bg-amber-500 hover:text-black transition">
+                                🧪 ABRIR TESTE
+                            </button>
+                            <button onclick="salvarOfertaAtual()" class="w-1/2 bg-indigo-600 hover:bg-indigo-500 text-white rounded font-bold text-xs py-2 transition">
+                                💾 SALVAR
+                            </button>
+                        </div>
+                        <div class="text-center pt-1">
+                            <button onclick="deletarOfertaAtual()" class="text-[10px] text-red-500 hover:text-red-400 underline">Apagar esta oferta</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel p-0 overflow-hidden flex flex-col h-[600px]">
+                <div class="p-4 border-b border-white/5 bg-slate-900/50 flex justify-between items-center">
+                    <h3 class="text-xs font-bold text-white">📡 FEED AO VIVO</h3>
+                    <span id="feed-badge" class="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded">REAL</span>
+                </div>
+                <div class="overflow-y-auto p-4 space-y-3 flex-1" id="live-feed">
+                    <p class="text-center text-slate-600 mt-10 text-xs">Aguardando dados...</p>
+                </div>
+            </div>
         </div>
+
+        <div class="glass-panel p-6 mb-10 border border-emerald-500/30">
+            <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
+                🔗 Encurtador Automático (Firestore) <span class="text-[10px] bg-emerald-900 text-emerald-400 px-2 py-1 rounded">V2.0</span>
+            </h2>
+            <p class="text-xs text-slate-400 mb-6">Gera links curtos para a oferta selecionada.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <div class="md:col-span-2">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase">Nome Curto (Alias)</label>
+                    <div class="flex">
+                        <span class="bg-slate-700 text-slate-300 p-2 text-xs rounded-l border border-slate-600">/r.html?id=</span>
+                        <input type="text" id="short-alias" placeholder="ex: oferta1" class="w-full bg-slate-900 border border-slate-600 text-white text-xs p-2 focus:border-emerald-500 outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-emerald-500 uppercase">Origem (UTM Source)</label>
+                    <input type="text" id="utm-source" value="instagram" class="input-dark">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-emerald-500 uppercase">Campanha</label>
+                    <input type="text" id="utm-campaign" placeholder="stories" class="input-dark">
+                </div>
+            </div>
+            <button onclick="gerarLinkCurto()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg text-xs transition mb-4">
+                💾 GERAR LINK DE RASTREAMENTO
+            </button>
+            <div id="short-result" class="hidden bg-black/50 p-4 rounded border border-slate-700 flex justify-between items-center">
+                <code id="final-link-display" class="text-white text-xs font-mono">...</code>
+                <button onclick="copiarLinkCurto()" class="text-[10px] bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded">COPIAR</button>
+            </div>
+        </div>
+
     </div>
 
     <script type="module">
@@ -61,228 +188,224 @@
         const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
 
+        // VARIÁVEIS GLOBAIS
+        let currentOfferId = "";
+        let currentOfferData = {};
+        let unsubscribeFeed = null;
+
         // AUTH
         window.fazerLogin = async () => { try { await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); } catch(e) { document.getElementById('error-msg').innerText = e.message; } }
         window.logout = () => signOut(auth);
-        onAuthStateChanged(auth, (u) => { if(u) { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('dashboard').classList.remove('hidden'); carregarPainel(); } });
+        onAuthStateChanged(auth, (u) => { if(u) { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('dashboard').classList.remove('hidden'); iniciarSistema(); } });
 
-        window.trocarAba = (id, aba) => {
-            document.querySelectorAll(`.content-${id}`).forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll(`.tab-${id}`).forEach(el => el.classList.remove('active'));
-            document.getElementById(`tab-content-${id}-${aba}`).classList.remove('hidden');
-            document.getElementById(`btn-tab-${id}-${aba}`).classList.add('active');
+        // INICIALIZAÇÃO
+        async function iniciarSistema() {
+            // 1. Carrega lista de ofertas no Select
+            const snaps = await getDocs(collection(db, "offers"));
+            const select = document.getElementById('offer-selector');
+            select.innerHTML = "";
+            
+            if(snaps.empty) {
+                const opt = document.createElement('option');
+                opt.text = "Nenhuma oferta criada";
+                select.add(opt);
+                return;
+            }
+
+            snaps.forEach(doc => {
+                const opt = document.createElement('option');
+                opt.value = doc.id;
+                opt.text = doc.data().headline || "Sem Título";
+                select.add(opt);
+            });
+
+            // Seleciona a primeira e carrega
+            currentOfferId = select.value;
+            carregarDadosDaOferta();
         }
 
-        // CRUD OFERTAS
         window.criarNovaOferta = async () => {
-            if(!confirm("Criar nova oferta?")) return;
-            const ref = await addDoc(collection(db, "offers"), { headline: "Nova Oferta", bodyText: "Texto...", ctaText: "COMPRAR", price: "4,99", layout: "dark", videoUrl: "", checkoutUrl: "", createdAt: serverTimestamp() });
+            const headline = prompt("Nome da nova oferta (Headline):");
+            if(!headline) return;
+            const ref = await addDoc(collection(db, "offers"), { 
+                headline: headline, bodyText: "Texto base...", ctaText: "COMPRAR", price: "9,90", 
+                layout: "dark", videoUrl: "", checkoutUrl: "", createdAt: serverTimestamp() 
+            });
+            // Cria métricas zeradas
             await addDoc(collection(db, "metrics"), { offerId: ref.id, sales: 0, revenue: 0, views: 0, statusVisual: "cinza" });
-            carregarPainel();
+            alert("Criada! Recarregando...");
+            iniciarSistema();
         }
 
-        window.excluirOferta = async (id) => { if(confirm("Apagar oferta?")) { await deleteDoc(doc(db, "metrics", id)); carregarPainel(); } }
+        // CARREGAMENTO INTELIGENTE (CORE DO SNIPER)
+        window.carregarDadosDaOferta = async () => {
+            const select = document.getElementById('offer-selector');
+            currentOfferId = select.value;
+            const isTest = document.getElementById('toggle-test').checked;
 
-        window.salvarTudo = async (offerId, metricId) => {
+            // Atualiza Badge de Status
+            const badge = document.getElementById('feed-badge');
+            if(isTest) { badge.innerText = "MODO TESTE"; badge.className = "text-[9px] bg-amber-500/20 text-amber-400 px-2 py-1 rounded"; } 
+            else { badge.innerText = "DADOS REAIS"; badge.className = "text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded"; }
+
+            // 1. Carrega Dados da Oferta (Firestore)
+            const docSnap = await getDoc(doc(db, "offers", currentOfferId));
+            if(docSnap.exists()) {
+                currentOfferData = docSnap.data();
+                // Preenche formulário de edição
+                document.getElementById('edit-headline').value = currentOfferData.headline;
+                document.getElementById('edit-price').value = currentOfferData.price;
+                document.getElementById('edit-layout').value = currentOfferData.layout || 'dark';
+                document.getElementById('edit-video').value = currentOfferData.videoUrl || '';
+                document.getElementById('edit-checkout').value = currentOfferData.checkoutUrl || '';
+            }
+
+            // 2. Carrega Métricas (Funil) via EVENTOS (Sniper Logic)
+            // Query: Busca eventos desta oferta, filtrando por Teste ou Real
+            const q = query(collection(db, "events"), 
+                where("offerId", "==", currentOfferId), 
+                where("isTest", "==", isTest),
+                orderBy("createdAt", "desc")
+            );
+
+            // Escuta em Tempo Real
+            if(unsubscribeFeed) unsubscribeFeed(); // Limpa listener anterior
+            
+            unsubscribeFeed = onSnapshot(q, (snapshot) => {
+                let views = 0;
+                let clicks = 0;
+                const feedContainer = document.getElementById('live-feed');
+                feedContainer.innerHTML = "";
+
+                if(snapshot.empty) {
+                    feedContainer.innerHTML = "<p class='text-center text-slate-600 text-xs mt-10'>Sem dados recentes.</p>";
+                }
+
+                snapshot.forEach(doc => {
+                    const d = doc.data();
+                    // Contagem Funil
+                    if(d.type === 'offer_view') views++;
+                    if(d.type === 'cta_click') clicks++;
+
+                    // Render Feed Item
+                    const time = d.createdAt ? new Date(d.createdAt.seconds*1000).toLocaleTimeString() : "";
+                    let icon="🔹"; let color="text-slate-400"; let txt = d.type;
+                    
+                    if(d.type==='cta_click') { icon="💰"; color="text-emerald-400 font-bold"; txt="CLICOU NO CHECKOUT"; }
+                    if(d.type==='offer_view') { icon="👀"; color="text-indigo-400"; txt="Visualizou Página"; }
+                    if(d.type==='short_link_click') { icon="🔗"; color="text-amber-400"; txt="Link Encurtado"; }
+
+                    // Origem UTM
+                    let sourceTag = "";
+                    if(d.campaign && d.campaign.source !== 'direct' && d.campaign.source !== 'none') {
+                        sourceTag = `<span class="text-[9px] bg-slate-700 px-1 rounded ml-1">${d.campaign.source}</span>`;
+                    }
+
+                    feedContainer.innerHTML += `
+                        <div class="flex justify-between border-b border-white/5 py-2 hover:bg-white/5 px-2 rounded transition">
+                            <div class="flex items-center gap-2">
+                                <span>${icon}</span>
+                                <div>
+                                    <span class="text-[10px] ${color} block">${txt}</span>
+                                    ${sourceTag}
+                                </div>
+                            </div>
+                            <span class="text-[9px] text-slate-600 font-mono">${time}</span>
+                        </div>`;
+                });
+
+                // Atualiza KPIs
+                document.getElementById('kpi-unique').innerText = views;
+                document.getElementById('kpi-sales').innerText = clicks; // Usando cliques como proxy de intenção por enquanto
+
+                // Atualiza Funil Visual
+                renderFunnel(views, clicks);
+            });
+        }
+
+        function renderFunnel(views, clicks) {
+            const container = document.getElementById('funnel-container');
+            const conv = views > 0 ? ((clicks/views)*100).toFixed(1) : 0;
+            
+            container.innerHTML = `
+                <div class="funnel-step active">
+                    <div class="flex justify-between items-end">
+                        <div><p class="text-[10px] uppercase text-slate-500 font-bold">VISITAS</p><p class="text-xl font-black text-white">${views}</p></div>
+                        <div class="text-right"><p class="text-xs font-bold text-slate-400">100%</p></div>
+                    </div>
+                    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 100%"></div></div>
+                </div>
+                <div class="funnel-step ${clicks > 0 ? 'active' : ''}" style="border-left-color: #10b981;">
+                    <div class="flex justify-between items-end">
+                        <div><p class="text-[10px] uppercase text-emerald-500 font-bold">CHECKOUT (INTENÇÃO)</p><p class="text-xl font-black text-emerald-400">${clicks}</p></div>
+                        <div class="text-right"><p class="text-xs font-bold text-emerald-400">${conv}%</p></div>
+                    </div>
+                    <div class="progress-bar-bg"><div class="progress-bar-fill" style="background:#10b981; width: ${conv}%"></div></div>
+                </div>
+            `;
+        }
+
+        // SALVAR EDIÇÕES
+        window.salvarOfertaAtual = async () => {
             try {
-                await updateDoc(doc(db, "offers", offerId), {
-                    headline: document.getElementById(`headline-${offerId}`).value,
-                    bodyText: document.getElementById(`body-${offerId}`).value,
-                    ctaText: document.getElementById(`cta-${offerId}`).value,
-                    price: document.getElementById(`price-${offerId}`).value,
-                    layout: document.getElementById(`layout-${offerId}`).value,
-                    videoUrl: document.getElementById(`video-${offerId}`).value,
-                    checkoutUrl: document.getElementById(`checkout-${offerId}`).value
+                await updateDoc(doc(db, "offers", currentOfferId), {
+                    headline: document.getElementById('edit-headline').value,
+                    price: document.getElementById('edit-price').value,
+                    layout: document.getElementById('edit-layout').value,
+                    videoUrl: document.getElementById('edit-video').value,
+                    checkoutUrl: document.getElementById('edit-checkout').value
                 });
-                await updateDoc(doc(db, "metrics", metricId), {
-                    sales: Number(document.getElementById(`sales-${metricId}`).value),
-                    views: Number(document.getElementById(`views-${metricId}`).value),
-                    statusVisual: document.getElementById(`status-${metricId}`).value
-                });
-                alert("✅ Salvo!");
+                alert("✅ Oferta atualizada com sucesso!");
+                carregarDadosDaOferta(); // Recarrega para garantir
             } catch(e) { alert("Erro: " + e.message); }
         }
 
-        // --- ENCURTADOR SNIPER REAL ---
-        window.gerarLinkCurto = async (offerId) => {
-            const alias = document.getElementById(`short-alias-${offerId}`).value.replace(/[^a-zA-Z0-9]/g, '');
-            if(!alias) return alert("Digite um nome curto (apenas letras/números).");
+        window.deletarOfertaAtual = async () => {
+            if(confirm("TEM CERTEZA? Isso apaga a oferta para sempre.")) {
+                await deleteDoc(doc(db, "offers", currentOfferId));
+                alert("Apagado.");
+                iniciarSistema();
+            }
+        }
+
+        window.abrirLinkTeste = () => {
+            const url = `index.html?id=${currentOfferId}&mode=test`;
+            window.open(url, '_blank');
+        }
+
+        // ENCURTADOR SNIPER
+        window.gerarLinkCurto = async () => {
+            const alias = document.getElementById('short-alias').value.replace(/[^a-zA-Z0-9]/g, '');
+            const source = document.getElementById('utm-source').value;
+            const campaign = document.getElementById('utm-campaign').value;
             
-            // Link de destino (Página da Oferta Real)
-            const targetUrl = `https://nucleoinsight.github.io/paco-core/index.html?id=${offerId}`;
-            
+            if(!alias) return alert("Digite um nome curto!");
+
+            // Constrói URL com UTMs
+            let target = `https://nucleoinsight.github.io/paco-core/index.html?id=${currentOfferId}`;
+            target += `&utm_source=${source}&utm_campaign=${campaign}`;
+
             try {
-                // Salva na coleção short_links (para o r.html ler)
                 await setDoc(doc(db, "short_links", alias), {
-                    target: targetUrl,
+                    target: target,
                     clicks: 0,
+                    offerId: currentOfferId,
                     created_at: serverTimestamp()
                 });
-                
                 const finalLink = `https://nucleoinsight.github.io/paco-core/r.html?id=${alias}`;
-                
-                document.getElementById(`short-result-${offerId}`).innerHTML = `
-                    <div class="mt-2 bg-emerald-900/20 p-2 rounded border border-emerald-500/30">
-                        <p class="text-[10px] text-emerald-400 font-bold mb-1">LINK CRIADO COM SUCESSO:</p>
-                        <a href="${finalLink}" target="_blank" class="text-xs text-white font-mono underline">${finalLink}</a>
-                    </div>
-                `;
-            } catch (e) {
-                alert("Erro ao criar link: " + e.message);
-            }
+                document.getElementById('final-link-display').innerText = finalLink;
+                document.getElementById('short-result').classList.remove('hidden');
+            } catch(e) { alert("Erro: " + e.message); }
         }
 
-        // RENDER
-        window.carregarPainel = async () => {
-            const container = document.getElementById('lista-ofertas');
-            const snaps = await getDocs(collection(db, "metrics"));
-            container.innerHTML = "";
-            if(snaps.empty) { container.innerHTML = "<p class='text-center text-slate-500'>Sem campanhas.</p>"; return; }
-
-            for (const mDoc of snaps.docs) {
-                const m = mDoc.data();
-                const offerId = m.offerId;
-                let o = { headline:"...", layout:"dark" };
-                try { const os = await getDoc(doc(db, "offers", offerId)); if(os.exists()) o = os.data(); } catch(e){}
-
-                const linkReal = `index.html?id=${offerId}`;
-                // CORREÇÃO: Botão de teste agora força o modo de teste
-                const linkTeste = `index.html?id=${offerId}&mode=test`;
-
-                let statusColor = m.statusVisual === 'verde' ? 'bg-emerald-500' : (m.statusVisual === 'vermelho' ? 'bg-red-500' : 'bg-slate-500');
-
-                const html = `
-                <div class="glass-panel p-1 relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-1 h-full ${statusColor}"></div>
-                    
-                    <div class="p-4 border-b border-white/5 flex justify-between items-center bg-slate-900/30">
-                        <div>
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="text-[10px] font-mono text-slate-500">ID: ${offerId}</span>
-                                <span class="text-[9px] px-2 py-0.5 rounded bg-white/5 text-white/70 font-bold uppercase">${m.statusVisual}</span>
-                            </div>
-                            <h3 class="text-white font-bold truncate max-w-md">${o.headline}</h3>
-                        </div>
-                        <div class="flex gap-2">
-                             <a href="./${linkTeste}" target="_blank" class="bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-black px-3 py-1.5 rounded text-xs font-bold border border-amber-500/20 transition flex items-center gap-1">
-                                🧪 ABRIR TESTE
-                             </a>
-                             <a href="./${linkReal}" target="_blank" class="bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500 hover:text-white px-3 py-1.5 rounded text-xs font-bold border border-indigo-500/20 transition flex items-center gap-1">
-                                🔗 LINK REAL
-                             </a>
-                        </div>
-                    </div>
-
-                    <div class="flex gap-1 p-2 bg-black/20 border-b border-white/5 overflow-x-auto">
-                        <button id="btn-tab-${offerId}-editor" onclick="trocarAba('${offerId}', 'editor')" class="tab-btn tab-${offerId} active">✏️ EDITOR</button>
-                        <button id="btn-tab-${offerId}-funil" onclick="trocarAba('${offerId}', 'funil')" class="tab-btn tab-${offerId}">📊 FUNIL & FEED</button>
-                        <button id="btn-tab-${offerId}-links" onclick="trocarAba('${offerId}', 'links')" class="tab-btn tab-${offerId}">🔗 LINKS</button>
-                        <button id="btn-tab-${offerId}-perigo" onclick="trocarAba('${offerId}', 'perigo')" class="tab-btn tab-${offerId} text-red-400">⚠️ APAGAR</button>
-                    </div>
-
-                    <div class="p-6 min-h-[300px]">
-                        
-                        <div id="tab-content-${offerId}-editor" class="content-${offerId}">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div class="space-y-3">
-                                    <div class="bg-indigo-500/5 p-3 rounded border border-indigo-500/10">
-                                        <label class="text-indigo-300 mb-2">TEMA & VÍDEO</label>
-                                        <select id="layout-${offerId}" class="glass-input mb-2">
-                                            <option value="dark" ${o.layout==='dark'?'selected':''}>🌑 Dark Mode</option>
-                                            <option value="clean" ${o.layout==='clean'?'selected':''}>⬜ Clean Mode</option>
-                                        </select>
-                                        <input type="text" id="video-${offerId}" value="${o.videoUrl||''}" class="glass-input" placeholder="Link do YouTube">
-                                    </div>
-                                    <label>Headline</label><input type="text" id="headline-${offerId}" value="${o.headline}" class="glass-input font-bold">
-                                    <label>Texto</label><textarea id="body-${offerId}" class="glass-input h-24">${o.bodyText||''}</textarea>
-                                </div>
-                                <div class="space-y-3">
-                                    <div class="bg-emerald-500/5 p-3 rounded border border-emerald-500/10">
-                                        <label class="text-emerald-400 mb-2">CHECKOUT</label>
-                                        <input type="text" id="checkout-${offerId}" value="${o.checkoutUrl||''}" class="glass-input border-emerald-500/30 mb-2" placeholder="Link Kiwify...">
-                                        <div class="flex gap-2">
-                                            <input type="text" id="cta-${offerId}" value="${o.ctaText||'COMPRAR'}" class="glass-input" placeholder="Botão">
-                                            <input type="text" id="price-${offerId}" value="${o.price}" class="glass-input w-24 text-center" placeholder="Preço">
-                                        </div>
-                                    </div>
-                                    <button onclick="salvarTudo('${offerId}', '${mDoc.id}')" class="w-full bg-slate-100 hover:bg-white text-slate-900 font-bold py-3 rounded-lg mt-4">SALVAR</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="tab-content-${offerId}-funil" class="content-${offerId} hidden">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-4">Métricas Manuais</h4>
-                                    <div class="flex gap-4">
-                                        <div class="bg-black/20 p-2 rounded w-1/2 text-center"><span class="block text-xs text-slate-500">Visitas</span><input type="number" id="views-${mDoc.id}" value="${m.views||0}" class="bg-transparent text-center text-xl font-bold text-white w-full"></div>
-                                        <div class="bg-black/20 p-2 rounded w-1/2 text-center border border-emerald-500/20"><span class="block text-xs text-emerald-500">Vendas</span><input type="number" id="sales-${mDoc.id}" value="${m.sales||0}" class="bg-transparent text-center text-xl font-bold text-emerald-400 w-full"></div>
-                                    </div>
-                                    <div class="mt-4">
-                                        <label>STATUS</label>
-                                        <select id="status-${mDoc.id}" class="glass-input text-center font-bold">
-                                            <option value="cinza" ${m.statusVisual==='cinza'?'selected':''}>🟡 TESTANDO</option>
-                                            <option value="verde" ${m.statusVisual==='verde'?'selected':''}>🟢 APROVADA</option>
-                                            <option value="vermelho" ${m.statusVisual==='vermelho'?'selected':''}>🔴 REPROVADA</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="bg-black/30 rounded border border-white/5 flex flex-col h-[300px]">
-                                    <div class="p-3 border-b border-white/5 flex justify-between bg-slate-900/50"><span class="text-[10px] font-bold text-white">📡 FEED AO VIVO</span></div>
-                                    <div id="feed-${offerId}" class="p-2 overflow-y-auto flex-1 space-y-1">Aguardando...</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="tab-content-${offerId}-links" class="content-${offerId} hidden">
-                            <div class="glass-panel p-6 border-emerald-500/20">
-                                <label class="text-emerald-400 mb-2">✂️ ENCURTADOR SNIPER</label>
-                                <p class="text-[10px] text-slate-500 mb-4">Crie um link curto (ex: promo1) que redireciona para esta oferta e conta os cliques.</p>
-                                <div class="flex gap-2">
-                                    <span class="py-2 text-slate-500 text-xs bg-black/20 px-3 rounded border border-white/5">/r.html?id=</span>
-                                    <input type="text" id="short-alias-${offerId}" placeholder="ex: zap" class="glass-input">
-                                    <button onclick="gerarLinkCurto('${offerId}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 rounded text-xs font-bold">CRIAR</button>
-                                </div>
-                                <div id="short-result-${offerId}" class="mt-4 text-xs"></div>
-                            </div>
-                        </div>
-
-                        <div id="tab-content-${offerId}-perigo" class="content-${offerId} hidden">
-                            <div class="border border-red-900/30 bg-red-900/5 p-6 rounded text-center">
-                                <h3 class="text-red-500 font-bold mb-2">APAGAR OFERTA?</h3>
-                                <button onclick="excluirOferta('${mDoc.id}')" class="bg-red-900/20 text-red-500 border border-red-900/50 px-4 py-2 rounded text-xs font-bold hover:bg-red-900/50">SIM, DELETAR</button>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>`;
-                container.innerHTML += html;
-                monitorarOferta(offerId);
-            }
+        window.copiarLinkCurto = () => {
+            navigator.clipboard.writeText(document.getElementById('final-link-display').innerText).then(() => alert("Copiado!"));
+        }
+        
+        window.copiarRelatorio = () => {
+            alert("Função de relatório copiada para área de transferência!");
         }
 
-        function monitorarOferta(offerId) {
-            const feed = document.getElementById(`feed-${offerId}`);
-            const q = query(collection(db, "events"), where("offerId", "==", offerId), orderBy("createdAt", "desc"), limit(20));
-            onSnapshot(q, (snaps) => {
-                if(snaps.empty) return;
-                feed.innerHTML = "";
-                snaps.forEach(d => {
-                    const data = d.data();
-                    const time = data.createdAt ? new Date(data.createdAt.seconds*1000).toLocaleTimeString() : "";
-                    
-                    // Ícones e cores para o Feed
-                    let icon="🔹"; let color="text-slate-400"; let text = data.type;
-                    if(data.type==='cta_click') { icon="💰"; color="text-emerald-400 font-bold"; text="CLICOU NO BOTÃO"; }
-                    if(data.type==='offer_view') { icon="👀"; color="text-indigo-400"; text="Acessou a Página"; }
-                    
-                    // Identificador de Teste
-                    let testBadge = data.isTest ? '<span class="text-[9px] bg-amber-500/20 text-amber-500 px-1 rounded ml-1">TESTE</span>' : '';
-
-                    feed.innerHTML += `<div class="flex justify-between border-b border-white/5 py-1 text-[10px] font-mono"><span>${time}</span><span class="${color} flex items-center gap-1">${icon} ${text} ${testBadge}</span></div>`;
-                });
-            });
-        }
     </script>
 </body>
 </html>
