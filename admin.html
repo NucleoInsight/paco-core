@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper PACO | V29 (Quiz Details)</title>
+    <title>Sniper PACO | V30 (VSL Tracking)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -40,6 +40,7 @@
         ::-webkit-scrollbar-track { background: #0b0c15; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
 
+        /* CSS DO FEED DETALHADO */
         .feed-session { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 5px; border-radius: 6px; }
         .feed-session:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
         .feed-header { padding: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
@@ -50,7 +51,7 @@
         @media print {
             body { background-color: white !important; color: black !important; }
             .no-print, button, #login-screen { display: none !important; }
-            .glass-panel { border: 1px solid #ccc !important; background: none !important; box-shadow: none !important; color: black !important; }
+            .glass-panel { border: 1px solid #ccc !important; background: none !important; color: black !important; box-shadow: none !important; }
             .text-white { color: black !important; }
             .text-slate-400 { color: #666 !important; }
             canvas { max-height: 250px; }
@@ -334,15 +335,21 @@
                         let icon="🔹"; let color="text-slate-400"; let txt=e.type;
                         let label = e.data?.label || ''; 
                         
-                        // --- AQUI ESTÁ A LÓGICA DO FEED QUE VOCÊ PEDIU ---
+                        // --- LÓGICA V30: EVENTOS DE VÍDEO ---
                         if(e.type === 'cta_click' || label.toLowerCase().includes('comprar')) { 
                             icon="💰"; color="text-emerald-400 font-bold"; txt = `click ( ${label || 'CHECKOUT'} )`; 
                         } else if(e.type === 'click') { 
                             icon="👆"; color="text-slate-300"; txt = `click ( ${label} )`; 
                         } else if(e.type === 'quiz_answer') { 
-                            icon="💬"; color="text-pink-400 font-bold"; txt = `Quiz: "${e.data?.answer}"`; // MOSTRA A RESPOSTA
+                            icon="💬"; color="text-pink-400 font-bold"; txt = `Quiz: "${e.data?.answer}"`;
                         } else if(e.type === 'offer_view') { 
                             icon="👀"; color="text-indigo-400"; txt="Visualizou Página"; 
+                        } else if(e.type === 'video_start') { 
+                            icon="🎥"; color="text-amber-400"; txt="Deu Play no Vídeo";
+                        } else if(e.type === 'video_progress') {
+                            icon="⏳"; color="text-amber-200"; txt=`Viu ${e.data?.percent}% do Vídeo`;
+                        } else if(e.type === 'video_complete') {
+                            icon="✅"; color="text-green-400"; txt="Viu o Vídeo Todo";
                         } else if(e.type === 'short_link_click') { 
                             icon="🔗"; color="text-amber-400"; txt=`Encurtador (${e.alias})`; 
                         }
