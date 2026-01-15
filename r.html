@@ -3,60 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <title>Redirecionando...</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body { background: #0b0c15; color: #10b981; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: monospace; font-size: 20px; }
-    </style>
+    <style>body{background:#000;color:#0f0;display:flex;justify-content:center;align-items:center;height:100vh;font-family:monospace;}</style>
 </head>
 <body>
-    <div id="msg">Acessando Link Seguro...</div>
-
+    <div id="msg">Conectando...</div>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, getDoc, updateDoc, increment, serverTimestamp, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // SUA CONFIGURAÇÃO
         const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        async function redirect() {
-            const params = new URLSearchParams(window.location.search);
-            const alias = params.get('id'); // Pega o nome "zap" ou "oferta1"
-
-            if (!alias) { document.getElementById('msg').innerText = "Link inválido."; return; }
-
+        async function go() {
+            const id = new URLSearchParams(window.location.search).get('id');
+            if(!id) return document.getElementById('msg').innerText = "Link inválido.";
+            
             try {
-                // 1. Busca o link original na coleção 'short_links'
-                const docRef = doc(db, "short_links", alias);
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    
-                    // 2. Contabiliza o clique
-                    updateDoc(docRef, { clicks: increment(1) });
-                    
-                    // 3. Salva no histórico geral (opcional, igual ao Sniper)
-                    addDoc(collection(db, "analytics_events"), {
-                        type: "short_link_click",
-                        alias: alias,
-                        timestamp: serverTimestamp()
-                    });
-
-                    // 4. Redireciona
-                    window.location.href = data.target;
+                const ref = doc(db, "short_links", id);
+                const snap = await getDoc(ref);
+                if(snap.exists()) {
+                    const data = snap.data();
+                    updateDoc(ref, { clicks: increment(1) }); // Conta clique no link curto
+                    window.location.href = data.target; // Redireciona
                 } else {
-                    document.getElementById('msg').innerText = "Link não encontrado ou expirado.";
-                    document.getElementById('msg').style.color = "red";
+                    document.getElementById('msg').innerText = "Link não encontrado.";
                 }
-            } catch (e) {
-                console.error(e);
-                document.getElementById('msg').innerText = "Erro de conexão.";
-            }
+            } catch(e) { document.getElementById('msg').innerText = "Erro."; }
         }
-
-        redirect();
+        go();
     </script>
 </body>
 </html>
