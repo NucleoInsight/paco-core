@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper PACO | V25 (Source Logic Fixed)</title>
+    <title>Sniper PACO | V26 (Source Fix)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -33,7 +33,6 @@
         label { font-size: 10px; text-transform: uppercase; font-weight: bold; color: #64748b; display: block; margin-bottom: 2px; }
 
         .hidden { display: none !important; }
-        
         .metric-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; font-weight: 700; }
         .metric-value { font-size: 1.25rem; font-weight: 800; color: white; line-height: 1; margin-top: 4px; }
 
@@ -218,7 +217,6 @@
         import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, addDoc, deleteDoc, serverTimestamp, query, where, orderBy, limit, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // CONFIG
         const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
 
@@ -226,7 +224,6 @@
         let unsubscribeFeed = null;
         let myChart = null; 
 
-        // AUTH
         window.fazerLogin = async () => { try { await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); } catch(e) { document.getElementById('error-msg').innerText = e.message; } }
         window.logout = () => signOut(auth);
         onAuthStateChanged(auth, (u) => { if(u) { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('dashboard').classList.remove('hidden'); iniciarSistema(); } });
@@ -248,7 +245,6 @@
             iniciarSistema();
         }
 
-        // --- RELATÓRIO ---
         window.copiarRelatorio = () => {
             const views = document.getElementById('kpi-unique').innerText;
             const clicks = document.getElementById('kpi-sales').innerText;
@@ -256,7 +252,6 @@
             navigator.clipboard.writeText(text).then(() => alert("Copiado!"));
         }
 
-        // CARREGAMENTO INTELIGENTE (CORE)
         window.carregarDadosDaOferta = async () => {
             const select = document.getElementById('offer-selector');
             currentOfferId = select.value;
@@ -267,7 +262,6 @@
             if(isTest) { badge.innerText = "MODO TESTE"; badge.className = "text-[9px] bg-amber-500/20 text-amber-400 px-2 py-1 rounded"; } 
             else { badge.innerText = "DADOS REAIS"; badge.className = "text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded"; }
 
-            // Carrega Editor
             const docSnap = await getDoc(doc(db, "offers", currentOfferId));
             if(docSnap.exists()) {
                 const d = docSnap.data();
@@ -278,7 +272,6 @@
                 document.getElementById('edit-checkout').value = d.checkoutUrl || '';
             }
 
-            // FEED E ANALYTICS
             const q = query(collection(db, "events"), where("offerId", "==", currentOfferId));
             if(unsubscribeFeed) unsubscribeFeed();
             
@@ -300,22 +293,15 @@
                 events.forEach(e => {
                     const sid = e.sessionId || 'anon';
                     
-                    // --- LÓGICA DE PRIORIDADE DE ORIGEM (CORREÇÃO DE "DIRETO") ---
-                    let currentSource = e.campaign?.source || 'direto';
-
+                    // --- CORREÇÃO DE ORIGEM: PRIORIDADE ---
+                    let source = e.campaign?.source || 'direto';
+                    
                     if(!sessions[sid]) {
-                        sessions[sid] = { 
-                            id: sid, 
-                            events: [], 
-                            source: currentSource, 
-                            time: e.createdAt?.seconds || 0, 
-                            isTest: e.isTest 
-                        };
+                        sessions[sid] = { id: sid, events: [], source: source, time: e.createdAt?.seconds || 0, isTest: e.isTest };
                     } else {
-                        // Se a origem atual for "direto" ou "encurtador" e a nova for "instagram" ou similar, ATUALIZA
-                        const existingSource = sessions[sid].source;
-                        if ((existingSource === 'direto' || existingSource === 'encurtador') && (currentSource !== 'direto' && currentSource !== 'encurtador')) {
-                            sessions[sid].source = currentSource;
+                        // Se a sessão já tem origem 'direto' ou 'encurtador', mas o novo evento traz uma origem melhor, ATUALIZA.
+                        if((sessions[sid].source === 'direto' || sessions[sid].source === 'encurtador') && (source !== 'direto' && source !== 'encurtador')) {
+                            sessions[sid].source = source;
                         }
                     }
 
@@ -326,20 +312,16 @@
                     if(e.type === 'cta_click') clicks++;
                 });
 
-                // Métricas e Gráfico
                 let totalSessions = Object.keys(sessions).length;
-                
                 Object.values(sessions).forEach(s => { 
-                     // Filtra 'encurtador' para o gráfico de pizza (mostra a origem real)
+                     // Filtra 'encurtador' para o gráfico
                      if(s.source !== 'encurtador') sources[s.source] = (sources[s.source] || 0) + 1; 
                 });
                 
                 let bestChannel = Object.keys(sources).length > 0 ? Object.keys(sources).reduce((a, b) => sources[a] > sources[b] ? a : b) : "-";
 
-                // Atualiza Gráfico
                 updateSourceChart(sources);
 
-                // Feed Visual
                 const sortedSessions = Object.values(sessions).sort((a,b) => b.time - a.time);
 
                 sortedSessions.slice(0, 30).forEach(s => {
@@ -368,7 +350,6 @@
             });
         }
 
-        // FUNÇÃO GRÁFICO
         function updateSourceChart(dataObj) {
             const ctx = document.getElementById('sourceChart');
             if(!ctx) return;
