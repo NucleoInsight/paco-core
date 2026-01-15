@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper PACO | V24 (Source Fixed)</title>
+    <title>Sniper PACO | V25 (Source Logic Fixed)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -33,6 +33,7 @@
         label { font-size: 10px; text-transform: uppercase; font-weight: bold; color: #64748b; display: block; margin-bottom: 2px; }
 
         .hidden { display: none !important; }
+        
         .metric-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; font-weight: 700; }
         .metric-value { font-size: 1.25rem; font-weight: 800; color: white; line-height: 1; margin-top: 4px; }
 
@@ -40,6 +41,7 @@
         ::-webkit-scrollbar-track { background: #0b0c15; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
 
+        /* CSS DO FEED DETALHADO */
         .feed-session { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 5px; border-radius: 6px; }
         .feed-session:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
         .feed-header { padding: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
@@ -47,10 +49,11 @@
         .feed-body.open { display: block; }
         .tag-source { background: #334155; color: #cbd5e1; padding: 1px 4px; border-radius: 3px; font-size: 9px; font-weight: bold; border: 1px solid #475569; }
 
+        /* MODO IMPRESSÃO */
         @media print {
             body { background-color: white !important; color: black !important; }
-            .no-print, button, #login-screen, .tab-btn { display: none !important; }
-            .glass-panel { border: 1px solid #ccc !important; background: none !important; color: black !important; box-shadow: none !important; }
+            .no-print, button, #login-screen { display: none !important; }
+            .glass-panel { border: 1px solid #ccc !important; background: none !important; box-shadow: none !important; color: black !important; }
             .text-white { color: black !important; }
             .text-slate-400 { color: #666 !important; }
             canvas { max-height: 250px; }
@@ -63,6 +66,7 @@
     <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#0b0c15]">
         <div class="glass-panel p-8 w-full max-w-md text-center">
             <h1 class="text-3xl font-black text-white tracking-tight mb-2">SNIPER <span class="text-indigo-500">PACO</span></h1>
+            <p class="text-xs text-slate-500 mb-6 font-mono">Central de Fusão</p>
             <input type="email" id="email" class="input-sniper mb-3" placeholder="Email">
             <input type="password" id="password" class="input-sniper mb-6" placeholder="Senha">
             <button onclick="fazerLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-indigo-500/20">ACESSAR SISTEMA</button>
@@ -118,27 +122,17 @@
 
             <div class="space-y-6">
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="glass-panel p-4 border-l-2 border-indigo-500">
-                        <p class="metric-label">Visitantes</p>
-                        <p id="kpi-unique" class="metric-value">0</p>
-                    </div>
-                    <div class="glass-panel p-4 border-l-2 border-emerald-500">
-                        <p class="metric-label">Checkout</p>
-                        <p id="kpi-sales" class="metric-value">0</p>
-                    </div>
-                    <div class="glass-panel p-4 border-l-2 border-pink-500">
-                        <p class="metric-label">Retenção Quiz</p>
-                        <p id="kpi-retention" class="metric-value">0%</p>
-                    </div>
-                    <div class="glass-panel p-4 border-l-2 border-amber-500">
-                        <p class="metric-label">Melhor Canal</p>
-                        <p id="kpi-source" class="metric-value truncate text-base pt-1">...</p>
-                    </div>
+                    <div class="glass-panel p-4 border-l-2 border-indigo-500"><p class="metric-label">Visitantes</p><p id="kpi-unique" class="metric-value">0</p></div>
+                    <div class="glass-panel p-4 border-l-2 border-emerald-500"><p class="metric-label">Checkout</p><p id="kpi-sales" class="metric-value">0</p></div>
+                    <div class="glass-panel p-4 border-l-2 border-pink-500"><p class="metric-label">Retenção Quiz</p><p id="kpi-retention" class="metric-value">0%</p></div>
+                    <div class="glass-panel p-4 border-l-2 border-amber-500"><p class="metric-label">Melhor Canal</p><p id="kpi-source" class="metric-value truncate text-base pt-1">...</p></div>
                 </div>
 
                 <div class="glass-panel p-4">
-                    <h3 class="text-xs font-bold text-white mb-4 uppercase">Origem do Tráfego</h3>
-                    <canvas id="sourceChart" height="150"></canvas>
+                    <h3 class="text-xs font-bold text-slate-500 mb-2 uppercase flex justify-between">Origem do Tráfego</h3>
+                    <div style="height: 150px; position: relative;">
+                        <canvas id="sourceChart"></canvas>
+                    </div>
                 </div>
 
                 <div class="glass-panel p-4 border border-indigo-500/30">
@@ -148,9 +142,7 @@
                     </div>
                     
                     <div class="space-y-1">
-                        <label>HEADLINE (Promessa)</label>
-                        <input type="text" id="edit-headline" class="input-sniper" placeholder="Digite a promessa...">
-                        
+                        <label>HEADLINE</label><input type="text" id="edit-headline" class="input-sniper">
                         <div class="flex gap-2">
                             <div class="w-1/2">
                                 <label>LAYOUT</label>
@@ -163,17 +155,13 @@
                             </div>
                             <div class="w-1/2">
                                 <label>PREÇO</label>
-                                <input type="text" id="edit-price" class="input-sniper text-center font-bold text-emerald-400" placeholder="R$">
+                                <input type="text" id="edit-price" class="input-sniper text-center font-bold text-emerald-400">
                             </div>
                         </div>
+                        <label>CHECKOUT</label><input type="text" id="edit-checkout" class="input-sniper border-emerald-500/30">
+                        <label>VÍDEO</label><input type="text" id="edit-video" class="input-sniper">
 
-                        <label>CHECKOUT (Link Kiwify/Stripe)</label>
-                        <input type="text" id="edit-checkout" class="input-sniper border-emerald-500/30" placeholder="https://pay...">
-
-                        <label>VÍDEO (Opcional - Youtube)</label>
-                        <input type="text" id="edit-video" class="input-sniper" placeholder="Cole o link aqui...">
-
-                        <div class="pt-2 flex gap-2">
+                        <div class="pt-2">
                             <button onclick="salvarOfertaAtual()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg text-xs transition">💾 SALVAR ALTERAÇÕES</button>
                         </div>
                     </div>
@@ -186,7 +174,7 @@
                     <span id="feed-badge" class="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded">REAL</span>
                 </div>
                 <div class="overflow-y-auto p-4 space-y-3 flex-1 custom-scroll" id="live-feed">
-                    <p class="text-center text-slate-600 mt-10 text-xs">Aguardando visitantes...</p>
+                    <p class="text-center text-slate-600 mt-10 text-xs">Aguardando...</p>
                 </div>
             </div>
         </div>
@@ -265,7 +253,7 @@
             const views = document.getElementById('kpi-unique').innerText;
             const clicks = document.getElementById('kpi-sales').innerText;
             const text = `📊 RELATÓRIO PACO\n\n- Visitas: ${views}\n- Checkout: ${clicks}\n\nGerado em: ${new Date().toLocaleString()}`;
-            navigator.clipboard.writeText(text).then(() => alert("Relatório copiado!"));
+            navigator.clipboard.writeText(text).then(() => alert("Copiado!"));
         }
 
         // CARREGAMENTO INTELIGENTE (CORE)
@@ -303,27 +291,34 @@
                 let events = [];
                 snapshot.forEach(doc => events.push({ id: doc.id, ...doc.data() }));
                 
-                // Filtro de Modo
                 events = events.filter(e => !!e.isTest === isTest);
                 events.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
-                if(events.length === 0) feedContainer.innerHTML = "<p class='text-center text-slate-600 text-xs mt-10'>Sem dados neste modo.</p>";
+                if(events.length === 0) feedContainer.innerHTML = "<p class='text-center text-slate-600 text-xs mt-10'>Sem dados.</p>";
 
                 const sessions = {};
                 events.forEach(e => {
                     const sid = e.sessionId || 'anon';
-                    // --- CORREÇÃO DA ORIGEM DO TRÁFEGO ---
-                    // Se o parâmetro campaign.source existir e NÃO for 'direto', usa ele.
-                    // Caso contrário, tenta pegar do referrer ou mantém 'direto'.
-                    let source = e.campaign?.source || 'direto';
                     
-                    if(!sessions[sid]) sessions[sid] = { 
-                        id: sid, 
-                        events: [], 
-                        source: source, // Usa a fonte capturada corretamente
-                        time: e.createdAt?.seconds || 0, 
-                        isTest: e.isTest 
-                    };
+                    // --- LÓGICA DE PRIORIDADE DE ORIGEM (CORREÇÃO DE "DIRETO") ---
+                    let currentSource = e.campaign?.source || 'direto';
+
+                    if(!sessions[sid]) {
+                        sessions[sid] = { 
+                            id: sid, 
+                            events: [], 
+                            source: currentSource, 
+                            time: e.createdAt?.seconds || 0, 
+                            isTest: e.isTest 
+                        };
+                    } else {
+                        // Se a origem atual for "direto" ou "encurtador" e a nova for "instagram" ou similar, ATUALIZA
+                        const existingSource = sessions[sid].source;
+                        if ((existingSource === 'direto' || existingSource === 'encurtador') && (currentSource !== 'direto' && currentSource !== 'encurtador')) {
+                            sessions[sid].source = currentSource;
+                        }
+                    }
+
                     sessions[sid].events.push(e);
                     if(e.createdAt?.seconds > sessions[sid].time) sessions[sid].time = e.createdAt.seconds;
                     
@@ -334,14 +329,14 @@
                 // Métricas e Gráfico
                 let totalSessions = Object.keys(sessions).length;
                 
-                // Contagem de Fontes (Ignorando Encurtador se necessário, mas aqui queremos ver tudo)
                 Object.values(sessions).forEach(s => { 
-                     sources[s.source] = (sources[s.source] || 0) + 1; 
+                     // Filtra 'encurtador' para o gráfico de pizza (mostra a origem real)
+                     if(s.source !== 'encurtador') sources[s.source] = (sources[s.source] || 0) + 1; 
                 });
                 
                 let bestChannel = Object.keys(sources).length > 0 ? Object.keys(sources).reduce((a, b) => sources[a] > sources[b] ? a : b) : "-";
 
-                // Atualiza Gráfico de Pizza
+                // Atualiza Gráfico
                 updateSourceChart(sources);
 
                 // Feed Visual
@@ -350,47 +345,19 @@
                 sortedSessions.slice(0, 30).forEach(s => {
                     const timeStr = new Date(s.time * 1000).toLocaleTimeString();
                     const badge = s.isTest ? '<span class="text-[8px] bg-amber-500/20 text-amber-500 px-1 rounded ml-1">TESTE</span>' : '';
-                    
                     s.events.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
-
                     let details = "";
                     s.events.forEach(e => {
                         let icon="🔹"; let color="text-slate-400"; let txt=e.type;
                         let label = e.data?.label || ''; 
+                        if(e.type === 'cta_click' || label.toLowerCase().includes('comprar')) { icon="💰"; color="text-emerald-400 font-bold"; txt = `click ( ${label || 'CHECKOUT'} )`; } 
+                        else if(e.type === 'click') { icon="👆"; color="text-slate-300"; txt = `click ( ${label} )`; } 
+                        else if(e.type === 'offer_view') { icon="👀"; color="text-indigo-400"; txt="Visualizou Página"; } 
+                        else if(e.type === 'short_link_click') { icon="🔗"; color="text-amber-400"; txt=`Encurtador (${e.alias})`; }
 
-                        if(e.type === 'cta_click' || label.toLowerCase().includes('comprar') || label.toLowerCase().includes('checkout')) { 
-                            icon="💰"; color="text-emerald-400 font-bold"; txt = `click ( ${label || 'CHECKOUT'} )`; 
-                        } else if(e.type === 'click') { 
-                            icon="👆"; color="text-slate-300"; txt = `click ( ${label} )`; 
-                        } else if(e.type === 'offer_view') { 
-                            icon="👀"; color="text-indigo-400"; txt="Visualizou Página"; 
-                        } else if(e.type === 'short_link_click') { 
-                            icon="🔗"; color="text-amber-400"; txt=`Encurtador (${e.alias})`; 
-                        }
-
-                        details += `
-                            <div class="flex justify-between py-1 border-b border-white/5 last:border-0 hover:bg-white/5 px-2">
-                                <div class="flex items-center gap-2"><span>${icon}</span><span class="${color} text-[10px] font-mono">${txt}</span></div>
-                                <span class="text-[9px] text-slate-600 font-mono">${new Date(e.createdAt.seconds*1000).toLocaleTimeString()}</span>
-                            </div>`;
+                        details += `<div class="flex justify-between py-1 border-b border-white/5 last:border-0 hover:bg-white/5 px-2"><div class="flex items-center gap-2"><span>${icon}</span><span class="${color} text-[10px] font-mono">${txt}</span></div><span class="text-[9px] text-slate-600 font-mono">${new Date(e.createdAt.seconds*1000).toLocaleTimeString()}</span></div>`;
                     });
-
-                    // FEED: Exibe a origem da sessão no cabeçalho
-                    feedContainer.innerHTML += `
-                        <div class="feed-session">
-                            <div class="feed-header" onclick="this.nextElementSibling.classList.toggle('open')">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-[10px] font-mono text-slate-400">${timeStr}</span>
-                                    <span class="tag-source">${s.source}</span>
-                                    ${badge}
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-[10px] font-bold text-slate-300">${s.events.length} ações</span>
-                                    <span class="text-[8px] text-indigo-400 border border-indigo-500/30 px-1 rounded">▼</span>
-                                </div>
-                            </div>
-                            <div class="feed-body">${details}</div>
-                        </div>`;
+                    feedContainer.innerHTML += `<div class="feed-session"><div class="feed-header" onclick="this.nextElementSibling.classList.toggle('open')"><div class="flex items-center gap-2"><span class="text-[10px] font-mono text-slate-400">${timeStr}</span><span class="tag-source">${s.source}</span>${badge}</div><div class="flex items-center gap-2"><span class="text-[10px] font-bold text-slate-300">${s.events.length} ações</span><span class="text-[8px] text-indigo-400 border border-indigo-500/30 px-1 rounded">▼</span></div></div><div class="feed-body">${details}</div></div>`;
                 });
 
                 document.getElementById('kpi-unique').innerText = totalSessions;
@@ -401,9 +368,11 @@
             });
         }
 
-        // ATUALIZA O GRÁFICO (NOVA FUNÇÃO)
+        // FUNÇÃO GRÁFICO
         function updateSourceChart(dataObj) {
-            const ctx = document.getElementById('sourceChart').getContext('2d');
+            const ctx = document.getElementById('sourceChart');
+            if(!ctx) return;
+            if(Object.keys(dataObj).length === 0) dataObj = { "Sem dados": 1 };
             if(myChart) myChart.destroy();
             myChart = new Chart(ctx, {
                 type: 'doughnut',
@@ -411,11 +380,11 @@
                     labels: Object.keys(dataObj),
                     datasets: [{
                         data: Object.values(dataObj),
-                        backgroundColor: ['#6366f1', '#10b981', '#f43f5e', '#f59e0b', '#8b5cf6', '#ec4899'],
+                        backgroundColor: ['#6366f1', '#10b981', '#f43f5e', '#f59e0b', '#ec4899'],
                         borderWidth: 0
                     }]
                 },
-                options: { plugins: { legend: { position: 'right', labels: { color: '#94a3b8', font: { size: 10 } } } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#94a3b8', font: { size: 9, family: 'monospace' }, boxWidth: 8 } } } }
             });
         }
 
