@@ -3,30 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper PACO | Control Center</title>
-    
+    <title>Sniper PACO | V15.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #0b0c15; color: #a5b4fc; font-family: 'JetBrains Mono', monospace; }
+        body { background-color: #0b0c15; color: #a5b4fc; font-family: 'Inter', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
         .glass-panel { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; }
-        
-        .funnel-step { position: relative; padding-left: 20px; border-left: 2px solid #334155; margin-bottom: 20px; }
-        .funnel-step.active { border-left-color: #10b981; }
-        .funnel-step::before { content: ''; position: absolute; left: -6px; top: 0; width: 10px; height: 10px; background: #334155; border-radius: 50%; }
-        .funnel-step.active::before { background: #10b981; box-shadow: 0 0 10px #10b981; }
-        
-        .progress-bar-bg { background: #1e293b; height: 6px; border-radius: 3px; overflow: hidden; margin-top: 5px; }
-        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #a855f7); width: 0%; transition: width 1s; }
-        
         .toggle-checkbox:checked { right: 0; border-color: #10b981; }
         .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
-
         .input-dark { background: #0f172a; border: 1px solid #334155; color: white; padding: 8px; border-radius: 6px; width: 100%; font-size: 12px; }
         .hidden { display: none !important; }
-        
+        .funnel-step { border-left: 2px solid #334155; padding-left: 15px; margin-bottom: 10px; }
+        .funnel-step.active { border-left-color: #10b981; }
+        .progress-bar-bg { background: #1e293b; height: 6px; border-radius: 3px; overflow: hidden; margin-top: 5px; }
+        .progress-bar-fill { height: 100%; background: #10b981; width: 0%; transition: width 1s; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #0b0c15; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
@@ -49,7 +41,7 @@
         <header class="flex flex-col md:flex-row justify-between items-end mb-10 border-b border-indigo-900/30 pb-4 gap-4">
             <div>
                 <h1 class="text-3xl font-black text-white tracking-tight">SNIPER <span class="text-indigo-500">ANALYTICS</span></h1>
-                <p class="text-xs text-indigo-400 mt-1">Gestão de Ofertas & Link Automático</p>
+                <p class="text-xs text-indigo-400 mt-1">Painel V15.2 (Feed Destravado)</p>
             </div>
             
             <div class="flex flex-wrap items-center gap-4">
@@ -78,29 +70,26 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
             
             <div class="glass-panel p-6">
-                <h2 class="text-sm font-bold text-white mb-6 flex items-center gap-2">
-                    <svg class="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
-                    FUNIL DE RETENÇÃO
-                </h2>
+                <h2 class="text-sm font-bold text-white mb-6 flex items-center gap-2">FUNIL DE RETENÇÃO</h2>
                 <div id="funnel-container" class="space-y-6">
-                    <div class="text-center text-slate-600 text-xs py-10 loading-pulse">Selecione uma oferta...</div>
+                    <div class="text-center text-slate-600 text-xs py-10 loading-pulse">Aguardando dados...</div>
                 </div>
             </div>
 
             <div class="space-y-6">
                 <div class="grid grid-cols-2 gap-4">
                     <div class="glass-panel p-4 border-l-2 border-indigo-500">
-                        <p class="metric-label">Visitantes</p>
-                        <p id="kpi-unique" class="metric-value">0</p>
+                        <p class="text-[10px] uppercase font-bold text-slate-500">Visitantes</p>
+                        <p id="kpi-unique" class="text-2xl font-black text-white">0</p>
                     </div>
                     <div class="glass-panel p-4 border-l-2 border-emerald-500">
-                        <p class="metric-label">Cliques ($)</p>
-                        <p id="kpi-sales" class="metric-value">0</p>
+                        <p class="text-[10px] uppercase font-bold text-slate-500">Cliques ($)</p>
+                        <p id="kpi-sales" class="text-2xl font-black text-white">0</p>
                     </div>
                 </div>
 
                 <div class="glass-panel p-4 border border-indigo-500/30">
-                    <h3 class="text-xs font-bold text-indigo-400 mb-3 uppercase">Configurar Oferta Selecionada</h3>
+                    <h3 class="text-xs font-bold text-indigo-400 mb-3 uppercase">Configurar Oferta</h3>
                     <div class="space-y-2">
                         <input type="text" id="edit-headline" class="input-dark" placeholder="Headline">
                         <div class="flex gap-2">
@@ -129,13 +118,13 @@
                     <span id="feed-badge" class="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded">REAL</span>
                 </div>
                 <div class="overflow-y-auto p-4 space-y-3 flex-1" id="live-feed">
-                    <p class="text-center text-slate-600 mt-10 text-xs">Aguardando dados...</p>
+                    <p class="text-center text-slate-600 mt-10 text-xs">Monitorando eventos...</p>
                 </div>
             </div>
         </div>
 
         <div class="glass-panel p-6 mb-10 border border-emerald-500/30">
-            <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">🔗 Encurtador Automático <span class="text-[10px] bg-emerald-900 text-emerald-400 px-2 py-1 rounded">V2.0</span></h2>
+            <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">🔗 Encurtador Automático V2</h2>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                 <div class="md:col-span-2">
                     <label class="text-[10px] font-bold text-slate-500 uppercase">Nome Curto</label>
@@ -147,20 +136,18 @@
                 <div><label class="text-[10px] font-bold text-emerald-500 uppercase">Origem (Source)</label><input type="text" id="utm-source" value="instagram" class="input-dark"></div>
                 <div><label class="text-[10px] font-bold text-emerald-500 uppercase">Campanha</label><input type="text" id="utm-campaign" placeholder="stories" class="input-dark"></div>
             </div>
-            <button onclick="gerarLinkCurto()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg text-xs transition mb-4">💾 GERAR LINK DE RASTREAMENTO</button>
+            <button onclick="gerarLinkCurto()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg text-xs transition mb-4">💾 GERAR LINK</button>
             <div id="short-result" class="hidden bg-black/50 p-4 rounded border border-slate-700 flex justify-between items-center">
                 <code id="final-link-display" class="text-white text-xs font-mono">...</code>
                 <button onclick="copiarLinkCurto()" class="text-[10px] bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded">COPIAR</button>
             </div>
         </div>
 
-        <div class="border border-red-900/30 bg-red-950/10 rounded-xl p-6 no-print mt-10">
-            <h3 class="text-red-500 font-bold text-sm mb-2 uppercase">⚠️ Zona de Perigo (Gerenciamento de Dados)</h3>
-            <p class="text-xs text-slate-400 mb-4">Ações aqui são irreversíveis. O botão abaixo apaga <strong>apenas os dados de rastreamento</strong> (cliques, views) da oferta selecionada, baseados no modo atual (Teste ou Real). A oferta NÃO será apagada.</p>
+        <div class="border border-red-900/30 bg-red-950/10 rounded-xl p-6 mt-10">
+            <h3 class="text-red-500 font-bold text-sm mb-2 uppercase">⚠️ Zona de Perigo</h3>
+            <p class="text-xs text-slate-400 mb-4">Apaga apenas as métricas (cliques/views) do modo atual. A oferta continua existindo.</p>
             <div class="flex items-center gap-4">
-                <button onclick="limparDados()" class="bg-red-900/50 hover:bg-red-800 text-red-200 border border-red-800 px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2">
-                    🗑️ APAGAR TODOS OS DADOS DO MODO ATUAL
-                </button>
+                <button onclick="limparDados()" class="bg-red-900/50 hover:bg-red-800 text-red-200 border border-red-800 px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2">🗑️ LIMPAR DADOS DO MODO ATUAL</button>
                 <p id="delete-status" class="text-xs text-slate-500 italic"></p>
             </div>
         </div>
@@ -209,6 +196,7 @@
             if(isTest) { badge.innerText = "MODO TESTE"; badge.className = "text-[9px] bg-amber-500/20 text-amber-400 px-2 py-1 rounded"; } 
             else { badge.innerText = "DADOS REAIS"; badge.className = "text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded"; }
 
+            // Carrega Editor
             const docSnap = await getDoc(doc(db, "offers", currentOfferId));
             if(docSnap.exists()) {
                 const d = docSnap.data();
@@ -219,26 +207,42 @@
                 document.getElementById('edit-checkout').value = d.checkoutUrl || '';
             }
 
-            const q = query(collection(db, "events"), where("offerId", "==", currentOfferId), where("isTest", "==", isTest), orderBy("createdAt", "desc"));
+            // FEED E FUNIL (CORREÇÃO CRÍTICA: Removi 'isTest' e 'orderBy' da query para evitar erro de índice)
+            // Filtramos no Javascript para garantir que funcione SEMPRE.
+            const q = query(collection(db, "events"), where("offerId", "==", currentOfferId));
+            
             if(unsubscribeFeed) unsubscribeFeed();
             
             unsubscribeFeed = onSnapshot(q, (snapshot) => {
                 let views = 0, clicks = 0;
                 const feedContainer = document.getElementById('live-feed');
                 feedContainer.innerHTML = "";
-                if(snapshot.empty) feedContainer.innerHTML = "<p class='text-center text-slate-600 text-xs mt-10'>Sem dados.</p>";
+                
+                // Converte para array e ordena via JS (Seguro)
+                let events = [];
+                snapshot.forEach(doc => events.push({ id: doc.id, ...doc.data() }));
+                
+                // FILTRO MANUAL: Só mostra o que bate com o Modo (Teste ou Real)
+                events = events.filter(e => !!e.isTest === isTest);
+                events.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
-                snapshot.forEach(doc => {
-                    const d = doc.data();
+                if(events.length === 0) feedContainer.innerHTML = "<p class='text-center text-slate-600 text-xs mt-10'>Sem dados neste modo.</p>";
+
+                events.slice(0, 50).forEach(d => {
                     if(d.type === 'offer_view') views++;
                     if(d.type === 'cta_click') clicks++;
+                    
                     const time = d.createdAt ? new Date(d.createdAt.seconds*1000).toLocaleTimeString() : "";
                     let icon="🔹", color="text-slate-400", txt=d.type;
                     if(d.type==='cta_click') { icon="💰"; color="text-emerald-400 font-bold"; txt="CLICOU NO CHECKOUT"; }
                     if(d.type==='offer_view') { icon="👀"; color="text-indigo-400"; txt="Visualizou Página"; }
                     if(d.type==='short_link_click') { icon="🔗"; color="text-amber-400"; txt="Link Encurtado"; }
                     
-                    feedContainer.innerHTML += `<div class="flex justify-between border-b border-white/5 py-2 px-2 hover:bg-white/5 rounded transition"><div class="flex items-center gap-2"><span>${icon}</span><span class="text-[10px] ${color}">${txt}</span></div><span class="text-[9px] text-slate-600 font-mono">${time}</span></div>`;
+                    // Mostra Origem (UTM)
+                    let sourceHTML = "";
+                    if(d.campaign && d.campaign.source !== 'direto') sourceHTML = `<span class="ml-2 bg-slate-700 text-[8px] px-1 rounded">${d.campaign.source}</span>`;
+
+                    feedContainer.innerHTML += `<div class="flex justify-between border-b border-white/5 py-2 px-2 hover:bg-white/5 rounded transition"><div class="flex items-center gap-2"><span>${icon}</span><span class="text-[10px] ${color}">${txt}</span>${sourceHTML}</div><span class="text-[9px] text-slate-600 font-mono">${time}</span></div>`;
                 });
 
                 document.getElementById('kpi-unique').innerText = views;
@@ -277,14 +281,23 @@
             const statusEl = document.getElementById('delete-status');
             statusEl.innerText = "Apagando...";
             
-            const q = query(collection(db, "events"), where("offerId", "==", currentOfferId), where("isTest", "==", isTest));
+            // Busca apenas os eventos da oferta atual e do modo atual
+            const q = query(collection(db, "events"), where("offerId", "==", currentOfferId));
             const snapshot = await getDocs(q);
+            
             const promises = [];
-            snapshot.forEach(doc => promises.push(deleteDoc(doc.ref)));
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                // Filtra manualmente para ter certeza (já que removemos o filtro da query principal)
+                if (!!data.isTest === isTest) {
+                    promises.push(deleteDoc(doc.ref));
+                }
+            });
             await Promise.all(promises);
             
             statusEl.innerText = "Limpo!";
             setTimeout(() => statusEl.innerText = "", 2000);
+            carregarDadosDaOferta(); // Atualiza o feed na hora
         }
 
         window.gerarLinkCurto = async () => {
@@ -303,7 +316,6 @@
         }
         
         window.copiarLinkCurto = () => { navigator.clipboard.writeText(document.getElementById('final-link-display').innerText).then(() => alert("Copiado!")); }
-        window.copiarRelatorio = () => { alert("Em breve: PDF do Relatório"); }
     </script>
 </body>
 </html>
