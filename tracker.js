@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// CONFIGURAÇÃO DO PACO (Não use a do NucleoInsight aqui)
+// CONFIGURAÇÃO DO PACO
 const firebaseConfig = {
     apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg",
     authDomain: "paco-core.firebaseapp.com",
@@ -14,29 +14,39 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 1. CAPTURA PARÂMETROS
+// 1. CAPTURA DE PARÂMETROS
 const urlParams = new URLSearchParams(window.location.search);
-const isTestMode = urlParams.get('mode') === 'test';
 const offerId = urlParams.get('id');
+const isTestMode = urlParams.get('mode') === 'test' || window.location.hostname === 'localhost';
 
-// 2. ID DE SESSÃO (Para o Feed saber que é a mesma pessoa)
-let sessionId = sessionStorage.getItem('paco_session');
-if (!sessionId) {
+// Captura UTMs (Igual ao Sniper)
+const campaignData = {
+    source: urlParams.get('utm_source') || 'direct',
+    medium: urlParams.get('utm_medium') || 'none',
+    campaign: urlParams.get('utm_campaign') || 'none',
+    content: urlParams.get('utm_content') || 'none'
+};
+
+// ID da Sessão
+let sessionId = sessionStorage.getItem('paco_sid');
+if(!sessionId) {
     sessionId = 'sess_' + Math.random().toString(36).substr(2, 9);
-    sessionStorage.setItem('paco_session', sessionId);
+    sessionStorage.setItem('paco_sid', sessionId);
 }
 
-// 3. FUNÇÃO DE RASTREAMENTO EXPORTADA
+// 2. FUNÇÃO DE RASTREAMENTO
 export async function trackEvent(eventName, eventData = {}) {
-    if (!offerId) return; // Não rastreia sem oferta
+    if (!offerId) return;
 
     const payload = {
-        offerId: offerId, // Vincula à oferta específica
-        eventName: eventName, // 'page_view', 'checkout_click'
-        type: eventName, // Compatibilidade com painel antigo
-        isTest: isTestMode, // SEPARA OS DADOS
+        offerId: offerId,
         sessionId: sessionId,
-        createdAt: serverTimestamp(),
+        eventName: eventName, // 'page_view', 'cta_click'
+        type: eventName,      // Compatibilidade
+        timestamp: new Date(),
+        createdAt: new Date(), // Compatibilidade com admin
+        isTest: isTestMode,
+        campaign: campaignData,
         device: {
             userAgent: navigator.userAgent,
             url: window.location.href
@@ -45,26 +55,22 @@ export async function trackEvent(eventName, eventData = {}) {
     };
 
     try {
-        // Salva na coleção 'events' (que seu painel já lê)
         await addDoc(collection(db, "events"), payload);
-
-        if (isTestMode) {
+        
+        if(isTestMode) {
             console.log(`🧪 [TESTE] ${eventName}`, payload);
-            showTestBanner();
+            if(!document.getElementById('test-badge')) {
+                const b = document.createElement('div');
+                b.id = 'test-badge';
+                b.innerHTML = 'MODO TESTE';
+                b.style.cssText = 'position:fixed;top:0;left:0;background:#f59e0b;color:black;font-size:10px;padding:2px 5px;font-weight:bold;z-index:9999;';
+                document.body.appendChild(b);
+            }
         }
-
     } catch (e) {
-        console.error("Erro no Tracker:", e);
+        console.error("[Tracker Error]", e);
     }
 }
 
-// Mostra faixa amarela se for teste
-function showTestBanner() {
-    if (!document.getElementById('test-banner')) {
-        const banner = document.createElement('div');
-        banner.id = 'test-banner';
-        banner.innerHTML = '🧪 MODO DE TESTE ATIVADO - DADOS NÃO CONTABILIZADOS';
-        banner.style.cssText = "position:fixed;top:0;left:0;width:100%;background:#f59e0b;color:black;text-align:center;font-size:10px;font-weight:bold;padding:5px;z-index:9999;";
-        document.body.prepend(banner);
-    }
-}
+// Auto-track PageView ao carregar
+if(offerId) trackEvent("page_view");
