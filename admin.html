@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper PACO | V27 (Campaign Detail)</title>
+    <title>Sniper PACO | V28 (Final Display Fix)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -223,6 +223,7 @@
         let unsubscribeFeed = null;
         let myChart = null; 
 
+        // AUTH
         window.fazerLogin = async () => { try { await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); } catch(e) { document.getElementById('error-msg').innerText = e.message; } }
         window.logout = () => signOut(auth);
         onAuthStateChanged(auth, (u) => { if(u) { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('dashboard').classList.remove('hidden'); iniciarSistema(); } });
@@ -244,6 +245,7 @@
             iniciarSistema();
         }
 
+        // --- RELATÓRIO ---
         window.copiarRelatorio = () => {
             const views = document.getElementById('kpi-unique').innerText;
             const clicks = document.getElementById('kpi-sales').innerText;
@@ -251,6 +253,7 @@
             navigator.clipboard.writeText(text).then(() => alert("Copiado!"));
         }
 
+        // CARREGAMENTO INTELIGENTE (CORE)
         window.carregarDadosDaOferta = async () => {
             const select = document.getElementById('offer-selector');
             currentOfferId = select.value;
@@ -290,22 +293,21 @@
                 const sessions = {};
                 events.forEach(e => {
                     const sid = e.sessionId || 'anon';
-                    
-                    // --- CORREÇÃO DE PRIORIDADE DE ORIGEM (SOURCE) ---
                     let source = e.campaign?.source || 'direto';
-                    let campaign = e.campaign?.campaign || ''; // PEGA A CAMPANHA TAMBÉM
+                    // --- CORREÇÃO: CAPTURA A CAMPANHA TAMBÉM ---
+                    let campaign = e.campaign?.campaign || ''; 
 
                     if(!sessions[sid]) {
                         sessions[sid] = { 
                             id: sid, 
                             events: [], 
                             source: source,
-                            campaign: campaign, // SALVA A CAMPANHA NA SESSÃO
+                            campaign: campaign, // Guarda a campanha
                             time: e.createdAt?.seconds || 0, 
                             isTest: e.isTest 
                         };
                     } else {
-                        // ATUALIZA SE ACHAR UMA ORIGEM MELHOR
+                        // Atualiza se encontrar uma origem melhor
                         if((sessions[sid].source === 'direto' || sessions[sid].source === 'encurtador') && (source !== 'direto' && source !== 'encurtador')) {
                             sessions[sid].source = source;
                             sessions[sid].campaign = campaign;
@@ -333,7 +335,7 @@
                     const timeStr = new Date(s.time * 1000).toLocaleTimeString();
                     const badge = s.isTest ? '<span class="text-[8px] bg-amber-500/20 text-amber-500 px-1 rounded ml-1">TESTE</span>' : '';
                     
-                    // --- MONTA O TEXTO DA ORIGEM COMPLETA (Source • Campaign) ---
+                    // --- CORREÇÃO: EXIBE ORIGEM + CAMPANHA ---
                     let originText = s.source;
                     if(s.campaign && s.campaign !== 'none') originText += ` • ${s.campaign}`;
 
@@ -350,7 +352,7 @@
                         details += `<div class="flex justify-between py-1 border-b border-white/5 last:border-0 hover:bg-white/5 px-2"><div class="flex items-center gap-2"><span>${icon}</span><span class="${color} text-[10px] font-mono">${txt}</span></div><span class="text-[9px] text-slate-600 font-mono">${new Date(e.createdAt.seconds*1000).toLocaleTimeString()}</span></div>`;
                     });
                     
-                    // INSERI O 'originText' NO LUGAR DE 's.source'
+                    // --- AQUI APLICA A VARIÁVEL originText ---
                     feedContainer.innerHTML += `<div class="feed-session"><div class="feed-header" onclick="this.nextElementSibling.classList.toggle('open')"><div class="flex items-center gap-2"><span class="text-[10px] font-mono text-slate-400">${timeStr}</span><span class="tag-source">${originText}</span>${badge}</div><div class="flex items-center gap-2"><span class="text-[10px] font-bold text-slate-300">${s.events.length} ações</span><span class="text-[8px] text-indigo-400 border border-indigo-500/30 px-1 rounded">▼</span></div></div><div class="feed-body">${details}</div></div>`;
                 });
 
