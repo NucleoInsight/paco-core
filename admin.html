@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper PACO | V26 (Quiz Option)</title>
+    <title>Sniper PACO | V29 (Quiz Details)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -40,7 +40,6 @@
         ::-webkit-scrollbar-track { background: #0b0c15; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
 
-        /* CSS DO FEED DETALHADO */
         .feed-session { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 5px; border-radius: 6px; }
         .feed-session:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
         .feed-header { padding: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
@@ -48,7 +47,6 @@
         .feed-body.open { display: block; }
         .tag-source { background: #334155; color: #cbd5e1; padding: 1px 4px; border-radius: 3px; font-size: 9px; font-weight: bold; border: 1px solid #475569; }
 
-        /* MODO IMPRESSÃO */
         @media print {
             body { background-color: white !important; color: black !important; }
             .no-print, button, #login-screen { display: none !important; }
@@ -141,9 +139,7 @@
                     </div>
                     
                     <div class="space-y-1">
-                        <label>HEADLINE (Promessa)</label>
-                        <input type="text" id="edit-headline" class="input-sniper" placeholder="Digite a promessa...">
-                        
+                        <label>HEADLINE</label><input type="text" id="edit-headline" class="input-sniper">
                         <div class="flex gap-2">
                             <div class="w-1/2">
                                 <label>LAYOUT</label>
@@ -152,19 +148,16 @@
                                     <option value="clean">⬜ Clean Mode</option>
                                     <option value="artigo">📰 Artigo</option>
                                     <option value="vsl">🎥 VSL</option>
-                                    <option value="quiz">🧩 QUIZ MODE</option> </select>
+                                    <option value="quiz">🧩 QUIZ MODE</option>
+                                </select>
                             </div>
                             <div class="w-1/2">
                                 <label>PREÇO</label>
                                 <input type="text" id="edit-price" class="input-sniper text-center font-bold text-emerald-400">
                             </div>
                         </div>
-
-                        <label>CHECKOUT (Link Kiwify/Stripe)</label>
-                        <input type="text" id="edit-checkout" class="input-sniper border-emerald-500/30" placeholder="https://pay...">
-
-                        <label>VÍDEO (Opcional - Youtube)</label>
-                        <input type="text" id="edit-video" class="input-sniper" placeholder="Cole o link aqui...">
+                        <label>CHECKOUT</label><input type="text" id="edit-checkout" class="input-sniper border-emerald-500/30">
+                        <label>VÍDEO</label><input type="text" id="edit-video" class="input-sniper">
 
                         <div class="pt-2">
                             <button onclick="salvarOfertaAtual()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg text-xs transition">💾 SALVAR ALTERAÇÕES</button>
@@ -299,7 +292,6 @@
                 const sessions = {};
                 events.forEach(e => {
                     const sid = e.sessionId || 'anon';
-                    
                     let source = e.campaign?.source || 'direto';
                     let campaign = e.campaign?.campaign || ''; 
 
@@ -341,10 +333,19 @@
                     s.events.forEach(e => {
                         let icon="🔹"; let color="text-slate-400"; let txt=e.type;
                         let label = e.data?.label || ''; 
-                        if(e.type === 'cta_click' || label.toLowerCase().includes('comprar')) { icon="💰"; color="text-emerald-400 font-bold"; txt = `click ( ${label || 'CHECKOUT'} )`; } 
-                        else if(e.type === 'click') { icon="👆"; color="text-slate-300"; txt = `click ( ${label} )`; } 
-                        else if(e.type === 'offer_view') { icon="👀"; color="text-indigo-400"; txt="Visualizou Página"; } 
-                        else if(e.type === 'short_link_click') { icon="🔗"; color="text-amber-400"; txt=`Encurtador (${e.alias})`; }
+                        
+                        // --- AQUI ESTÁ A LÓGICA DO FEED QUE VOCÊ PEDIU ---
+                        if(e.type === 'cta_click' || label.toLowerCase().includes('comprar')) { 
+                            icon="💰"; color="text-emerald-400 font-bold"; txt = `click ( ${label || 'CHECKOUT'} )`; 
+                        } else if(e.type === 'click') { 
+                            icon="👆"; color="text-slate-300"; txt = `click ( ${label} )`; 
+                        } else if(e.type === 'quiz_answer') { 
+                            icon="💬"; color="text-pink-400 font-bold"; txt = `Quiz: "${e.data?.answer}"`; // MOSTRA A RESPOSTA
+                        } else if(e.type === 'offer_view') { 
+                            icon="👀"; color="text-indigo-400"; txt="Visualizou Página"; 
+                        } else if(e.type === 'short_link_click') { 
+                            icon="🔗"; color="text-amber-400"; txt=`Encurtador (${e.alias})`; 
+                        }
 
                         details += `<div class="flex justify-between py-1 border-b border-white/5 last:border-0 hover:bg-white/5 px-2"><div class="flex items-center gap-2"><span>${icon}</span><span class="${color} text-[10px] font-mono">${txt}</span></div><span class="text-[9px] text-slate-600 font-mono">${new Date(e.createdAt.seconds*1000).toLocaleTimeString()}</span></div>`;
                     });
