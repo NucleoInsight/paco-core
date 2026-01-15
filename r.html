@@ -2,50 +2,41 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Redirecionando...</title>
+    <title>...</title>
     <style>body{background:#0b0c15;color:#10b981;display:flex;justify-content:center;align-items:center;height:100vh;font-family:monospace;}</style>
 </head>
 <body>
-    <div id="msg">Acessando...</div>
+    <div id="msg">Redirecionando...</div>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, updateDoc, increment, serverTimestamp, addDoc, collection } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, updateDoc, increment, serverTimestamp, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
         async function go() {
-            const params = new URLSearchParams(window.location.search);
-            const id = params.get('id');
+            const id = new URLSearchParams(window.location.search).get('id');
             if(!id) return document.getElementById('msg').innerText = "Link inválido.";
-            
             try {
                 const ref = doc(db, "short_links", id);
                 const snap = await getDoc(ref);
-                
                 if(snap.exists()) {
-                    const data = snap.data();
-                    
-                    // Conta o clique no link curto
+                    const d = snap.data();
                     updateDoc(ref, { clicks: increment(1) });
-                    
-                    // Registra evento de analytics (igual ao Sniper)
+                    // Salva evento para aparecer no Feed
                     addDoc(collection(db, "events"), {
                         type: "short_link_click",
                         alias: id,
-                        target: data.target,
-                        timestamp: new Date(),
-                        createdAt: new Date(),
-                        userAgent: navigator.userAgent
+                        offerId: d.offerId,
+                        isTest: false,
+                        sessionId: 'redirect',
+                        campaign: { source: 'encurtador' },
+                        createdAt: serverTimestamp()
                     });
-
-                    window.location.href = data.target;
-                } else {
-                    document.getElementById('msg').innerText = "Link não encontrado.";
-                    document.getElementById('msg').style.color = "red";
-                }
-            } catch(e) { console.error(e); document.getElementById('msg').innerText = "Erro."; }
+                    window.location.href = d.target;
+                } else { document.getElementById('msg').innerText = "Não encontrado."; }
+            } catch(e) { document.getElementById('msg').innerText = "Erro."; }
         }
         go();
     </script>
