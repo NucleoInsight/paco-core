@@ -1,8 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// CHAVES NUCLEOINSIGHT
-const firebaseConfig = { apiKey: "AIzaSyCFnz5Wis_b3CGGblNn-bfUjqEgTOlqGNE", authDomain: "nucleoinsight-e4566.firebaseapp.com", projectId: "nucleoinsight-e4566", storageBucket: "nucleoinsight-e4566.firebasestorage.app", messagingSenderId: "650150743348", appId: "1:650150743348:web:f62f3cc95a38a5e90ca961" };
+// CHAVE PACO-CORE (A MESMA DO SEU PAINEL)
+const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
 
 const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 const urlParams = new URLSearchParams(window.location.search);
@@ -30,5 +30,5 @@ export async function trackEvent(name, data = {}) {
             offerId, sessionId, type: name, isTest: isTestMode, campaign: campaignData,
             createdAt: serverTimestamp(), device: { ua: navigator.userAgent }, data
         });
-    } catch (e) { console.error("Tracker", e); }
+    } catch (e) { console.error("Tracker Error", e); }
 }
