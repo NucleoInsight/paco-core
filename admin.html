@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper PACO | V32 (Final)</title>
+    <title>Sniper PACO | V33 (Unlocked)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -23,7 +23,6 @@
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #0b0c15; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-        
         .feed-session { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 5px; border-radius: 6px; }
         .feed-session:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
         .feed-header { padding: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
@@ -38,7 +37,6 @@
             .text-white { color: black !important; }
             .text-slate-400 { color: #666 !important; }
             canvas { max-height: 250px; }
-            input, select, textarea { border: 1px solid #ccc !important; color: black !important; background: white !important; }
         }
     </style>
 </head>
@@ -46,11 +44,8 @@
 
     <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#0b0c15]">
         <div class="glass-panel p-8 w-full max-w-md text-center">
-            <h1 class="text-3xl font-black text-white tracking-tight mb-2">SNIPER <span class="text-indigo-500">PACO</span></h1>
-            <p class="text-xs text-slate-500 mb-6 font-mono">Central de Fusão</p>
-            <input type="email" id="email" class="glass-input mb-3" placeholder="Email">
-            <input type="password" id="password" class="glass-input mb-6" placeholder="Senha">
-            <button onclick="fazerLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-indigo-500/20">ACESSAR SISTEMA</button>
+            <h1 class="text-3xl font-black text-white tracking-tight mb-6">SNIPER <span class="text-indigo-500">PACO</span></h1>
+            <button onclick="fazerLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-lg transition shadow-lg shadow-indigo-500/20 text-lg">ACESSAR SISTEMA</button>
             <p id="error-msg" class="text-red-400 text-xs mt-4"></p>
         </div>
     </div>
@@ -59,7 +54,7 @@
         <header class="flex flex-col md:flex-row justify-between items-end mb-10 border-b border-indigo-900/30 pb-4 gap-4">
             <div>
                 <h1 class="text-3xl font-black text-white tracking-tight">SNIPER <span class="text-indigo-500">ANALYTICS</span></h1>
-                <p class="text-xs text-indigo-400 mt-1">Gestão de Ofertas & Link Automático</p>
+                <p class="text-xs text-indigo-400 mt-1">Painel Oficial NucleoInsight</p>
             </div>
             <div class="flex flex-wrap items-center gap-4">
                 <div class="glass-panel px-3 py-2 border-indigo-500/50">
@@ -74,9 +69,9 @@
                     </label>
                 </div>
                 <div class="flex gap-2 no-print">
-                    <button onclick="copiarRelatorio()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">📋 COPIAR</button>
-                    <button onclick="window.print()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">🖨️ PDF</button>
-                    <button onclick="criarNovaOferta()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1"><span>+</span> NOVA</button>
+                    <button onclick="copiarRelatorio()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">📋</button>
+                    <button onclick="window.print()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">🖨️</button>
+                    <button onclick="criarNovaOferta()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition">NOVA +</button>
                     <button onclick="carregarDadosDaOferta()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">🔄</button>
                     <button onclick="logout()" class="bg-slate-800 text-slate-300 px-3 py-2 rounded-lg text-xs font-bold border border-slate-700">SAIR</button>
                 </div>
@@ -157,15 +152,16 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, addDoc, deleteDoc, serverTimestamp, query, where, orderBy, limit, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // --- CREDENCIAIS CORRETAS PARA NUCLEOINSIGHT ---
+        // CONFIG (NUCLEOINSIGHT)
         const firebaseConfig = { apiKey: "AIzaSyCFnz5Wis_b3CGGblNn-bfUjqEgTOlqGNE", authDomain: "nucleoinsight-e4566.firebaseapp.com", projectId: "nucleoinsight-e4566", storageBucket: "nucleoinsight-e4566.firebasestorage.app", messagingSenderId: "650150743348", appId: "1:650150743348:web:f62f3cc95a38a5e90ca961", measurementId: "G-M24P3TBP5J" };
         
         const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
         let currentOfferId = "", unsubscribeFeed = null, myChart = null;
 
-        window.fazerLogin = async () => { try { await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); } catch(e) { document.getElementById('error-msg').innerText = e.message; } }
+        // AUTH ANÔNIMO (PARA DESTRAVAR LOGIN)
+        window.fazerLogin = async () => { try { await signInAnonymously(auth); } catch(e) { document.getElementById('error-msg').innerText = e.message; } }
         window.logout = () => signOut(auth);
         onAuthStateChanged(auth, (u) => { if(u) { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('dashboard').classList.remove('hidden'); iniciarSistema(); } });
 
@@ -179,7 +175,7 @@
             carregarDadosDaOferta();
         }
 
-        window.criarNovaOferta = async () => { const headline = prompt("Headline:"); if(!headline) return; await addDoc(collection(db, "offers"), { headline: headline, bodyText: "...", ctaText: "COMPRAR", price: "9,90", layout: "dark", videoUrl: "", checkoutUrl: "", createdAt: serverTimestamp() }); iniciarSistema(); }
+        window.criarNovaOferta = async () => { const headline = prompt("Headline:"); if(!headline) return; await addDoc(collection(db, "offers"), { headline: headline, bodyText: "...", ctaText: "COMPRAR", price: "9,90", layout: "dark", videoUrl: "", checkoutUrl: "", createdAt: serverTimestamp() }); location.reload(); }
         window.copiarRelatorio = () => { const views = document.getElementById('kpi-unique').innerText; const clicks = document.getElementById('kpi-sales').innerText; navigator.clipboard.writeText(`📊 RELATÓRIO\nVisitas: ${views}\nCheckout: ${clicks}`).then(() => alert("Copiado!")); }
 
         window.carregarDadosDaOferta = async () => {
@@ -194,9 +190,9 @@
                 const d = docSnap.data();
                 document.getElementById('edit-headline').value = d.headline;
                 document.getElementById('edit-price').value = d.price;
-                document.getElementById('edit-layout').value = d.layout || 'dark';
-                document.getElementById('edit-video').value = d.videoUrl || '';
-                document.getElementById('edit-checkout').value = d.checkoutUrl || '';
+                document.getElementById('edit-layout').value = d.layout;
+                document.getElementById('edit-video').value = d.videoUrl;
+                document.getElementById('edit-checkout').value = d.checkoutUrl;
             }
 
             const q = query(collection(db, "events"), where("offerId", "==", currentOfferId));
@@ -204,63 +200,56 @@
             
             unsubscribeFeed = onSnapshot(q, (snapshot) => {
                 let views=0, clicks=0, sources={};
-                const feedContainer = document.getElementById('live-feed');
-                feedContainer.innerHTML = "";
-                let events = [];
-                snapshot.forEach(doc => events.push({ id: doc.id, ...doc.data() }));
-                events = events.filter(e => !!e.isTest === isTest).sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
-
                 const sessions = {};
-                events.forEach(e => {
+                const events = [];
+                snapshot.forEach(doc => events.push(doc.data()));
+                
+                const filtered = events.filter(e => !!e.isTest === isTest).sort((a,b) => b.createdAt - a.createdAt);
+                
+                filtered.forEach(e => {
                     const sid = e.sessionId || 'anon';
                     let source = e.campaign?.source || 'direto';
                     let campaign = e.campaign?.campaign || '';
-                    if(!sessions[sid]) sessions[sid] = { id: sid, events: [], source, campaign, time: e.createdAt?.seconds||0, isTest: e.isTest };
-                    else if((sessions[sid].source==='direto'||sessions[sid].source==='encurtador') && (source!=='direto'&&source!=='encurtador')) {
+                    if(!sessions[sid]) sessions[sid] = { id: sid, events: [], source, campaign, time: e.createdAt?.seconds||0 };
+                    
+                    if((sessions[sid].source==='direto'||sessions[sid].source==='encurtador') && (source!=='direto'&&source!=='encurtador')) {
                         sessions[sid].source = source; sessions[sid].campaign = campaign;
                     }
                     sessions[sid].events.push(e);
-                    if((e.createdAt?.seconds||0) > sessions[sid].time) sessions[sid].time = e.createdAt.seconds;
                     if(e.type==='offer_view') views++;
                     if(e.type==='cta_click') clicks++;
                 });
 
-                Object.values(sessions).forEach(s => { if(s.source!=='encurtador') sources[s.source]=(sources[s.source]||0)+1; });
+                Object.values(sessions).forEach(s => { if(s.source!=='encurtador') sources[s.source] = (sources[s.source]||0)+1; });
                 updateSourceChart(sources);
-
+                document.getElementById('kpi-unique').innerText = Object.keys(sessions).length;
+                document.getElementById('kpi-sales').innerText = clicks;
+                
+                // FEED V33
+                const feedDiv = document.getElementById('live-feed');
+                feedDiv.innerHTML = "";
                 Object.values(sessions).sort((a,b) => b.time - a.time).slice(0,30).forEach(s => {
-                    let originText = s.source + (s.campaign && s.campaign!=='none' ? ` • ${s.campaign}` : '');
-                    let details = "";
-                    s.events.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0)).forEach(e => {
+                    let origin = s.source + (s.campaign && s.campaign !== 'none' ? ` • ${s.campaign}` : '');
+                    let details = s.events.map(e => {
                         let icon="🔹", txt=e.type, color="text-slate-400";
-                        if(e.type==='cta_click'||(e.data?.label||'').toLowerCase().includes('comprar')) { icon="💰"; color="text-emerald-400 font-bold"; txt=`Checkout (${e.data?.label})`; }
+                        if(e.type==='cta_click'||(e.data?.label||'').toLowerCase().includes('comprar')) { icon="💰"; color="text-emerald-400 font-bold"; txt=`Checkout (${e.data?.label||'btn'})`; }
                         else if(e.type==='click') { icon="👆"; txt=`Click (${e.data?.label})`; }
-                        else if(e.type==='quiz_answer') { icon="💬"; color="text-pink-400"; txt=`Quiz: "${e.data?.answer}"`; }
+                        else if(e.type==='quiz_answer') { icon="💬"; color="text-pink-400"; txt=`Quiz: ${e.data?.answer}`; }
                         else if(e.type==='video_progress') { icon="⏳"; txt=`Vídeo: ${e.data?.percent}%`; }
                         else if(e.type==='video_complete') { icon="✅"; color="text-green-400"; txt="Viu Tudo"; }
                         else if(e.type==='video_start') { icon="🎥"; txt="Play"; }
-                        details += `<div class="flex justify-between py-1 border-b border-white/5 text-[10px]"><div class="flex items-center gap-2"><span>${icon}</span><span class="${color}">${txt}</span></div><span class="text-slate-600">${new Date(e.createdAt.seconds*1000).toLocaleTimeString()}</span></div>`;
-                    });
-                    feedContainer.innerHTML += `<div class="feed-session"><div class="feed-header" onclick="this.nextElementSibling.classList.toggle('open')"><div class="flex items-center gap-2"><span class="text-[10px] text-slate-400">${new Date(s.time*1000).toLocaleTimeString()}</span><span class="tag-source">${originText}</span></div><span class="text-[10px] font-bold text-slate-300">${s.events.length} ações ▼</span></div><div class="feed-body">${details}</div></div>`;
-                });
+                        return `<div class="flex justify-between py-1 border-b border-white/5 text-[10px] ${color}"><span>${icon} ${txt}</span><span>${new Date(e.createdAt.seconds*1000).toLocaleTimeString()}</span></div>`;
+                    }).join('');
 
-                document.getElementById('kpi-unique').innerText = Object.keys(sessions).length;
-                document.getElementById('kpi-sales').innerText = clicks;
-                document.getElementById('kpi-retention').innerText = "0%";
-                document.getElementById('kpi-source').innerText = (Object.keys(sources).sort((a,b)=>sources[b]-sources[a])[0]||'-').toUpperCase();
-                renderFunnel(Object.keys(sessions).length, clicks);
+                    feedDiv.innerHTML += `<div class="feed-session"><div class="feed-header" onclick="this.nextElementSibling.classList.toggle('open')"><div class="flex items-center gap-2"><span class="text-[10px] text-slate-400">${new Date(s.time*1000).toLocaleTimeString()}</span><span class="tag-source">${origin}</span></div><span class="text-[10px] font-bold text-slate-300">${s.events.length} ações ▼</span></div><div class="feed-body">${details}</div></div>`;
+                });
             });
         }
 
         function updateSourceChart(data) {
             const ctx = document.getElementById('sourceChart');
             if(myChart) myChart.destroy();
-            myChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(data), datasets: [{ data: Object.values(data), backgroundColor: ['#6366f1','#10b981','#f43f5e','#f59e0b'], borderWidth:0 }] }, options: { plugins: { legend: { position:'right', labels:{ color:'#94a3b8', font:{size:9}, boxWidth:8 } } } } });
-        }
-
-        function renderFunnel(v, c) {
-            const cv = v>0?((c/v)*100).toFixed(1):0;
-            document.getElementById('funnel-container').innerHTML = `<div class="funnel-step active"><div class="flex justify-between"><div><p class="text-[10px] font-bold text-slate-500">VISITAS</p><p class="text-xl font-black text-white">${v}</p></div></div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:100%"></div></div></div><div class="funnel-step ${c>0?'active':''}"><div class="flex justify-between"><div><p class="text-[10px] font-bold text-emerald-500">CHECKOUT</p><p class="text-xl font-black text-emerald-400">${c}</p></div><div class="text-right"><p class="text-xs font-bold text-emerald-400">${cv}%</p></div></div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${cv}%; background:#10b981"></div></div></div>`;
+            myChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(data), datasets: [{ data: Object.values(data), backgroundColor: ['#6366f1', '#10b981', '#f43f5e', '#f59e0b'], borderWidth:0 }] }, options: { plugins: { legend: { position: 'right', labels: { color: '#64748b', font: { size: 9 } } } } } });
         }
 
         window.salvarOfertaAtual = async () => { await updateDoc(doc(db,"offers",currentOfferId), { headline:document.getElementById('edit-headline').value, price:document.getElementById('edit-price').value, layout:document.getElementById('edit-layout').value, videoUrl:document.getElementById('edit-video').value, checkoutUrl:document.getElementById('edit-checkout').value }); alert("Salvo!"); }
