@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper PACO | V21 (Fixed)</title>
+    <title>Sniper PACO | Fusion V22</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
     
     <style>
-        body { background-color: #0b0c15; color: #a5b4fc; font-family: 'Inter', sans-serif; }
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        body { background-color: #0b0c15; color: #a5b4fc; font-family: 'JetBrains Mono', monospace; }
         .glass-panel { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; }
         
+        /* Funil Visual */
         .funnel-step { position: relative; padding-left: 20px; border-left: 2px solid #334155; margin-bottom: 20px; }
         .funnel-step.active { border-left-color: #10b981; }
         .funnel-step::before { content: ''; position: absolute; left: -6px; top: 0; width: 10px; height: 10px; background: #334155; border-radius: 50%; }
@@ -29,28 +29,24 @@
         .toggle-checkbox:checked { right: 0; border-color: #10b981; }
         .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
 
-        /* Inputs para Edição */
+        /* Inputs para Edição (Estilo Sniper) */
         .input-sniper { background: #0f172a; border: 1px solid #334155; color: white; padding: 8px; border-radius: 6px; width: 100%; font-size: 12px; margin-bottom: 8px; font-family: sans-serif; }
         .input-sniper:focus { border-color: #6366f1; outline: none; }
         label { font-size: 10px; text-transform: uppercase; font-weight: bold; color: #64748b; display: block; margin-bottom: 2px; }
 
+        /* Estilos do Feed Detalhado */
+        .feed-session { background: rgba(255,255,255,0.02); margin-bottom: 4px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.05); }
+        .feed-session:hover { border-color: rgba(99, 102, 241, 0.3); }
+        .feed-detail-box { display: none; background: rgba(0,0,0,0.3); padding: 5px; border-top: 1px solid rgba(255,255,255,0.05); }
         .hidden { display: none !important; }
         
-        .metric-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; font-weight: 700; }
-        .metric-value { font-size: 1.25rem; font-weight: 800; color: white; line-height: 1; margin-top: 4px; }
+        .metric-value { font-size: 1.5rem; font-weight: 800; color: white; }
+        .metric-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; }
 
         /* Scrollbar */
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #0b0c15; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-
-        /* --- CSS DO FEED DETALHADO (ADICIONADO SEM QUEBRAR O RESTO) --- */
-        .feed-session { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 5px; border-radius: 6px; }
-        .feed-session:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
-        .feed-header { padding: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .feed-body { display: none; background: rgba(0,0,0,0.3); border-top: 1px solid rgba(255,255,255,0.05); padding: 5px; }
-        .feed-body.open { display: block; }
-        .tag-source { background: #334155; color: #cbd5e1; padding: 1px 4px; border-radius: 3px; font-size: 9px; font-weight: bold; border: 1px solid #475569; }
     </style>
 </head>
 <body class="p-4 md:p-8 min-h-screen">
@@ -58,7 +54,7 @@
     <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#0b0c15]">
         <div class="glass-panel p-8 w-full max-w-md text-center">
             <h1 class="text-3xl font-black text-white tracking-tight mb-2">SNIPER <span class="text-indigo-500">PACO</span></h1>
-            <p class="text-xs text-slate-500 mb-6 font-mono">Central de Fusão</p>
+            <p class="text-xs text-slate-500 mb-6 font-mono">Central de Inteligência</p>
             <input type="email" id="email" class="input-sniper mb-3" placeholder="Email">
             <input type="password" id="password" class="input-sniper mb-6" placeholder="Senha">
             <button onclick="fazerLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-indigo-500/20">ACESSAR SISTEMA</button>
@@ -75,31 +71,32 @@
             </div>
             
             <div class="flex flex-wrap items-center gap-4">
-                <div class="glass-panel px-3 py-2 border-indigo-500/50">
-                    <label class="text-[9px] text-indigo-400 uppercase font-bold block">Oferta Ativa</label>
-                    <select id="offer-selector" onchange="carregarDadosDaOferta()" class="bg-transparent text-white font-bold text-sm outline-none w-48 cursor-pointer">
-                        <option value="">Carregando...</option>
+                <div class="bg-slate-800/50 p-2 rounded-lg border border-slate-700">
+                    <label class="text-[9px] text-indigo-400 block font-bold">OFERTA ATIVA</label>
+                    <select id="offer-selector" onchange="carregarDadosDaOferta()" class="bg-transparent text-white font-bold text-xs outline-none w-32 cursor-pointer">
+                        <option>Carregando...</option>
                     </select>
                 </div>
 
-                <div class="flex items-center gap-2 bg-slate-800/50 p-2 rounded-lg border border-slate-700">
+                <div class="flex items-center gap-2 bg-slate-800/50 p-2 rounded-lg border border-slate-700 no-print">
                     <span class="text-[10px] text-slate-400 uppercase font-bold">Modo Teste</span>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="toggle-test" class="sr-only peer" onchange="carregarDadosDaOferta()">
-                        <div class="w-9 h-5 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:bg-amber-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
+                        <div class="w-9 h-5 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
                     </label>
                 </div>
 
-                <div class="flex gap-2">
-                    <button onclick="criarNovaOferta()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1"><span>+</span> NOVA</button>
+                <div class="flex gap-2 no-print">
+                    <button id="btn-open-test" onclick="abrirLinkTeste()" class="bg-purple-900/50 hover:bg-purple-800 text-purple-200 border border-purple-700 px-3 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center">
+                        🧪 TESTAR
+                    </button>
+                    <button onclick="criarNovaOferta()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition shadow-lg shadow-indigo-500/20">NOVA +</button>
                     <button onclick="carregarDadosDaOferta()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">🔄</button>
-                    <button onclick="logout()" class="bg-slate-800 text-slate-300 px-3 py-2 rounded-lg text-xs font-bold border border-slate-700">SAIR</button>
                 </div>
             </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-            
             <div class="glass-panel p-6">
                 <h2 class="text-sm font-bold text-white mb-6 flex items-center gap-2">
                     <svg class="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
@@ -126,45 +123,42 @@
                     </div>
                     <div class="glass-panel p-4 border-l-2 border-amber-500">
                         <p class="metric-label">Melhor Canal</p>
-                        <p id="kpi-source" class="metric-value truncate text-base pt-1">...</p>
+                        <p id="kpi-source" class="text-lg font-bold text-white truncate">...</p>
                     </div>
                 </div>
 
                 <div class="glass-panel p-4 border border-indigo-500/30">
-                    <div class="flex justify-between items-center mb-3">
-                        <h3 class="text-xs font-bold text-indigo-400 uppercase">CONFIGURAR OFERTA</h3>
-                        <a href="#" id="btn-open-test" target="_blank" class="text-[10px] text-amber-400 border border-amber-500/30 px-2 py-1 rounded hover:bg-amber-500/10">🧪 ABRIR TESTE</a>
-                    </div>
+                    <h3 class="text-xs font-bold text-white mb-3 flex items-center gap-2">⚙️ CONFIGURAR OFERTA</h3>
                     
                     <div class="space-y-1">
-                        <label>HEADLINE (Promessa)</label>
-                        <input type="text" id="edit-headline" class="input-sniper" placeholder="Digite a promessa...">
+                        <label>HEADLINE</label>
+                        <input type="text" id="edit-headline" class="input-sniper">
                         
                         <div class="flex gap-2">
                             <div class="w-1/2">
                                 <label>LAYOUT</label>
                                 <select id="edit-layout" class="input-sniper bg-slate-900">
-                                    <option value="dark">🌑 Dark Mode</option>
-                                    <option value="clean">⬜ Clean Mode</option>
-                                    <option value="artigo">📰 Artigo</option>
-                                    <option value="vsl">🎥 VSL</option>
+                                    <option value="dark">Dark Mode</option>
+                                    <option value="clean">Clean Mode</option>
+                                    <option value="artigo">Artigo</option>
+                                    <option value="vsl">VSL (Vídeo)</option>
                                 </select>
                             </div>
                             <div class="w-1/2">
                                 <label>PREÇO</label>
-                                <input type="text" id="edit-price" class="input-sniper text-center font-bold text-emerald-400" placeholder="R$">
+                                <input type="text" id="edit-price" class="input-sniper text-center text-emerald-400 font-bold">
                             </div>
                         </div>
 
-                        <label>CHECKOUT (Link Kiwify/Stripe)</label>
+                        <label>CHECKOUT (Link Pagamento)</label>
                         <input type="text" id="edit-checkout" class="input-sniper border-emerald-500/30" placeholder="https://pay...">
 
-                        <label>VÍDEO (Opcional - Youtube)</label>
-                        <input type="text" id="edit-video" class="input-sniper" placeholder="Cole o link aqui...">
+                        <label>VÍDEO (Link Youtube)</label>
+                        <input type="text" id="edit-video" class="input-sniper" placeholder="Opcional">
 
-                        <div class="pt-2 flex gap-2">
-                            <button onclick="salvarOfertaAtual()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg text-xs transition">💾 SALVAR ALTERAÇÕES</button>
-                        </div>
+                        <button onclick="salvarOfertaAtual()" class="w-full bg-slate-700 hover:bg-white hover:text-black text-white font-bold py-2 rounded-lg text-xs transition mt-2">
+                            💾 SALVAR ALTERAÇÕES
+                        </button>
                     </div>
                 </div>
             </div>
@@ -174,42 +168,44 @@
                     <h3 class="text-xs font-bold text-white">📡 FEED AO VIVO</h3>
                     <span id="feed-badge" class="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded">REAL</span>
                 </div>
-                <div class="overflow-y-auto p-4 space-y-3 flex-1 custom-scroll" id="live-feed">
-                    <p class="text-center text-slate-600 mt-10 text-xs">Aguardando visitantes...</p>
+                <div class="overflow-y-auto p-4 space-y-3" id="live-feed">
+                    <p class="text-center text-slate-600 mt-10 text-xs">Aguardando dados...</p>
                 </div>
             </div>
         </div>
 
         <div class="glass-panel p-6 mb-10 no-print border border-emerald-500/30">
             <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
-                🔗 Encurtador Automático <span class="text-[10px] bg-emerald-900 text-emerald-400 px-2 py-1 rounded border border-emerald-500/50">V2.0</span>
+                🔗 Encurtador Automático (V2.0)
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                 <div class="md:col-span-2">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase">Nome Curto (Alias)</label>
+                    <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">Nome Curto (Alias)</label>
                     <div class="flex">
                         <span class="bg-slate-700 text-slate-300 p-2 text-xs rounded-l border border-slate-600">/r.html?id=</span>
                         <input type="text" id="short-alias" placeholder="ex: zap" class="w-full bg-slate-900 border border-slate-600 text-white text-xs p-2 focus:border-emerald-500 outline-none">
                     </div>
                 </div>
-                <div><label class="text-[10px] font-bold text-emerald-500 uppercase">Origem (Source)</label><input type="text" id="utm-source" value="instagram" class="input-sniper m-0"></div>
-                <div><label class="text-[10px] font-bold text-emerald-500 uppercase">Campanha</label><input type="text" id="utm-campaign" placeholder="stories" class="input-sniper m-0"></div>
+                <div><label class="block text-[10px] font-bold text-emerald-500 mb-1 uppercase">Origem</label><input type="text" id="utm-source" value="instagram" class="input-sniper m-0"></div>
+                <div><label class="block text-[10px] font-bold text-emerald-500 mb-1 uppercase">Campanha</label><input type="text" id="utm-campaign" placeholder="stories" class="input-sniper m-0"></div>
             </div>
-            <button onclick="gerarLinkCurto()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg text-xs transition mb-4">💾 GERAR LINK RASTREÁVEL</button>
+            <button onclick="gerarLinkCurto()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg text-xs transition mb-4">💾 GERAR LINK DE RASTREAMENTO</button>
             <div id="short-result" class="hidden bg-black/50 p-4 rounded border border-slate-700 flex justify-between items-center">
                 <code id="final-link-display" class="text-white text-xs font-mono">...</code>
-                <button onclick="copiarLinkCurto()" class="text-[10px] bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded">COPIAR</button>
+                <button onclick="copiarLinkCurto()" class="text-[10px] bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded ml-2">COPIAR</button>
             </div>
         </div>
 
         <div class="border border-red-900/30 bg-red-950/10 rounded-xl p-6 no-print flex justify-between items-center">
             <div>
-                <h3 class="text-red-500 font-bold text-sm mb-1 uppercase">⚠️ Zona de Perigo</h3>
-                <p class="text-xs text-slate-400">Apagar dados de tráfego do modo atual (Teste ou Real). A oferta continua existindo.</p>
+                <h3 class="text-red-500 font-bold text-sm mb-2 uppercase">⚠️ Zona de Perigo</h3>
+                <p class="text-xs text-slate-400">O botão abaixo apaga <strong>apenas os dados de rastreamento (cliques/views)</strong> do modo atual. A oferta continua existindo.</p>
             </div>
-            <div class="flex gap-4 items-center">
-                <button onclick="limparDados()" class="bg-red-900/50 hover:bg-red-800 text-red-200 border border-red-800 px-4 py-2 rounded-lg text-xs font-bold transition">🗑️ LIMPAR DADOS</button>
-                <button onclick="excluirOferta()" class="text-slate-500 hover:text-red-500 text-xs underline">Excluir Oferta</button>
+            <div class="flex items-center gap-4">
+                <button onclick="limparDados()" class="bg-red-900/50 hover:bg-red-800 text-red-200 border border-red-800 px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2">
+                    🗑️ LIMPAR DADOS DO MODO ATUAL
+                </button>
+                <button onclick="excluirOferta()" class="text-slate-500 text-xs underline hover:text-red-500">Excluir Oferta</button>
             </div>
         </div>
     </div>
@@ -219,7 +215,7 @@
         import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, addDoc, deleteDoc, serverTimestamp, query, where, orderBy, limit, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // SUA CONFIGURAÇÃO DO PACO
+        // CONFIG PACO
         const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
 
@@ -231,7 +227,6 @@
         window.logout = () => signOut(auth);
         onAuthStateChanged(auth, (u) => { if(u) { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('dashboard').classList.remove('hidden'); iniciarSistema(); } });
 
-        // INICIALIZAÇÃO
         async function iniciarSistema() {
             const snaps = await getDocs(collection(db, "offers"));
             const select = document.getElementById('offer-selector');
@@ -249,14 +244,11 @@
             iniciarSistema();
         }
 
-        // CARREGAMENTO INTELIGENTE (CORE)
         window.carregarDadosDaOferta = async () => {
             const select = document.getElementById('offer-selector');
             currentOfferId = select.value;
             const isTest = document.getElementById('toggle-test').checked;
             
-            // Atualiza Botões e Badges
-            document.getElementById('btn-open-test').href = `index.html?id=${currentOfferId}&mode=test`;
             const badge = document.getElementById('feed-badge');
             if(isTest) { badge.innerText = "MODO TESTE"; badge.className = "text-[9px] bg-amber-500/20 text-amber-400 px-2 py-1 rounded"; } 
             else { badge.innerText = "DADOS REAIS"; badge.className = "text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded"; }
@@ -272,113 +264,79 @@
                 document.getElementById('edit-checkout').value = d.checkoutUrl || '';
             }
 
-            // FEED E ANALYTICS (AQUI ESTÁ A CORREÇÃO DE EXIBIÇÃO)
+            // --- AQUI ESTÁ A LÓGICA DO FEED DETALHADO (A QUE VOCÊ QUERIA) ---
             const q = query(collection(db, "events"), where("offerId", "==", currentOfferId));
+            
             if(unsubscribeFeed) unsubscribeFeed();
             
             unsubscribeFeed = onSnapshot(q, (snapshot) => {
-                let views = 0, clicks = 0;
-                let sources = {};
-                const feedContainer = document.getElementById('live-feed');
-                feedContainer.innerHTML = "";
-                
-                let events = [];
-                snapshot.forEach(doc => events.push({ id: doc.id, ...doc.data() }));
-                
-                // Filtro de Modo
-                events = events.filter(e => !!e.isTest === isTest);
-                events.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-
-                if(events.length === 0) feedContainer.innerHTML = "<p class='text-center text-slate-600 text-xs mt-10'>Sem dados neste modo.</p>";
-
                 const sessions = {};
-                events.forEach(e => {
-                    const sid = e.sessionId || 'anon';
-                    if(!sessions[sid]) sessions[sid] = { 
-                        id: sid,
-                        events: [], 
-                        source: e.campaign?.source || 'direto', 
-                        time: e.createdAt?.seconds || 0,
-                        isTest: e.isTest
-                    };
-                    sessions[sid].events.push(e);
-                    // Atualiza tempo da sessão
-                    if(e.createdAt?.seconds > sessions[sid].time) sessions[sid].time = e.createdAt.seconds;
-                    
-                    if(e.type === 'offer_view') views++;
-                    if(e.type === 'cta_click') clicks++;
+                let views = 0, clicks = 0;
+                
+                snapshot.forEach(doc => {
+                    const d = doc.data();
+                    if(!!d.isTest !== isTest) return; // Filtro de Modo
+
+                    if(d.type === 'offer_view') views++;
+                    if(d.type === 'cta_click') clicks++;
+
+                    const sid = d.sessionId || 'anon';
+                    if(!sessions[sid]) sessions[sid] = { id: sid, events: [], source: d.campaign?.source || 'direto', time: d.createdAt?.seconds || 0 };
+                    sessions[sid].events.push(d);
+                    if(d.createdAt?.seconds > sessions[sid].time) sessions[sid].time = d.createdAt.seconds;
                 });
 
-                // Métricas
-                let totalSessions = Object.keys(sessions).length;
-                let sourceCounts = {};
-                Object.values(sessions).forEach(s => { sourceCounts[s.source] = (sourceCounts[s.source] || 0) + 1; });
-                let bestChannel = Object.keys(sourceCounts).length > 0 ? Object.keys(sourceCounts).reduce((a, b) => sourceCounts[a] > sourceCounts[b] ? a : b) : "-";
+                document.getElementById('kpi-unique').innerText = Object.keys(sessions).length;
+                document.getElementById('kpi-sales').innerText = clicks;
+                renderFunnel(Object.keys(sessions).length, clicks);
 
-                // === LÓGICA DO FEED DETALHADO (IGUAL IMAGEM) ===
-                const sortedSessions = Object.values(sessions).sort((a,b) => b.time - a.time);
+                // Render Feed
+                const feedContainer = document.getElementById('live-feed');
+                feedContainer.innerHTML = "";
+                const sorted = Object.values(sessions).sort((a,b) => b.time - a.time);
 
-                sortedSessions.slice(0, 30).forEach(s => {
+                if(sorted.length === 0) feedContainer.innerHTML = "<p class='text-center text-slate-600 text-xs mt-10'>Sem dados.</p>";
+
+                sorted.slice(0, 30).forEach(s => {
                     const timeStr = new Date(s.time * 1000).toLocaleTimeString();
-                    const badge = s.isTest ? '<span class="text-[8px] bg-amber-500/20 text-amber-500 px-1 rounded ml-1">TESTE</span>' : '';
                     
                     s.events.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
 
                     let details = "";
                     s.events.forEach(e => {
                         let icon="🔹"; let color="text-slate-400"; let txt=e.type;
-                        
-                        // RECUPERA O RÓTULO DO BOTÃO (label)
-                        let label = e.data?.label || ''; 
+                        let label = e.data?.label || ''; // PEGA O NOME DO BOTÃO
 
-                        // LÓGICA DE EXIBIÇÃO:
-                        if(e.type === 'cta_click' || label.toLowerCase().includes('comprar') || label.toLowerCase().includes('checkout')) { 
-                            icon="💰"; 
-                            color="text-emerald-400 font-bold"; 
-                            txt = `click ( ${label || 'CHECKOUT'} )`; 
+                        if(e.type === 'cta_click' || label.toLowerCase().includes('comprar')) { 
+                            icon="💰"; color="text-emerald-400 font-bold"; txt=`click ( ${label || 'CHECKOUT'} )`; 
+                        } else if(e.type === 'click') { 
+                            icon="👆"; color="text-slate-300"; txt=`click ( ${label} )`; 
+                        } else if(e.type === 'offer_view') { 
+                            icon="👀"; color="text-indigo-400"; txt="Visualizou Página"; 
                         }
-                        else if(e.type === 'click') { 
-                            icon="👆"; 
-                            color="text-slate-300"; 
-                            txt = `click ( ${label} )`; 
-                        }
-                        else if(e.type === 'offer_view') { icon="👀"; color="text-indigo-400"; txt="Visualizou Página"; }
-                        else if(e.type === 'short_link_click') { icon="🔗"; color="text-amber-400"; txt=`Encurtador (${e.alias})`; }
-                        
+
                         details += `
-                            <div class="flex justify-between py-1 border-b border-white/5 last:border-0">
-                                <div class="flex items-center gap-2">
-                                    <span>${icon}</span>
-                                    <span class="${color} text-[10px] font-mono">${txt}</span>
-                                </div>
+                            <div class="flex justify-between py-1 border-b border-white/5 last:border-0 hover:bg-white/5 px-2">
+                                <div class="flex items-center gap-2"><span>${icon}</span><span class="${color} text-[10px] font-mono">${txt}</span></div>
                                 <span class="text-[9px] text-slate-600 font-mono">${new Date(e.createdAt.seconds*1000).toLocaleTimeString()}</span>
                             </div>`;
                     });
 
-                    // Renderiza o Card Expansível
                     feedContainer.innerHTML += `
                         <div class="feed-session">
-                            <div class="feed-header" onclick="this.nextElementSibling.classList.toggle('open')">
+                            <div class="p-2 flex justify-between items-center cursor-pointer hover:bg-white/5" onclick="this.nextElementSibling.classList.toggle('open')">
                                 <div class="flex items-center gap-2">
                                     <span class="text-[10px] font-mono text-slate-400">${timeStr}</span>
                                     <span class="tag-source">${s.source}</span>
-                                    ${badge}
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <span class="text-[10px] font-bold text-slate-300">${s.events.length} ações</span>
                                     <span class="text-[8px] text-indigo-400 border border-indigo-500/30 px-1 rounded">▼</span>
                                 </div>
                             </div>
-                            <div class="feed-body">${details}</div>
+                            <div class="feed-detail-box">${details}</div>
                         </div>`;
                 });
-
-                document.getElementById('kpi-unique').innerText = totalSessions;
-                document.getElementById('kpi-sales').innerText = clicks;
-                document.getElementById('kpi-retention').innerText = "0%";
-                document.getElementById('kpi-source').innerText = bestChannel.toUpperCase();
-                
-                renderFunnel(totalSessions, clicks);
             });
         }
 
@@ -439,6 +397,7 @@
         }
         
         window.copiarLinkCurto = () => { navigator.clipboard.writeText(document.getElementById('final-link-display').innerText).then(() => alert("Copiado!")); }
+        window.copiarRelatorio = () => { alert("Função em desenvolvimento (PDF)."); }
     </script>
 </body>
 </html>
