@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper PACO | V21 (Fixed)</title>
+    <title>Sniper PACO | V22 (Reports)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -44,13 +44,23 @@
         ::-webkit-scrollbar-track { background: #0b0c15; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
 
-        /* --- CSS DO FEED DETALHADO (ADICIONADO SEM QUEBRAR O RESTO) --- */
+        /* --- CSS DO FEED DETALHADO --- */
         .feed-session { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 5px; border-radius: 6px; }
         .feed-session:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
         .feed-header { padding: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .feed-body { display: none; background: rgba(0,0,0,0.3); border-top: 1px solid rgba(255,255,255,0.05); padding: 5px; }
         .feed-body.open { display: block; }
         .tag-source { background: #334155; color: #cbd5e1; padding: 1px 4px; border-radius: 3px; font-size: 9px; font-weight: bold; border: 1px solid #475569; }
+
+        /* --- MODO IMPRESSÃO (NOVO) --- */
+        @media print {
+            body { background-color: white !important; color: black !important; }
+            .no-print { display: none !important; }
+            .glass-panel { border: 1px solid #ccc !important; background: none !important; box-shadow: none !important; color: black !important; }
+            .text-white { color: black !important; }
+            .text-slate-400 { color: #666 !important; }
+            canvas { max-height: 250px; }
+        }
     </style>
 </head>
 <body class="p-4 md:p-8 min-h-screen">
@@ -90,7 +100,9 @@
                     </label>
                 </div>
 
-                <div class="flex gap-2">
+                <div class="flex gap-2 no-print">
+                    <button onclick="copiarRelatorio()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">📋 COPIAR</button>
+                    <button onclick="window.print()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">🖨️ PDF</button>
                     <button onclick="criarNovaOferta()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1"><span>+</span> NOVA</button>
                     <button onclick="carregarDadosDaOferta()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">🔄</button>
                     <button onclick="logout()" class="bg-slate-800 text-slate-300 px-3 py-2 rounded-lg text-xs font-bold border border-slate-700">SAIR</button>
@@ -249,6 +261,14 @@
             iniciarSistema();
         }
 
+        // --- NOVA FUNÇÃO DE RELATÓRIO ---
+        window.copiarRelatorio = () => {
+            const views = document.getElementById('kpi-unique').innerText;
+            const clicks = document.getElementById('kpi-sales').innerText;
+            const text = `📊 RELATÓRIO PACO\n\n- Visitas: ${views}\n- Checkout: ${clicks}\n\nGerado em: ${new Date().toLocaleString()}`;
+            navigator.clipboard.writeText(text).then(() => alert("Relatório copiado!"));
+        }
+
         // CARREGAMENTO INTELIGENTE (CORE)
         window.carregarDadosDaOferta = async () => {
             const select = document.getElementById('offer-selector');
@@ -272,20 +292,19 @@
                 document.getElementById('edit-checkout').value = d.checkoutUrl || '';
             }
 
-            // FEED E ANALYTICS (AQUI ESTÁ A CORREÇÃO DE EXIBIÇÃO)
+            // FEED E ANALYTICS
             const q = query(collection(db, "events"), where("offerId", "==", currentOfferId));
             if(unsubscribeFeed) unsubscribeFeed();
             
             unsubscribeFeed = onSnapshot(q, (snapshot) => {
                 let views = 0, clicks = 0;
-                let sources = {};
                 const feedContainer = document.getElementById('live-feed');
                 feedContainer.innerHTML = "";
                 
                 let events = [];
                 snapshot.forEach(doc => events.push({ id: doc.id, ...doc.data() }));
                 
-                // Filtro de Modo
+                // FILTRO DE MODO (TESTE vs REAL)
                 events = events.filter(e => !!e.isTest === isTest);
                 events.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
@@ -302,7 +321,6 @@
                         isTest: e.isTest
                     };
                     sessions[sid].events.push(e);
-                    // Atualiza tempo da sessão
                     if(e.createdAt?.seconds > sessions[sid].time) sessions[sid].time = e.createdAt.seconds;
                     
                     if(e.type === 'offer_view') views++;
@@ -315,7 +333,7 @@
                 Object.values(sessions).forEach(s => { sourceCounts[s.source] = (sourceCounts[s.source] || 0) + 1; });
                 let bestChannel = Object.keys(sourceCounts).length > 0 ? Object.keys(sourceCounts).reduce((a, b) => sourceCounts[a] > sourceCounts[b] ? a : b) : "-";
 
-                // === LÓGICA DO FEED DETALHADO (IGUAL IMAGEM) ===
+                // Feed Visual
                 const sortedSessions = Object.values(sessions).sort((a,b) => b.time - a.time);
 
                 sortedSessions.slice(0, 30).forEach(s => {
@@ -327,35 +345,25 @@
                     let details = "";
                     s.events.forEach(e => {
                         let icon="🔹"; let color="text-slate-400"; let txt=e.type;
-                        
-                        // RECUPERA O RÓTULO DO BOTÃO (label)
                         let label = e.data?.label || ''; 
 
-                        // LÓGICA DE EXIBIÇÃO:
                         if(e.type === 'cta_click' || label.toLowerCase().includes('comprar') || label.toLowerCase().includes('checkout')) { 
-                            icon="💰"; 
-                            color="text-emerald-400 font-bold"; 
-                            txt = `click ( ${label || 'CHECKOUT'} )`; 
+                            icon="💰"; color="text-emerald-400 font-bold"; txt = `click ( ${label || 'CHECKOUT'} )`; 
+                        } else if(e.type === 'click') { 
+                            icon="👆"; color="text-slate-300"; txt = `click ( ${label} )`; 
+                        } else if(e.type === 'offer_view') { 
+                            icon="👀"; color="text-indigo-400"; txt="Visualizou Página"; 
+                        } else if(e.type === 'short_link_click') { 
+                            icon="🔗"; color="text-amber-400"; txt=`Encurtador (${e.alias})`; 
                         }
-                        else if(e.type === 'click') { 
-                            icon="👆"; 
-                            color="text-slate-300"; 
-                            txt = `click ( ${label} )`; 
-                        }
-                        else if(e.type === 'offer_view') { icon="👀"; color="text-indigo-400"; txt="Visualizou Página"; }
-                        else if(e.type === 'short_link_click') { icon="🔗"; color="text-amber-400"; txt=`Encurtador (${e.alias})`; }
-                        
+
                         details += `
-                            <div class="flex justify-between py-1 border-b border-white/5 last:border-0">
-                                <div class="flex items-center gap-2">
-                                    <span>${icon}</span>
-                                    <span class="${color} text-[10px] font-mono">${txt}</span>
-                                </div>
+                            <div class="flex justify-between py-1 border-b border-white/5 last:border-0 hover:bg-white/5 px-2">
+                                <div class="flex items-center gap-2"><span>${icon}</span><span class="${color} text-[10px] font-mono">${txt}</span></div>
                                 <span class="text-[9px] text-slate-600 font-mono">${new Date(e.createdAt.seconds*1000).toLocaleTimeString()}</span>
                             </div>`;
                     });
 
-                    // Renderiza o Card Expansível
                     feedContainer.innerHTML += `
                         <div class="feed-session">
                             <div class="feed-header" onclick="this.nextElementSibling.classList.toggle('open')">
