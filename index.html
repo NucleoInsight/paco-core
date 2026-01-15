@@ -5,154 +5,110 @@
     <title>Oferta Especial</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    
     <style>
-        /* BASE CSS */
+        /* TEMA DINÂMICO */
         body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; transition: 0.3s; }
         
-        /* TEMAS */
-        body.dark { background-color: #0b0c15; color: #ffffff; }
+        /* DARK MODE (Padrão) */
+        body.dark { background-color: #0b0c15; color: white; }
         body.dark .container { background-color: #1e293b; border: 1px solid rgba(255,255,255,0.05); }
-        body.dark .price-tag { color: #10b981; }
         body.dark .btn { background: #10b981; color: #064e3b; }
-        
-        body.clean { background-color: #f8fafc; color: #1e293b; }
-        body.clean .container { background-color: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        body.clean .price-tag { color: #2563eb; }
-        body.clean .btn { background: #2563eb; color: #ffffff; }
+        body.dark .price { color: #10b981; }
 
-        /* MODO TESTE VISUAL */
-        .test-banner { background: #f59e0b; color: #000; text-align: center; font-size: 10px; font-weight: bold; padding: 5px; text-transform: uppercase; position: fixed; top: 0; width: 100%; z-index: 1000; display: none; }
+        /* CLEAN MODE */
+        body.clean { background-color: #f1f5f9; color: #1e293b; }
+        body.clean .container { background-color: white; border: 1px solid #cbd5e1; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        body.clean .btn { background: #2563eb; color: white; }
+        body.clean .price { color: #2563eb; }
 
         .wrapper { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .container { max-width: 500px; width: 100%; padding: 40px; border-radius: 16px; text-align: left; position: relative; }
-        
+        .container { max-width: 500px; width: 100%; padding: 40px; border-radius: 16px; position: relative; }
         h1 { font-size: 26px; font-weight: 800; line-height: 1.2; margin-bottom: 20px; }
-        p { font-size: 16px; line-height: 1.6; margin-bottom: 20px; white-space: pre-wrap; }
-        
+        p { font-size: 16px; line-height: 1.6; margin-bottom: 20px; white-space: pre-wrap; opacity: 0.9; }
+        .btn { width: 100%; padding: 18px; font-size: 18px; font-weight: 800; border-radius: 8px; border: none; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
+        .price { font-size: 32px; font-weight: 900; margin: 20px 0; display: block; }
         .video-box { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px; margin-bottom: 20px; background: black; display: none; }
         .video-box iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-
-        .price-tag { font-size: 32px; font-weight: 900; margin: 20px 0; display: block; }
-        .btn { width: 100%; padding: 18px; font-size: 18px; font-weight: 800; border-radius: 8px; border: none; cursor: pointer; text-transform: uppercase; }
         
-        #loading { position: fixed; inset: 0; z-index: 999; display: flex; justify-content: center; align-items: center; font-weight: bold; background: #0b0c15; color: #10b981; }
+        #test-banner { background: #f59e0b; color: black; text-align: center; font-size: 10px; font-weight: bold; padding: 5px; position: fixed; top: 0; width: 100%; z-index: 999; display: none; }
         .hidden { display: none !important; }
     </style>
 </head>
-<body class="dark"> 
-
-    <div id="test-banner" class="test-banner">🧪 MODO DE TESTE ATIVADO - DADOS NÃO CONTABILIZADOS</div>
-    <div id="loading">CARREGANDO...</div>
+<body class="dark">
+    <div id="test-banner">🧪 MODO TESTE - DADOS SEPARADOS</div>
+    <div id="loading" style="position:fixed; inset:0; background:#000; color:#0f0; display:flex; justify-content:center; align-items:center; z-index:998;">CARREGANDO...</div>
 
     <div class="wrapper">
         <div id="app" class="container hidden">
             <h1 id="headline">...</h1>
             <div id="videoArea" class="video-box"><iframe id="videoFrame" src="" frameborder="0" allowfullscreen></iframe></div>
             <p id="bodyText">...</p>
-            <div class="price-tag">R$ <span id="price">...</span></div>
+            <div class="price">R$ <span id="price">...</span></div>
             <button id="buyBtn" class="btn">...</button>
-            <div style="margin-top:20px; text-align:center; font-size:11px; opacity:0.6;">Site Seguro</div>
+            <div style="margin-top:20px; text-align:center; font-size:11px; opacity:0.5;">Compra Segura</div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, addDoc, collection, serverTimestamp, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
-        // Gera ID de Sessão (Para rastrear o mesmo usuário no feed)
-        const getSessionId = () => {
-            let sid = sessionStorage.getItem('paco_sid');
-            if(!sid) { sid = Math.random().toString(36).substring(2, 15); sessionStorage.setItem('paco_sid', sid); }
-            return sid;
-        };
-
         async function init() {
             const params = new URLSearchParams(window.location.search);
             const offerId = params.get('id');
-            const isTest = params.get('mode') === 'test'; // Detecta Modo Teste
+            const isTest = params.get('mode') === 'test';
 
-            if (!offerId) { document.getElementById('loading').innerText = "Erro: Link inválido."; return; }
-
-            // Se for teste, avisa visualmente
-            if(isTest) {
-                document.getElementById('test-banner').style.display = 'block';
-                console.log("⚠️ MODO TESTE: Eventos marcados com isTest=true");
-            }
+            if(!offerId) return document.getElementById('loading').innerText = "Erro: Link inválido";
+            if(isTest) document.getElementById('test-banner').style.display = 'block';
 
             try {
                 const docSnap = await getDoc(doc(db, "offers", offerId));
-                if (docSnap.exists()) {
+                if(docSnap.exists()) {
                     const data = docSnap.data();
+                    
+                    // 1. APLICA LAYOUT
+                    if(data.layout === 'clean') document.body.className = 'clean';
+                    
+                    // 2. PREENCHE DADOS
+                    document.getElementById('headline').innerText = data.headline;
+                    document.getElementById('bodyText').innerText = data.bodyText;
+                    document.getElementById('price').innerText = data.price;
+                    document.getElementById('buyBtn').innerText = data.ctaText;
 
-                    // 1. RENDERIZAÇÃO
-                    if (data.layout === 'clean') { document.body.className = 'clean'; } else { document.body.className = 'dark'; }
-                    document.getElementById('headline').innerText = data.headline || "";
-                    document.getElementById('bodyText').innerText = data.bodyText || "";
-                    document.getElementById('price').innerText = data.price || "";
-                    document.getElementById('buyBtn').innerText = data.ctaText || "COMPRAR";
-
-                    if (data.videoUrl && data.videoUrl.length > 5) {
-                        let vUrl = data.videoUrl;
-                        if(vUrl.includes("watch?v=")) vUrl = vUrl.replace("watch?v=", "embed/");
-                        document.getElementById('videoFrame').src = vUrl;
+                    // 3. VÍDEO INTELIGENTE
+                    if(data.videoUrl && data.videoUrl.length > 5) {
+                        let url = data.videoUrl.replace("watch?v=", "embed/").replace("youtu.be/", "www.youtube.com/embed/");
+                        document.getElementById('videoFrame').src = url;
                         document.getElementById('videoArea').style.display = "block";
                     }
 
                     document.getElementById('loading').classList.add('hidden');
                     document.getElementById('app').classList.remove('hidden');
 
-                    // 2. RASTREAMENTO (TRACKER)
-                    const sessionID = getSessionId();
-                    
-                    // Salva View no Eventos
-                    await addDoc(collection(db, "events"), { 
-                        offerId: offerId, 
-                        type: "offer_view", 
-                        isTest: isTest, // O SEGREDINHO TA AQUI
-                        sessionId: sessionID,
-                        createdAt: serverTimestamp() 
+                    // 4. ENVIA SINAL AO FEED (AQUI ESTAVA O PROBLEMA)
+                    await addDoc(collection(db, "events"), {
+                        offerId: offerId,
+                        type: "offer_view", // O painel procura ISSO
+                        isTest: isTest,
+                        createdAt: serverTimestamp()
                     });
 
-                    // Se NÃO for teste, atualiza o contador oficial da oferta
-                    if(!isTest) {
-                        // Tenta buscar a métrica associada (isso exige saber o ID do documento metrics, 
-                        // como não sabemos, vamos confiar que o Painel vai ler a collection 'events' e somar, ou usamos Cloud Functions depois. 
-                        // Por enquanto, o feed do painel já vai funcionar).
-                    }
-
-                    // 3. CHECKOUT
+                    // 5. CHECKOUT
                     document.getElementById('buyBtn').onclick = async () => {
-                        const btn = document.getElementById('buyBtn');
-                        const originalText = btn.innerText;
-                        btn.innerText = "AGUARDE...";
-                        btn.style.opacity = 0.6;
-
-                        // Salva Clique
-                        await addDoc(collection(db, "events"), { 
-                            offerId: offerId, 
-                            type: "cta_click", 
+                        await addDoc(collection(db, "events"), {
+                            offerId: offerId,
+                            type: "cta_click", // O painel procura ISSO
                             isTest: isTest,
-                            sessionId: sessionID,
-                            createdAt: serverTimestamp() 
+                            createdAt: serverTimestamp()
                         });
-
-                        if (data.checkoutUrl) {
-                            let url = data.checkoutUrl.trim();
-                            if (!url.startsWith("http")) url = "https://" + url;
-                            window.location.href = url;
-                        } else {
-                            alert("Link de pagamento não configurado!");
-                            btn.innerText = originalText;
-                            btn.style.opacity = 1;
-                        }
+                        if(data.checkoutUrl) window.location.href = data.checkoutUrl.startsWith('http') ? data.checkoutUrl : 'https://'+data.checkoutUrl;
+                        else alert("Link de checkout não configurado.");
                     };
-
-                } else { document.getElementById('loading').innerText = "Oferta não encontrada"; }
-            } catch (error) { console.error(error); }
+                }
+            } catch(e) { console.error(e); }
         }
         init();
     </script>
