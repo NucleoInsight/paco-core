@@ -1,97 +1,161 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PACO - Painel V8 (Multi-Layout)</title>
+    <title>PACO | Ultimate Dashboard</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: 0 auto; }
-        .hidden { display: none; }
+        body { background-color: #0b0c15; color: #a5b4fc; font-family: 'Inter', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
         
-        /* LOGIN */
-        #login-screen { text-align: center; margin-top: 100px; }
-        input.login-input { padding: 15px; background: #1e293b; color: white; border: none; margin-bottom: 10px; width: 250px; border-radius: 5px; }
-        
-        /* BOTÕES */
-        button { padding: 10px 20px; cursor: pointer; font-weight: bold; border: none; border-radius: 5px; margin-left: 5px; }
-        .btn-green { background: #10b981; color: white; }
-        .btn-red { background: #ef4444; color: white; }
-        .btn-blue { background: #3b82f6; color: white; }
-        .btn-trash { background: #334155; color: #ef4444; font-size: 14px; padding: 5px 10px; border: 1px solid #ef4444; }
+        /* Vidro (Glassmorphism) */
+        .glass-panel { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; }
+        .glass-panel:hover { border-color: rgba(99, 102, 241, 0.3); }
 
-        /* CARTÃO DA OFERTA */
-        .card { background: #1e293b; padding: 25px; margin-bottom: 25px; border-radius: 12px; border-left: 6px solid gray; position: relative; }
-        .card.verde { border-left-color: #10b981; } 
-        .card.vermelho { border-left-color: #ef4444; }
-
-        /* CAMPOS */
-        input.edit-field, textarea.edit-field, select.edit-field { 
-            background: #0f172a; border: 1px solid #334155; color: white; padding: 10px; 
-            border-radius: 6px; width: 96%; font-family: sans-serif; margin-bottom: 10px;
-        }
-        textarea.edit-field { height: 70px; resize: vertical; }
-        label { font-size: 11px; color: #94a3b8; display: block; margin-top: 5px; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+        /* Inputs Bonitos */
+        .input-dark { background: #0f172a; border: 1px solid #334155; color: white; padding: 10px; border-radius: 8px; width: 100%; transition: 0.2s; font-size: 13px; }
+        .input-dark:focus { border-color: #6366f1; outline: none; box-shadow: 0 0 10px rgba(99, 102, 241, 0.2); }
         
-        .row { display: flex; gap: 15px; } 
-        .col { flex: 1; }
-        .card-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #334155; padding-bottom: 10px; margin-bottom: 15px; }
+        /* Status */
+        .status-dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .bg-verde { background-color: #10b981; box-shadow: 0 0 8px #10b981; }
+        .bg-vermelho { background-color: #ef4444; }
+        .bg-amarelo { background-color: #f59e0b; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0b0c15; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        
+        .hidden { display: none !important; }
     </style>
 </head>
-<body>
+<body class="min-h-screen p-4 md:p-8">
 
-    <div class="container">
-        <div id="login-screen">
-            <h2 style="color:#10b981;">PACO V8 (4 Modelos)</h2>
-            <input type="email" id="email" class="login-input" placeholder="Email"><br>
-            <input type="password" id="password" class="login-input" placeholder="Senha"><br>
-            <button onclick="fazerLogin()" class="btn-green">ENTRAR</button>
-            <p id="error-msg" style="color:red; margin-top:10px;"></p>
+    <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#0b0c15]">
+        <div class="glass-panel p-8 w-full max-w-md text-center">
+            <h1 class="text-3xl font-black text-white tracking-tight mb-2">PACO <span class="text-indigo-500">ULTIMATE</span></h1>
+            <p class="text-xs text-slate-400 mb-6 font-mono">Plataforma de Ativação e Conversão</p>
+            <input type="email" id="email" class="input-dark mb-3" placeholder="Email de Admin">
+            <input type="password" id="password" class="input-dark mb-6" placeholder="Senha">
+            <button onclick="fazerLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-indigo-500/20">ACESSAR SISTEMA</button>
+            <p id="error-msg" class="text-red-400 text-xs mt-4"></p>
         </div>
+    </div>
 
-        <div id="dashboard" class="hidden">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-                <h1>Gerenciador de Ofertas</h1>
-                <div>
-                    <button onclick="criarNovaOferta()" class="btn-green">+ NOVA OFERTA</button>
-                    <button onclick="logout()" class="btn-red">Sair</button>
+    <div id="dashboard" class="max-w-7xl mx-auto hidden">
+        
+        <header class="flex flex-col md:flex-row justify-between items-end mb-8 border-b border-indigo-900/30 pb-4 gap-4">
+            <div>
+                <h1 class="text-2xl font-black text-white tracking-tight">PACO <span class="text-indigo-500">CONTROL</span></h1>
+                <div class="flex items-center gap-2 mt-1">
+                    <span class="status-dot bg-verde animate-pulse"></span>
+                    <p class="text-xs text-emerald-400 font-mono">SISTEMA ONLINE</p>
                 </div>
             </div>
-            <div id="lista-ofertas">Carregando dados...</div>
+            <div class="flex gap-2">
+                <button onclick="criarNovaOferta()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2">
+                    <span>+</span> NOVA OFERTA
+                </button>
+                <button onclick="logout()" class="bg-slate-800 hover:bg-red-900/50 text-slate-300 hover:text-red-200 px-4 py-2 rounded-lg text-xs font-bold transition border border-slate-700">
+                    SAIR
+                </button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <div class="lg:col-span-2 space-y-6">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                        <svg class="w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        OFERTAS ATIVAS
+                    </h2>
+                    <button onclick="carregarPainel()" class="text-xs text-indigo-400 hover:text-white transition">↻ Atualizar</button>
+                </div>
+
+                <div id="lista-ofertas" class="space-y-6">
+                    <div class="text-center py-10 text-slate-500 font-mono animate-pulse">Carregando ofertas do Firebase...</div>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                
+                <div class="glass-panel p-0 overflow-hidden flex flex-col h-[500px]">
+                    <div class="p-4 border-b border-white/5 bg-slate-900/50 flex justify-between items-center">
+                        <h3 class="text-xs font-bold text-white flex items-center gap-2">
+                            <span class="status-dot bg-verde animate-pulse"></span> FEED AO VIVO
+                        </h3>
+                        <span class="text-[9px] bg-indigo-500/20 text-indigo-300 px-2 py-1 rounded font-mono">REALTIME</span>
+                    </div>
+                    <div id="live-feed" class="overflow-y-auto p-3 space-y-2 flex-1 font-mono text-xs">
+                        <p class="text-center text-slate-600 mt-10">Aguardando eventos...</p>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-4">
+                    <h3 class="text-xs font-bold text-white mb-4">PERFORMANCE GERAL</h3>
+                    <canvas id="globalChart" height="200"></canvas>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, addDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, addDoc, deleteDoc, serverTimestamp, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
-        const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
+        // CONFIGURAÇÃO (Sua Configuração Real)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg",
+            authDomain: "paco-core.firebaseapp.com",
+            projectId: "paco-core",
+            storageBucket: "paco-core.firebasestorage.app",
+            messagingSenderId: "88467987691",
+            appId: "1:88467987691:web:85892f360253aa957c72ae"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
 
         // --- AUTH ---
-        window.fazerLogin = async () => { try { await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); } catch(e) { document.getElementById('error-msg').innerText = e.message; } }
+        window.fazerLogin = async () => { 
+            try { await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); } 
+            catch(e) { document.getElementById('error-msg').innerText = e.message; } 
+        }
         window.logout = () => signOut(auth);
-        onAuthStateChanged(auth, (user) => { if(user) { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('dashboard').classList.remove('hidden'); carregarPainel(); } });
+        
+        onAuthStateChanged(auth, (user) => { 
+            if(user) { 
+                document.getElementById('login-screen').classList.add('hidden'); 
+                document.getElementById('dashboard').classList.remove('hidden'); 
+                carregarPainel();
+                iniciarLiveFeed();
+            } 
+        });
 
-        // --- FUNÇÕES ---
-
+        // --- FUNÇÕES DE OFERTA ---
         window.criarNovaOferta = async () => {
-            if(!confirm("Criar nova oferta?")) return;
+            if(!confirm("Criar nova oferta em branco?")) return;
             const ref = await addDoc(collection(db, "offers"), {
-                headline: "Nova Oferta", bodyText: "Texto da oferta...", ctaText: "QUERO COMPRAR", price: "4,99", 
-                layout: "index.html", videoUrl: "", createdAt: serverTimestamp()
+                headline: "Nova Oferta Incrível", bodyText: "Texto persuasivo aqui...", ctaText: "QUERO COMPRAR", price: "4,99", layout: "index.html", videoUrl: "", createdAt: serverTimestamp()
             });
             await addDoc(collection(db, "metrics"), { offerId: ref.id, sales: 0, revenue: 0, views: 0, statusVisual: "cinza" });
             carregarPainel();
         }
 
-        window.excluirOferta = async (metricId) => {
-            if(!confirm("⚠️ EXCLUIR?")) return;
-            try { await deleteDoc(doc(db, "metrics", metricId)); carregarPainel(); } catch(e) { alert(e.message); }
-        }
-
         window.salvarTudo = async (offerId, metricId) => {
+            const btn = document.getElementById(`btn-save-${offerId}`);
+            const originalText = btn.innerText;
+            btn.innerText = "Salvando...";
             try {
                 await updateDoc(doc(db, "offers", offerId), {
                     headline: document.getElementById(`headline-${offerId}`).value,
@@ -103,84 +167,195 @@
                 });
                 await updateDoc(doc(db, "metrics", metricId), {
                     sales: Number(document.getElementById(`sales-${metricId}`).value),
-                    revenue: Number(document.getElementById(`rev-${metricId}`).value),
                     views: Number(document.getElementById(`views-${metricId}`).value),
                     statusVisual: document.getElementById(`status-${metricId}`).value
                 });
-                alert("✅ Salvo!");
-                carregarPainel();
-            } catch(e) { alert("Erro: " + e.message); }
+                btn.innerText = "✅ SALVO!";
+                setTimeout(() => btn.innerText = originalText, 2000);
+            } catch(e) { alert("Erro: " + e.message); btn.innerText = "Erro"; }
         }
 
-        async function carregarPainel() {
-            const container = document.getElementById('lista-ofertas'); container.innerHTML = "Carregando..."; 
+        window.excluirOferta = async (metricId) => {
+            if(confirm("⚠️ Excluir oferta do painel?")) {
+                await deleteDoc(doc(db, "metrics", metricId));
+                carregarPainel();
+            }
+        }
+
+        // --- CARREGAMENTO DO PAINEL ---
+        window.carregarPainel = async () => {
+            const container = document.getElementById('lista-ofertas');
+            container.innerHTML = '<div class="text-center text-slate-500 animate-pulse">Atualizando...</div>';
+            
             const snaps = await getDocs(collection(db, "metrics"));
             if(snaps.empty) { container.innerHTML = "Nenhuma oferta."; return; }
             container.innerHTML = "";
 
-            snaps.forEach(async (mDoc) => {
+            let totalViews = 0;
+            let totalSales = 0;
+
+            for (const mDoc of snaps.docs) {
                 const m = mDoc.data();
                 const offerId = m.offerId;
-                let o = { headline:"", layout:"index.html", videoUrl:"" };
+                let o = { headline:"Carregando...", layout:"index.html" };
                 try { const os = await getDoc(doc(db, "offers", offerId)); if(os.exists()) o = os.data(); } catch(e){}
 
-                // LINK INTELIGENTE
+                // Cálculos para o gráfico global
+                totalViews += (m.views || 0);
+                totalSales += (m.sales || 0);
+
+                // Cor do Status
+                let borderClass = "border-l-4 border-gray-500";
+                let statusColor = "text-gray-400";
+                if(m.statusVisual === 'verde') { borderClass = "border-l-4 border-emerald-500"; statusColor = "text-emerald-400"; }
+                if(m.statusVisual === 'vermelho') { borderClass = "border-l-4 border-red-500"; statusColor = "text-red-400"; }
+
+                const isVideo = o.layout === 'vsl.html';
                 const linkFinal = `${o.layout}?id=${offerId}`;
 
+                // HTML DO CARD (ESTILO SNIPER)
                 const html = `
-                    <div class="card ${m.statusVisual}">
-                        <div class="card-header">
-                            <div><h3 style="margin:0; color:#fff;">${offerId}</h3></div>
-                            <button onclick="excluirOferta('${mDoc.id}')" class="btn-trash">🗑️</button>
+                <div class="glass-panel p-6 ${borderClass}">
+                    <div class="flex justify-between items-start mb-4 border-b border-white/5 pb-4">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs bg-slate-800 px-2 py-1 rounded text-slate-300 font-mono">ID: ${offerId.substring(0,6)}...</span>
+                                <span class="text-xs font-bold ${statusColor} uppercase">${m.statusVisual}</span>
+                            </div>
+                            <h3 class="text-lg font-bold text-white mt-1">${o.headline.substring(0, 40)}...</h3>
                         </div>
+                        <div class="flex gap-2">
+                            <a href="./${linkFinal}" target="_blank" class="text-xs bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500 hover:text-white border border-indigo-500/30 px-3 py-1.5 rounded transition">👁️ VER</a>
+                            <button onclick="excluirOferta('${mDoc.id}')" class="text-xs bg-slate-800 text-slate-400 hover:text-red-400 px-3 py-1.5 rounded transition">🗑️</button>
+                        </div>
+                    </div>
 
-                        <div style="background:#111; padding:15px; border-radius:8px; margin-bottom:15px; border:1px dashed #444;">
-                            <div class="row">
-                                <div class="col">
-                                    <label style="color:#00ff88;">MODELO VISUAL</label>
-                                    <select id="layout-${offerId}" class="edit-field">
-                                        <option value="index.html" ${o.layout === 'index.html' ? 'selected' : ''}>⬛ Dark Mode (Texto)</option>
-                                        <option value="clean.html" ${o.layout === 'clean.html' ? 'selected' : ''}>⬜ Clean Mode (Branco)</option>
-                                        <option value="vsl.html" ${o.layout === 'vsl.html' ? 'selected' : ''}>🎥 Vídeo (VSL)</option>
-                                        <option value="artigo.html" ${o.layout === 'artigo.html' ? 'selected' : ''}>📰 Advertorial (Notícia)</option>
-                                    </select>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-3">
+                            <div>
+                                <label class="text-[10px] uppercase font-bold text-slate-500">Modelo da Página</label>
+                                <select id="layout-${offerId}" class="input-dark">
+                                    <option value="index.html" ${!isVideo?'selected':''}>📄 Dark Mode (Texto)</option>
+                                    <option value="clean.html" ${o.layout==='clean.html'?'selected':''}>⬜ Clean (Branco)</option>
+                                    <option value="vsl.html" ${isVideo?'selected':''}>🎥 Vídeo (VSL)</option>
+                                    <option value="artigo.html" ${o.layout==='artigo.html'?'selected':''}>📰 Advertorial</option>
+                                </select>
+                            </div>
+                            ${isVideo ? `
+                            <div>
+                                <label class="text-[10px] uppercase font-bold text-slate-500">Link YouTube</label>
+                                <input type="text" id="video-${offerId}" value="${o.videoUrl||''}" class="input-dark" placeholder="Embed URL">
+                            </div>` : `<input type="hidden" id="video-${offerId}" value="">`}
+                            
+                            <div>
+                                <label class="text-[10px] uppercase font-bold text-slate-500">Headline</label>
+                                <input type="text" id="headline-${offerId}" value="${o.headline}" class="input-dark">
+                            </div>
+                            <div>
+                                <label class="text-[10px] uppercase font-bold text-slate-500">Corpo do Texto</label>
+                                <textarea id="body-${offerId}" class="input-dark h-16">${o.bodyText||''}</textarea>
+                            </div>
+                            <div class="flex gap-3">
+                                <div class="w-1/2">
+                                    <label class="text-[10px] uppercase font-bold text-slate-500">Botão CTA</label>
+                                    <input type="text" id="cta-${offerId}" value="${o.ctaText||'COMPRAR'}" class="input-dark">
                                 </div>
-                                <div class="col">
-                                    <label>Link Vídeo (Opcional)</label>
-                                    <input type="text" class="edit-field" id="video-${offerId}" value="${o.videoUrl || ''}">
+                                <div class="w-1/2">
+                                    <label class="text-[10px] uppercase font-bold text-slate-500">Preço</label>
+                                    <input type="text" id="price-${offerId}" value="${o.price}" class="input-dark">
                                 </div>
                             </div>
                         </div>
 
-                        <label>Headline</label><input type="text" class="edit-field" id="headline-${offerId}" value="${o.headline}">
-                        <label>Texto</label><textarea class="edit-field" id="body-${offerId}">${o.bodyText || ''}</textarea>
-                        <div class="row">
-                            <div class="col"><label>Botão</label><input type="text" class="edit-field" id="cta-${offerId}" value="${o.ctaText}"></div>
-                            <div class="col"><label>Preço</label><input type="text" class="edit-field" id="price-${offerId}" value="${o.price}"></div>
-                        </div>
-                        
-                        <div style="background:#2d3748; padding:10px; border-radius:5px; margin-top:10px;">
-                            <div class="row">
-                                <div class="col"><label>Views</label><input type="number" class="edit-field" id="views-${mDoc.id}" value="${m.views||0}"></div>
-                                <div class="col"><label>Vendas</label><input type="number" class="edit-field" id="sales-${mDoc.id}" value="${m.sales||0}"></div>
-                                <div class="col"><label>Status</label>
-                                    <select id="status-${mDoc.id}" class="edit-field">
-                                        <option value="cinza" ${m.statusVisual==='cinza'?'selected':''}>🟡 Teste</option>
+                        <div class="bg-slate-900/50 p-4 rounded-lg border border-white/5 flex flex-col justify-between">
+                            <div>
+                                <label class="text-[10px] uppercase font-bold text-indigo-400 mb-2 block">Performance Manual</label>
+                                <div class="grid grid-cols-2 gap-3 mb-4">
+                                    <div>
+                                        <span class="text-xs text-slate-400 block">Views</span>
+                                        <input type="number" id="views-${mDoc.id}" value="${m.views||0}" class="input-dark text-center font-bold">
+                                    </div>
+                                    <div>
+                                        <span class="text-xs text-slate-400 block">Vendas</span>
+                                        <input type="number" id="sales-${mDoc.id}" value="${m.sales||0}" class="input-dark text-center font-bold text-emerald-400">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] uppercase font-bold text-slate-500">Status</label>
+                                    <select id="status-${mDoc.id}" class="input-dark">
+                                        <option value="cinza" ${m.statusVisual==='cinza'?'selected':''}>🟡 Em Teste</option>
                                         <option value="verde" ${m.statusVisual==='verde'?'selected':''}>🟢 Validada</option>
                                         <option value="vermelho" ${m.statusVisual==='vermelho'?'selected':''}>🔴 Reprovada</option>
                                     </select>
                                 </div>
                             </div>
+                            
+                            <button id="btn-save-${offerId}" onclick="salvarTudo('${offerId}', '${mDoc.id}')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded text-xs transition mt-4 shadow-lg shadow-indigo-500/20">
+                                💾 SALVAR ALTERAÇÕES
+                            </button>
                         </div>
-
-                        <div style="margin-top:20px; text-align:right;">
-                            <a href="./${linkFinal}" target="_blank" style="color:#00ff88; text-decoration:none; margin-right:15px; font-weight:bold;">VER SITE ↗</a>
-                            <button class="btn-blue" onclick="salvarTudo('${offerId}', '${mDoc.id}')">💾 SALVAR</button>
-                        </div>
-                    </div>`;
+                    </div>
+                </div>`;
                 container.innerHTML += html;
+            }
+            
+            atualizarGraficoGlobal(totalViews, totalSales);
+        }
+
+        // --- LIVE FEED & CHART ---
+        function iniciarLiveFeed() {
+            const feed = document.getElementById('live-feed');
+            const q = query(collection(db, "events"), orderBy("createdAt", "desc"), limit(20));
+            
+            onSnapshot(q, (snapshot) => {
+                feed.innerHTML = "";
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const time = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleTimeString() : "--:--";
+                    let icon = "🔹";
+                    let color = "text-slate-400";
+                    
+                    if(data.type === 'cta_click') { icon = "💰"; color = "text-emerald-400 font-bold"; }
+                    if(data.type === 'offer_view') { icon = "👀"; color = "text-indigo-300"; }
+                    if(data.type === 'vsl_view') { icon = "🎥"; color = "text-red-300"; }
+
+                    feed.innerHTML += `
+                        <div class="flex justify-between items-center border-b border-white/5 py-2">
+                            <div class="flex items-center gap-2">
+                                <span>${icon}</span>
+                                <span class="${color}">${data.type.toUpperCase().replace('_', ' ')}</span>
+                            </div>
+                            <span class="text-slate-600">${time}</span>
+                        </div>
+                    `;
+                });
             });
         }
+
+        function atualizarGraficoGlobal(views, sales) {
+            const ctx = document.getElementById('globalChart').getContext('2d');
+            if(window.myChart) window.myChart.destroy();
+            
+            window.myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Sem Venda', 'Vendas'],
+                    datasets: [{
+                        data: [views - sales, sales],
+                        backgroundColor: ['#1e293b', '#10b981'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    cutout: '70%',
+                    plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } } }
+                }
+            });
+        }
+
+        // Inicializa login check
+        onAuthStateChanged(auth, (u) => { if(u) carregarPainel(); });
+
     </script>
 </body>
 </html>
