@@ -3,161 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper PACO | V36 (FIXED)</title>
-    
+    <title>Sniper PACO | V37 (Clean & Stable)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    
     <style>
         body { background-color: #0b0c15; color: #a5b4fc; font-family: 'Inter', sans-serif; }
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
         .glass-panel { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; }
         .glass-input { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(51, 65, 85, 0.5); color: white; padding: 10px; border-radius: 8px; width: 100%; font-size: 13px; margin-bottom: 5px; }
         .glass-input:focus { border-color: #6366f1; outline: none; }
-        .toggle-checkbox:checked { right: 0; border-color: #10b981; }
-        .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
-        .hidden { display: none !important; }
-        .metric-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; font-weight: 700; }
-        .metric-value { font-size: 1.25rem; font-weight: 800; color: white; line-height: 1; margin-top: 4px; }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #0b0c15; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-        
         .feed-session { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 5px; border-radius: 6px; }
-        .feed-session:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
         .feed-header { padding: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .feed-body { display: none; background: rgba(0,0,0,0.3); border-top: 1px solid rgba(255,255,255,0.05); padding: 5px; }
         .feed-body.open { display: block; }
-        .tag-source { background: #334155; color: #cbd5e1; padding: 1px 4px; border-radius: 3px; font-size: 9px; font-weight: bold; border: 1px solid #475569; }
-
-        @media print {
-            body { background-color: white !important; color: black !important; }
-            .no-print, button, #login-screen { display: none !important; }
-            .glass-panel { border: 1px solid #ccc !important; background: none !important; color: black !important; box-shadow: none !important; }
-            .text-white { color: black !important; }
-            .text-slate-400 { color: #666 !important; }
-            canvas { max-height: 250px; }
-        }
+        .hidden { display: none !important; }
+        ::-webkit-scrollbar { width: 5px; background: #0b0c15; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
     </style>
 </head>
 <body class="p-4 md:p-8 min-h-screen">
 
     <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#0b0c15]">
         <div class="glass-panel p-8 w-full max-w-md text-center">
-            <h1 class="text-3xl font-black text-white tracking-tight mb-2">SNIPER <span class="text-indigo-500">PACO</span></h1>
+            <h1 class="text-3xl font-black text-white tracking-tight mb-6">SNIPER <span class="text-indigo-500">PACO</span></h1>
             <input type="email" id="email" class="glass-input mb-3" placeholder="Email" value="gilvanxavierborges@gmail.com">
             <input type="password" id="password" class="glass-input mb-6" placeholder="Senha">
-            <button onclick="fazerLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition">ACESSAR SISTEMA</button>
+            <button onclick="fazerLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg">ACESSAR</button>
             <p id="error-msg" class="text-red-400 text-xs mt-4"></p>
         </div>
     </div>
 
     <div id="dashboard" class="max-w-7xl mx-auto hidden">
-        <header class="flex flex-col md:flex-row justify-between items-end mb-10 border-b border-indigo-900/30 pb-4 gap-4">
-            <div>
-                <h1 class="text-3xl font-black text-white tracking-tight">SNIPER <span class="text-indigo-500">ANALYTICS</span></h1>
-                <p class="text-xs text-indigo-400 mt-1">Gestão de Ofertas & Link Automático</p>
-            </div>
-            <div class="flex flex-wrap items-center gap-4">
-                <div class="glass-panel px-3 py-2 border-indigo-500/50">
-                    <label class="text-[9px] text-indigo-400 uppercase font-bold block">Oferta Ativa</label>
-                    <select id="offer-selector" onchange="carregarDadosDaOferta()" class="bg-transparent text-white font-bold text-sm outline-none w-48 cursor-pointer"></select>
+        <header class="flex justify-between items-center mb-10 pb-4 border-b border-indigo-900/30">
+            <h1 class="text-2xl font-bold text-white">PACO <span class="text-indigo-500">V37</span></h1>
+            <div class="flex gap-4 items-center">
+                <select id="offer-selector" onchange="carregarDadosDaOferta()" class="bg-slate-800 text-white text-xs p-2 rounded w-48"></select>
+                <div class="flex items-center gap-2 text-xs text-slate-400">
+                    <input type="checkbox" id="toggle-test" onchange="carregarDadosDaOferta()"> Teste
                 </div>
-                <div class="flex items-center gap-2 bg-slate-800/50 p-2 rounded-lg border border-slate-700 no-print">
-                    <span class="text-[10px] text-slate-400 uppercase font-bold">Modo Teste</span>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="toggle-test" class="sr-only peer" onchange="carregarDadosDaOferta()">
-                        <div class="w-9 h-5 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:bg-amber-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
-                    </label>
-                </div>
-                <div class="flex gap-2 no-print">
-                    <button onclick="copiarRelatorio()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">📋 COPIAR</button>
-                    <button onclick="window.print()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">🖨️ PDF</button>
-                    <button onclick="criarNovaOferta()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1"><span>+</span> NOVA</button>
-                    <button onclick="carregarDadosDaOferta()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">🔄</button>
-                    <button onclick="logout()" class="bg-slate-800 text-slate-300 px-3 py-2 rounded-lg text-xs font-bold border border-slate-700">SAIR</button>
-                </div>
+                <button onclick="logout()" class="bg-slate-800 text-white px-3 py-1 rounded text-xs">SAIR</button>
             </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="glass-panel p-6">
-                <h2 class="text-sm font-bold text-white mb-6 flex items-center gap-2">FUNIL DE RETENÇÃO</h2>
-                <div id="funnel-container" class="space-y-6"><div class="text-center text-slate-600 text-xs py-10 loading-pulse">Carregando dados...</div></div>
+                <h2 class="text-sm font-bold text-white mb-4">FUNIL</h2>
+                <div id="funnel-container" class="space-y-4 text-center text-slate-500 text-xs">Carregando...</div>
             </div>
 
             <div class="space-y-6">
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="glass-panel p-4 border-l-2 border-indigo-500"><p class="metric-label">Visitantes</p><p id="kpi-unique" class="metric-value">0</p></div>
-                    <div class="glass-panel p-4 border-l-2 border-emerald-500"><p class="metric-label">Checkout</p><p id="kpi-sales" class="metric-value">0</p></div>
-                    <div class="glass-panel p-4 border-l-2 border-pink-500"><p class="metric-label">Retenção Quiz</p><p id="kpi-retention" class="metric-value">0%</p></div>
-                    <div class="glass-panel p-4 border-l-2 border-amber-500"><p class="metric-label">Melhor Canal</p><p id="kpi-source" class="metric-value truncate text-base pt-1">...</p></div>
+                    <div class="glass-panel p-4 border-l-2 border-indigo-500"><p class="text-[10px] text-slate-400">VISITAS</p><p id="kpi-unique" class="text-xl font-bold text-white">0</p></div>
+                    <div class="glass-panel p-4 border-l-2 border-emerald-500"><p class="text-[10px] text-slate-400">CHECKOUT</p><p id="kpi-sales" class="text-xl font-bold text-white">0</p></div>
+                </div>
+                
+                <div class="glass-panel p-4 h-40 relative">
+                    <canvas id="sourceChart"></canvas>
                 </div>
 
                 <div class="glass-panel p-4">
-                    <h3 class="text-xs font-bold text-slate-500 mb-2 uppercase flex justify-between">Origem do Tráfego</h3>
-                    <div style="height: 150px; position: relative;"><canvas id="sourceChart"></canvas></div>
-                </div>
-
-                <div class="glass-panel p-4 border border-indigo-500/30">
-                    <div class="flex justify-between items-center mb-3">
-                        <h3 class="text-xs font-bold text-indigo-400 uppercase">CONFIGURAR OFERTA</h3>
-                        <a href="#" id="btn-open-test" target="_blank" class="text-[10px] text-amber-400 border border-amber-500/30 px-2 py-1 rounded hover:bg-amber-500/10">🧪 ABRIR TESTE</a>
-                    </div>
-                    <div class="space-y-1">
-                        <label>HEADLINE</label><input type="text" id="edit-headline" class="glass-input">
+                    <h3 class="text-xs font-bold text-indigo-400 mb-2">EDITOR RÁPIDO</h3>
+                    <div class="space-y-2">
+                        <input id="edit-headline" class="glass-input" placeholder="Headline">
                         <div class="flex gap-2">
-                            <div class="w-1/2"><label>LAYOUT</label>
-                                <select id="edit-layout" class="glass-input bg-slate-900">
-                                    <option value="dark">🌑 Dark Mode</option>
-                                    <option value="clean">⬜ Clean Mode</option>
-                                    <option value="artigo">📰 Artigo</option>
-                                    <option value="vsl">🎥 VSL</option>
-                                    <option value="quiz">🧩 QUIZ MODE</option>
-                                </select>
-                            </div>
-                            <div class="w-1/2"><label>PREÇO</label><input type="text" id="edit-price" class="glass-input text-center font-bold text-emerald-400"></div>
+                            <select id="edit-layout" class="glass-input bg-slate-900 w-1/2">
+                                <option value="dark">Dark</option>
+                                <option value="clean">Clean</option>
+                                <option value="artigo">Artigo</option>
+                                <option value="vsl">VSL</option>
+                                <option value="quiz">Quiz</option>
+                            </select>
+                            <input id="edit-price" class="glass-input w-1/2 text-center" placeholder="Preço">
                         </div>
-                        <label>CHECKOUT</label><input type="text" id="edit-checkout" class="glass-input border-emerald-500/30">
-                        <label>VÍDEO</label><input type="text" id="edit-video" class="glass-input">
-                        <div class="pt-2"><button onclick="salvarOfertaAtual()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg text-xs transition">💾 SALVAR ALTERAÇÕES</button></div>
+                        <input id="edit-video" class="glass-input" placeholder="Vídeo URL">
+                        <input id="edit-checkout" class="glass-input" placeholder="Checkout URL">
+                        <button onclick="salvarOfertaAtual()" class="w-full bg-indigo-600 text-white font-bold py-2 rounded text-xs">SALVAR</button>
                     </div>
                 </div>
             </div>
 
             <div class="glass-panel p-0 overflow-hidden flex flex-col h-[600px]">
-                <div class="p-4 border-b border-white/5 bg-slate-900/50 flex justify-between items-center">
-                    <h3 class="text-xs font-bold text-white">📡 FEED AO VIVO</h3>
-                    <span id="feed-badge" class="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded">REAL</span>
-                </div>
-                <div class="overflow-y-auto p-4 space-y-3 flex-1 custom-scroll" id="live-feed"><p class="text-center text-slate-600 mt-10 text-xs">Aguardando...</p></div>
+                <div class="p-3 border-b border-white/5 bg-slate-900/50 text-xs font-bold text-white">FEED EM TEMPO REAL</div>
+                <div id="live-feed" class="overflow-y-auto p-3 space-y-2 flex-1 text-xs text-slate-500 text-center">Aguardando...</div>
             </div>
         </div>
 
-        <div class="glass-panel p-6 mb-10 no-print border border-emerald-500/30">
-            <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">🔗 Encurtador Automático V2.0</h2>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                <div class="md:col-span-2"><label class="text-[10px] font-bold text-slate-500 uppercase">Nome Curto (Alias)</label><div class="flex"><span class="bg-slate-700 text-slate-300 p-2 text-xs rounded-l border border-slate-600">/r.html?id=</span><input type="text" id="short-alias" placeholder="ex: zap" class="w-full bg-slate-900 border border-slate-600 text-white text-xs p-2 focus:border-emerald-500 outline-none"></div></div>
-                <div><label class="text-[10px] font-bold text-emerald-500 uppercase">Origem (Source)</label><input type="text" id="utm-source" value="instagram" class="glass-input m-0"></div>
-                <div><label class="text-[10px] font-bold text-emerald-500 uppercase">Campanha</label><input type="text" id="utm-campaign" placeholder="stories" class="glass-input m-0"></div>
-            </div>
-            <button onclick="gerarLinkCurto()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg text-xs transition mb-4">💾 GERAR LINK RASTREÁVEL</button>
-            <div id="short-result" class="hidden bg-black/50 p-4 rounded border border-slate-700 flex justify-between items-center"><code id="final-link-display" class="text-white text-xs font-mono">...</code><button onclick="copiarLinkCurto()" class="text-[10px] bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded">COPIAR</button></div>
-        </div>
-
-        <div class="border border-red-900/30 bg-red-950/10 rounded-xl p-6 no-print flex justify-between items-center">
-            <div><h3 class="text-red-500 font-bold text-sm mb-1 uppercase">⚠️ Zona de Perigo</h3><p class="text-xs text-slate-400">Apagar dados de tráfego do modo atual.</p></div>
-            <div class="flex gap-4 items-center"><button onclick="limparDados()" class="bg-red-900/50 hover:bg-red-800 text-red-200 border border-red-800 px-4 py-2 rounded-lg text-xs font-bold transition">🗑️ LIMPAR DADOS</button><button onclick="excluirOferta()" class="text-slate-500 hover:text-red-500 text-xs underline">Excluir Oferta</button></div>
+        <div class="mt-8 flex gap-4">
+             <button onclick="criarNovaOferta()" class="bg-indigo-600 text-white px-4 py-2 rounded text-xs font-bold">+ NOVA OFERTA</button>
+             <button onclick="limparDados()" class="bg-red-900/50 text-red-200 px-4 py-2 rounded text-xs font-bold">LIMPAR DADOS</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, addDoc, deleteDoc, serverTimestamp, query, where, orderBy, limit, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, addDoc, deleteDoc, serverTimestamp, query, where, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // CONFIG (PACO-CORE - CORRETO)
+        // CONFIGURAÇÃO PACO-CORE (A ÚNICA QUE FUNCIONA PARA VOCÊ)
         const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
         
         const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
@@ -177,15 +119,9 @@
             carregarDadosDaOferta();
         }
 
-        window.criarNovaOferta = async () => { const headline = prompt("Headline:"); if(!headline) return; await addDoc(collection(db, "offers"), { headline: headline, bodyText: "...", ctaText: "COMPRAR", price: "9,90", layout: "dark", videoUrl: "", checkoutUrl: "", createdAt: serverTimestamp() }); location.reload(); }
-        window.copiarRelatorio = () => { const views = document.getElementById('kpi-unique').innerText; const clicks = document.getElementById('kpi-sales').innerText; navigator.clipboard.writeText(`📊 RELATÓRIO\nVisitas: ${views}\nCheckout: ${clicks}`).then(() => alert("Copiado!")); }
-
         window.carregarDadosDaOferta = async () => {
-            const select = document.getElementById('offer-selector');
-            currentOfferId = select.value;
+            currentOfferId = document.getElementById('offer-selector').value;
             const isTest = document.getElementById('toggle-test').checked;
-            document.getElementById('btn-open-test').href = `index.html?id=${currentOfferId}&mode=test`;
-            document.getElementById('feed-badge').innerText = isTest ? "MODO TESTE" : "DADOS REAIS";
 
             const docSnap = await getDoc(doc(db, "offers", currentOfferId));
             if(docSnap.exists()) {
@@ -197,8 +133,8 @@
                 document.getElementById('edit-checkout').value = d.checkoutUrl;
             }
 
-            const q = query(collection(db, "events"), where("offerId", "==", currentOfferId));
             if(unsubscribeFeed) unsubscribeFeed();
+            const q = query(collection(db, "events"), where("offerId", "==", currentOfferId));
             
             unsubscribeFeed = onSnapshot(q, (snapshot) => {
                 let views=0, clicks=0, sources={};
@@ -213,51 +149,51 @@
                 filtered.forEach(e => {
                     const sid = e.sessionId || 'anon';
                     let source = e.campaign?.source || 'direto';
-                    let campaign = e.campaign?.campaign || '';
-                    if(!sessions[sid]) sessions[sid] = { id: sid, events: [], source, campaign, time: e.createdAt?.seconds||0 };
+                    if(!sessions[sid]) sessions[sid] = { id: sid, events: [], source: source, time: e.createdAt?.seconds||0 };
                     
-                    if((sessions[sid].source==='direto'||sessions[sid].source==='encurtador') && (source!=='direto'&&source!=='encurtador')) {
-                        sessions[sid].source = source; sessions[sid].campaign = campaign;
+                    // Prioriza origem real
+                    if((sessions[sid].source === 'direto' || sessions[sid].source === 'encurtador') && (source !== 'direto' && source !== 'encurtador')) {
+                        sessions[sid].source = source;
                     }
                     sessions[sid].events.push(e);
                     if(e.type==='offer_view') views++;
                     if(e.type==='cta_click') clicks++;
                 });
 
-                Object.values(sessions).forEach(s => { if(s.source!=='encurtador') sources[s.source] = (sources[s.source]||0)+1; });
-                updateSourceChart(sources);
+                // Atualiza Gráfico
+                Object.values(sessions).forEach(s => { if(s.source !== 'encurtador') sources[s.source] = (sources[s.source]||0)+1; });
+                if(Object.keys(sources).length === 0) sources = {'Sem dados': 1};
+                
+                const ctx = document.getElementById('sourceChart');
+                if(myChart) myChart.destroy();
+                myChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(sources), datasets: [{ data: Object.values(sources), backgroundColor: ['#6366f1', '#10b981', '#f43f5e', '#f59e0b'], borderWidth:0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 9 }, color: '#94a3b8' } } } } });
+
                 document.getElementById('kpi-unique').innerText = Object.keys(sessions).length;
                 document.getElementById('kpi-sales').innerText = clicks;
                 
-                Object.values(sessions).sort((a,b) => b.time - a.time).slice(0,30).forEach(s => {
-                    let origin = s.source + (s.campaign && s.campaign !== 'none' ? ` • ${s.campaign}` : '');
-                    let details = s.events.map(e => {
-                        let icon="🔹", txt=e.type, color="text-slate-400";
-                        if(e.type==='cta_click'||(e.data?.label||'').toLowerCase().includes('comprar')) { icon="💰"; color="text-emerald-400 font-bold"; txt=`Checkout (${e.data?.label||'btn'})`; }
-                        else if(e.type==='click') { icon="👆"; txt=`Click (${e.data?.label})`; }
-                        else if(e.type==='quiz_answer') { icon="💬"; color="text-pink-400"; txt=`Quiz: "${e.data?.answer}"`; }
-                        else if(e.type==='video_progress') { icon="⏳"; txt=`Vídeo: ${e.data?.percent}%`; }
-                        else if(e.type==='video_complete') { icon="✅"; color="text-green-400"; txt="Viu Tudo"; }
-                        else if(e.type==='video_start') { icon="🎥"; txt="Play"; }
-                        return `<div class="flex justify-between py-1 border-b border-white/5 text-[10px] ${color}"><span>${icon} ${txt}</span><span>${new Date(e.createdAt.seconds*1000).toLocaleTimeString()}</span></div>`;
-                    }).join('');
+                // Funil Simples
+                const cv = Object.keys(sessions).length > 0 ? ((clicks/Object.keys(sessions).length)*100).toFixed(1) : 0;
+                document.getElementById('funnel-container').innerHTML = `<div class="bg-slate-800 p-2 rounded mb-2 flex justify-between"><span class="text-slate-400">Visitas</span><span class="text-white font-bold">${Object.keys(sessions).length}</span></div><div class="bg-emerald-900/30 border border-emerald-500/30 p-2 rounded flex justify-between"><span class="text-emerald-400">Checkout</span><span class="text-emerald-400 font-bold">${clicks} (${cv}%)</span></div>`;
 
-                    feedDiv.innerHTML += `<div class="feed-session"><div class="feed-header" onclick="this.nextElementSibling.classList.toggle('open')"><div class="flex items-center gap-2"><span class="text-[10px] text-slate-400">${new Date(s.time*1000).toLocaleTimeString()}</span><span class="tag-source">${origin}</span></div><span class="text-[10px] font-bold text-slate-300">${s.events.length} ações ▼</span></div><div class="feed-body">${details}</div></div>`;
+                // Feed Simples (Sem VSL Tracking complexo)
+                Object.values(sessions).sort((a,b) => b.time - a.time).slice(0,30).forEach(s => {
+                    let details = s.events.map(e => {
+                        let txt = e.type;
+                        if(e.type === 'cta_click') txt = "💰 Checkout";
+                        else if(e.type === 'quiz_answer') txt = `💬 Quiz: ${e.data?.answer}`;
+                        else if(e.type === 'offer_view') txt = "👀 Visualizou";
+                        else if(e.type === 'short_link_click') txt = `🔗 Link (${e.alias})`;
+                        else return ""; // Ignora outros eventos para limpar o feed
+                        return `<div class="flex justify-between py-1 text-[10px] text-slate-400"><span>${txt}</span><span>${new Date(e.createdAt.seconds*1000).toLocaleTimeString()}</span></div>`;
+                    }).join('');
+                    if(details) feedDiv.innerHTML += `<div class="feed-session"><div class="feed-header" onclick="this.nextElementSibling.classList.toggle('open')"><div class="flex gap-2"><span class="text-[10px] text-slate-500">${new Date(s.time*1000).toLocaleTimeString()}</span><span class="tag-source">${s.source}</span></div><span class="text-[10px] font-bold text-slate-400">▼</span></div><div class="feed-body">${details}</div></div>`;
                 });
             });
         }
 
-        function updateSourceChart(data) {
-            const ctx = document.getElementById('sourceChart');
-            if(myChart) myChart.destroy();
-            myChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(data), datasets: [{ data: Object.values(data), backgroundColor: ['#6366f1', '#10b981', '#f43f5e', '#f59e0b'], borderWidth:0 }] }, options: { plugins: { legend: { position: 'right', labels: { color: '#64748b', font: { size: 9 } } } } } });
-        }
-
         window.salvarOfertaAtual = async () => { await updateDoc(doc(db,"offers",currentOfferId), { headline:document.getElementById('edit-headline').value, price:document.getElementById('edit-price').value, layout:document.getElementById('edit-layout').value, videoUrl:document.getElementById('edit-video').value, checkoutUrl:document.getElementById('edit-checkout').value }); alert("Salvo!"); }
-        window.limparDados = async () => { if(!confirm("Apagar dados?")) return; const q=query(collection(db,"events"),where("offerId","==",currentOfferId)); const snap=await getDocs(q); snap.forEach(d=>{ if(!!d.data().isTest===document.getElementById('toggle-test').checked) deleteDoc(d.ref); }); alert("Limpo!"); }
-        window.excluirOferta = async () => { if(confirm("Excluir?")) { await deleteDoc(doc(db,"offers",currentOfferId)); location.reload(); } }
-        window.gerarLinkCurto = async () => { await setDoc(doc(db,"short_links",document.getElementById('short-alias').value), { target: `https://nucleoinsight.github.io/paco-core/index.html?id=${currentOfferId}&utm_source=${document.getElementById('utm-source').value}&utm_campaign=${document.getElementById('utm-campaign').value}`, clicks:0 }); alert("Criado!"); }
-        window.copiarLinkCurto = () => { navigator.clipboard.writeText(document.getElementById('final-link-display').innerText); alert("Copiado"); }
+        window.criarNovaOferta = async () => { const h = prompt("Nome:"); if(h) { await addDoc(collection(db,"offers"), {headline:h, price:"0", layout:"dark", createdAt:serverTimestamp()}); location.reload(); } }
+        window.limparDados = async () => { if(confirm("Apagar dados?")) { const q=query(collection(db,"events"),where("offerId","==",currentOfferId)); const snap=await getDocs(q); snap.forEach(d=>{ if(!!d.data().isTest===document.getElementById('toggle-test').checked) deleteDoc(d.ref); }); alert("Limpo!"); } }
     </script>
 </body>
 </html>
