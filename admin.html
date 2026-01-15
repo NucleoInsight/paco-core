@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper PACO | V24 (Source Fixed)</title>
+    <title>Sniper PACO | V24 (Pizza Chart)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -40,6 +40,7 @@
         ::-webkit-scrollbar-track { background: #0b0c15; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
 
+        /* CSS DO FEED */
         .feed-session { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 5px; border-radius: 6px; }
         .feed-session:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
         .feed-header { padding: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
@@ -49,7 +50,7 @@
 
         @media print {
             body { background-color: white !important; color: black !important; }
-            .no-print, button, #login-screen, .tab-btn { display: none !important; }
+            .no-print, button, #login-screen { display: none !important; }
             .glass-panel { border: 1px solid #ccc !important; background: none !important; color: black !important; box-shadow: none !important; }
             .text-white { color: black !important; }
             .text-slate-400 { color: #666 !important; }
@@ -63,6 +64,7 @@
     <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#0b0c15]">
         <div class="glass-panel p-8 w-full max-w-md text-center">
             <h1 class="text-3xl font-black text-white tracking-tight mb-2">SNIPER <span class="text-indigo-500">PACO</span></h1>
+            <p class="text-xs text-slate-500 mb-6 font-mono">Central de Fusão</p>
             <input type="email" id="email" class="input-sniper mb-3" placeholder="Email">
             <input type="password" id="password" class="input-sniper mb-6" placeholder="Senha">
             <button onclick="fazerLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-indigo-500/20">ACESSAR SISTEMA</button>
@@ -118,27 +120,17 @@
 
             <div class="space-y-6">
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="glass-panel p-4 border-l-2 border-indigo-500">
-                        <p class="metric-label">Visitantes</p>
-                        <p id="kpi-unique" class="metric-value">0</p>
-                    </div>
-                    <div class="glass-panel p-4 border-l-2 border-emerald-500">
-                        <p class="metric-label">Checkout</p>
-                        <p id="kpi-sales" class="metric-value">0</p>
-                    </div>
-                    <div class="glass-panel p-4 border-l-2 border-pink-500">
-                        <p class="metric-label">Retenção Quiz</p>
-                        <p id="kpi-retention" class="metric-value">0%</p>
-                    </div>
-                    <div class="glass-panel p-4 border-l-2 border-amber-500">
-                        <p class="metric-label">Melhor Canal</p>
-                        <p id="kpi-source" class="metric-value truncate text-base pt-1">...</p>
-                    </div>
+                    <div class="glass-panel p-4 border-l-2 border-indigo-500"><p class="metric-label">Visitantes</p><p id="kpi-unique" class="metric-value">0</p></div>
+                    <div class="glass-panel p-4 border-l-2 border-emerald-500"><p class="metric-label">Checkout</p><p id="kpi-sales" class="metric-value">0</p></div>
+                    <div class="glass-panel p-4 border-l-2 border-pink-500"><p class="metric-label">Retenção Quiz</p><p id="kpi-retention" class="metric-value">0%</p></div>
+                    <div class="glass-panel p-4 border-l-2 border-amber-500"><p class="metric-label">Melhor Canal</p><p id="kpi-source" class="metric-value truncate text-base pt-1">...</p></div>
                 </div>
 
                 <div class="glass-panel p-4">
-                    <h3 class="text-xs font-bold text-white mb-4 uppercase">Origem do Tráfego</h3>
-                    <canvas id="sourceChart" height="150"></canvas>
+                    <h3 class="text-xs font-bold text-slate-500 mb-2 uppercase flex justify-between">Origem do Tráfego</h3>
+                    <div style="height: 150px; position: relative;">
+                        <canvas id="sourceChart"></canvas>
+                    </div>
                 </div>
 
                 <div class="glass-panel p-4 border border-indigo-500/30">
@@ -148,9 +140,7 @@
                     </div>
                     
                     <div class="space-y-1">
-                        <label>HEADLINE (Promessa)</label>
-                        <input type="text" id="edit-headline" class="input-sniper" placeholder="Digite a promessa...">
-                        
+                        <label>HEADLINE</label><input type="text" id="edit-headline" class="input-sniper">
                         <div class="flex gap-2">
                             <div class="w-1/2">
                                 <label>LAYOUT</label>
@@ -163,17 +153,13 @@
                             </div>
                             <div class="w-1/2">
                                 <label>PREÇO</label>
-                                <input type="text" id="edit-price" class="input-sniper text-center font-bold text-emerald-400" placeholder="R$">
+                                <input type="text" id="edit-price" class="input-sniper text-center font-bold text-emerald-400">
                             </div>
                         </div>
+                        <label>CHECKOUT</label><input type="text" id="edit-checkout" class="input-sniper border-emerald-500/30">
+                        <label>VÍDEO</label><input type="text" id="edit-video" class="input-sniper">
 
-                        <label>CHECKOUT (Link Kiwify/Stripe)</label>
-                        <input type="text" id="edit-checkout" class="input-sniper border-emerald-500/30" placeholder="https://pay...">
-
-                        <label>VÍDEO (Opcional - Youtube)</label>
-                        <input type="text" id="edit-video" class="input-sniper" placeholder="Cole o link aqui...">
-
-                        <div class="pt-2 flex gap-2">
+                        <div class="pt-2">
                             <button onclick="salvarOfertaAtual()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg text-xs transition">💾 SALVAR ALTERAÇÕES</button>
                         </div>
                     </div>
@@ -186,27 +172,19 @@
                     <span id="feed-badge" class="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded">REAL</span>
                 </div>
                 <div class="overflow-y-auto p-4 space-y-3 flex-1 custom-scroll" id="live-feed">
-                    <p class="text-center text-slate-600 mt-10 text-xs">Aguardando visitantes...</p>
+                    <p class="text-center text-slate-600 mt-10 text-xs">Aguardando...</p>
                 </div>
             </div>
         </div>
 
         <div class="glass-panel p-6 mb-10 no-print border border-emerald-500/30">
-            <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
-                🔗 Encurtador Automático <span class="text-[10px] bg-emerald-900 text-emerald-400 px-2 py-1 rounded border border-emerald-500/50">V2.0</span>
-            </h2>
+            <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">🔗 Encurtador V2.0</h2>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                <div class="md:col-span-2">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase">Nome Curto (Alias)</label>
-                    <div class="flex">
-                        <span class="bg-slate-700 text-slate-300 p-2 text-xs rounded-l border border-slate-600">/r.html?id=</span>
-                        <input type="text" id="short-alias" placeholder="ex: zap" class="w-full bg-slate-900 border border-slate-600 text-white text-xs p-2 focus:border-emerald-500 outline-none">
-                    </div>
-                </div>
-                <div><label class="text-[10px] font-bold text-emerald-500 uppercase">Origem (Source)</label><input type="text" id="utm-source" value="instagram" class="input-sniper m-0"></div>
-                <div><label class="text-[10px] font-bold text-emerald-500 uppercase">Campanha</label><input type="text" id="utm-campaign" placeholder="stories" class="input-sniper m-0"></div>
+                <div class="md:col-span-2"><label class="text-slate-500 text-[10px] font-bold">Alias</label><input type="text" id="short-alias" placeholder="ex: zap" class="w-full bg-slate-900 border border-slate-600 text-white text-xs p-2 focus:border-emerald-500 outline-none"></div>
+                <div><label class="text-emerald-500 text-[10px] font-bold">Origem</label><input type="text" id="utm-source" value="instagram" class="input-sniper m-0"></div>
+                <div><label class="text-emerald-500 text-[10px] font-bold">Campanha</label><input type="text" id="utm-campaign" placeholder="stories" class="input-sniper m-0"></div>
             </div>
-            <button onclick="gerarLinkCurto()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg text-xs transition mb-4">💾 GERAR LINK RASTREÁVEL</button>
+            <button onclick="gerarLinkCurto()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg text-xs transition mb-4">💾 GERAR LINK</button>
             <div id="short-result" class="hidden bg-black/50 p-4 rounded border border-slate-700 flex justify-between items-center">
                 <code id="final-link-display" class="text-white text-xs font-mono">...</code>
                 <button onclick="copiarLinkCurto()" class="text-[10px] bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded">COPIAR</button>
@@ -214,10 +192,7 @@
         </div>
 
         <div class="border border-red-900/30 bg-red-950/10 rounded-xl p-6 no-print flex justify-between items-center">
-            <div>
-                <h3 class="text-red-500 font-bold text-sm mb-1 uppercase">⚠️ Zona de Perigo</h3>
-                <p class="text-xs text-slate-400">Apagar dados de tráfego do modo atual (Teste ou Real). A oferta continua existindo.</p>
-            </div>
+            <div><h3 class="text-red-500 font-bold text-sm mb-1 uppercase">⚠️ Zona de Perigo</h3><p class="text-xs text-slate-400">Apagar dados do modo atual.</p></div>
             <div class="flex gap-4 items-center">
                 <button onclick="limparDados()" class="bg-red-900/50 hover:bg-red-800 text-red-200 border border-red-800 px-4 py-2 rounded-lg text-xs font-bold transition">🗑️ LIMPAR DADOS</button>
                 <button onclick="excluirOferta()" class="text-slate-500 hover:text-red-500 text-xs underline">Excluir Oferta</button>
@@ -230,15 +205,13 @@
         import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, addDoc, deleteDoc, serverTimestamp, query, where, orderBy, limit, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // CONFIG
         const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
 
         let currentOfferId = "";
         let unsubscribeFeed = null;
-        let myChart = null; 
+        let myChart = null; // Variável global do gráfico
 
-        // AUTH
         window.fazerLogin = async () => { try { await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); } catch(e) { document.getElementById('error-msg').innerText = e.message; } }
         window.logout = () => signOut(auth);
         onAuthStateChanged(auth, (u) => { if(u) { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('dashboard').classList.remove('hidden'); iniciarSistema(); } });
@@ -254,21 +227,19 @@
         }
 
         window.criarNovaOferta = async () => {
-            const headline = prompt("Headline da Nova Oferta:");
+            const headline = prompt("Headline:");
             if(!headline) return;
             const ref = await addDoc(collection(db, "offers"), { headline: headline, bodyText: "...", ctaText: "COMPRAR", price: "9,90", layout: "dark", videoUrl: "", checkoutUrl: "", createdAt: serverTimestamp() });
             iniciarSistema();
         }
 
-        // --- RELATÓRIO ---
         window.copiarRelatorio = () => {
             const views = document.getElementById('kpi-unique').innerText;
             const clicks = document.getElementById('kpi-sales').innerText;
             const text = `📊 RELATÓRIO PACO\n\n- Visitas: ${views}\n- Checkout: ${clicks}\n\nGerado em: ${new Date().toLocaleString()}`;
-            navigator.clipboard.writeText(text).then(() => alert("Relatório copiado!"));
+            navigator.clipboard.writeText(text).then(() => alert("Copiado!"));
         }
 
-        // CARREGAMENTO INTELIGENTE (CORE)
         window.carregarDadosDaOferta = async () => {
             const select = document.getElementById('offer-selector');
             currentOfferId = select.value;
@@ -279,7 +250,6 @@
             if(isTest) { badge.innerText = "MODO TESTE"; badge.className = "text-[9px] bg-amber-500/20 text-amber-400 px-2 py-1 rounded"; } 
             else { badge.innerText = "DADOS REAIS"; badge.className = "text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded"; }
 
-            // Carrega Editor
             const docSnap = await getDoc(doc(db, "offers", currentOfferId));
             if(docSnap.exists()) {
                 const d = docSnap.data();
@@ -290,7 +260,6 @@
                 document.getElementById('edit-checkout').value = d.checkoutUrl || '';
             }
 
-            // FEED E ANALYTICS
             const q = query(collection(db, "events"), where("offerId", "==", currentOfferId));
             if(unsubscribeFeed) unsubscribeFeed();
             
@@ -299,31 +268,19 @@
                 let sources = {}; 
                 const feedContainer = document.getElementById('live-feed');
                 feedContainer.innerHTML = "";
-                
                 let events = [];
                 snapshot.forEach(doc => events.push({ id: doc.id, ...doc.data() }));
                 
-                // Filtro de Modo
                 events = events.filter(e => !!e.isTest === isTest);
                 events.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
-                if(events.length === 0) feedContainer.innerHTML = "<p class='text-center text-slate-600 text-xs mt-10'>Sem dados neste modo.</p>";
+                if(events.length === 0) feedContainer.innerHTML = "<p class='text-center text-slate-600 text-xs mt-10'>Sem dados.</p>";
 
                 const sessions = {};
                 events.forEach(e => {
                     const sid = e.sessionId || 'anon';
-                    // --- CORREÇÃO DA ORIGEM DO TRÁFEGO ---
-                    // Se o parâmetro campaign.source existir e NÃO for 'direto', usa ele.
-                    // Caso contrário, tenta pegar do referrer ou mantém 'direto'.
                     let source = e.campaign?.source || 'direto';
-                    
-                    if(!sessions[sid]) sessions[sid] = { 
-                        id: sid, 
-                        events: [], 
-                        source: source, // Usa a fonte capturada corretamente
-                        time: e.createdAt?.seconds || 0, 
-                        isTest: e.isTest 
-                    };
+                    if(!sessions[sid]) sessions[sid] = { id: sid, events: [], source: source, time: e.createdAt?.seconds || 0, isTest: e.isTest };
                     sessions[sid].events.push(e);
                     if(e.createdAt?.seconds > sessions[sid].time) sessions[sid].time = e.createdAt.seconds;
                     
@@ -331,91 +288,73 @@
                     if(e.type === 'cta_click') clicks++;
                 });
 
-                // Métricas e Gráfico
-                let totalSessions = Object.keys(sessions).length;
-                
-                // Contagem de Fontes (Ignorando Encurtador se necessário, mas aqui queremos ver tudo)
+                // Lógica de Fontes para o Gráfico
                 Object.values(sessions).forEach(s => { 
-                     sources[s.source] = (sources[s.source] || 0) + 1; 
+                     // Filtra 'encurtador' se quiser, mas aqui mostra tudo
+                     if(s.source !== 'encurtador') sources[s.source] = (sources[s.source] || 0) + 1; 
                 });
                 
+                // Melhor Canal
                 let bestChannel = Object.keys(sources).length > 0 ? Object.keys(sources).reduce((a, b) => sources[a] > sources[b] ? a : b) : "-";
 
-                // Atualiza Gráfico de Pizza
+                // Atualiza Gráfico
                 updateSourceChart(sources);
 
                 // Feed Visual
                 const sortedSessions = Object.values(sessions).sort((a,b) => b.time - a.time);
-
                 sortedSessions.slice(0, 30).forEach(s => {
                     const timeStr = new Date(s.time * 1000).toLocaleTimeString();
                     const badge = s.isTest ? '<span class="text-[8px] bg-amber-500/20 text-amber-500 px-1 rounded ml-1">TESTE</span>' : '';
-                    
                     s.events.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
-
                     let details = "";
                     s.events.forEach(e => {
                         let icon="🔹"; let color="text-slate-400"; let txt=e.type;
                         let label = e.data?.label || ''; 
-
-                        if(e.type === 'cta_click' || label.toLowerCase().includes('comprar') || label.toLowerCase().includes('checkout')) { 
-                            icon="💰"; color="text-emerald-400 font-bold"; txt = `click ( ${label || 'CHECKOUT'} )`; 
-                        } else if(e.type === 'click') { 
-                            icon="👆"; color="text-slate-300"; txt = `click ( ${label} )`; 
-                        } else if(e.type === 'offer_view') { 
-                            icon="👀"; color="text-indigo-400"; txt="Visualizou Página"; 
-                        } else if(e.type === 'short_link_click') { 
-                            icon="🔗"; color="text-amber-400"; txt=`Encurtador (${e.alias})`; 
-                        }
-
-                        details += `
-                            <div class="flex justify-between py-1 border-b border-white/5 last:border-0 hover:bg-white/5 px-2">
-                                <div class="flex items-center gap-2"><span>${icon}</span><span class="${color} text-[10px] font-mono">${txt}</span></div>
-                                <span class="text-[9px] text-slate-600 font-mono">${new Date(e.createdAt.seconds*1000).toLocaleTimeString()}</span>
-                            </div>`;
+                        if(e.type === 'cta_click' || label.toLowerCase().includes('comprar')) { icon="💰"; color="text-emerald-400 font-bold"; txt = `click ( ${label || 'CHECKOUT'} )`; } 
+                        else if(e.type === 'click') { icon="👆"; color="text-slate-300"; txt = `click ( ${label} )`; } 
+                        else if(e.type === 'offer_view') { icon="👀"; color="text-indigo-400"; txt="Visualizou Página"; } 
+                        else if(e.type === 'short_link_click') { icon="🔗"; color="text-amber-400"; txt=`Encurtador (${e.alias})`; }
+                        details += `<div class="flex justify-between py-1 border-b border-white/5 last:border-0 hover:bg-white/5 px-2"><div class="flex items-center gap-2"><span>${icon}</span><span class="${color} text-[10px] font-mono">${txt}</span></div><span class="text-[9px] text-slate-600 font-mono">${new Date(e.createdAt.seconds*1000).toLocaleTimeString()}</span></div>`;
                     });
-
-                    // FEED: Exibe a origem da sessão no cabeçalho
-                    feedContainer.innerHTML += `
-                        <div class="feed-session">
-                            <div class="feed-header" onclick="this.nextElementSibling.classList.toggle('open')">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-[10px] font-mono text-slate-400">${timeStr}</span>
-                                    <span class="tag-source">${s.source}</span>
-                                    ${badge}
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-[10px] font-bold text-slate-300">${s.events.length} ações</span>
-                                    <span class="text-[8px] text-indigo-400 border border-indigo-500/30 px-1 rounded">▼</span>
-                                </div>
-                            </div>
-                            <div class="feed-body">${details}</div>
-                        </div>`;
+                    feedContainer.innerHTML += `<div class="feed-session"><div class="feed-header" onclick="this.nextElementSibling.classList.toggle('open')"><div class="flex items-center gap-2"><span class="text-[10px] font-mono text-slate-400">${timeStr}</span><span class="tag-source">${s.source}</span>${badge}</div><div class="flex items-center gap-2"><span class="text-[10px] font-bold text-slate-300">${s.events.length} ações</span><span class="text-[8px] text-indigo-400 border border-indigo-500/30 px-1 rounded">▼</span></div></div><div class="feed-body">${details}</div></div>`;
                 });
 
-                document.getElementById('kpi-unique').innerText = totalSessions;
+                document.getElementById('kpi-unique').innerText = Object.keys(sessions).length;
                 document.getElementById('kpi-sales').innerText = clicks;
                 document.getElementById('kpi-retention').innerText = "0%";
                 document.getElementById('kpi-source').innerText = bestChannel.toUpperCase();
-                renderFunnel(totalSessions, clicks);
+                renderFunnel(Object.keys(sessions).length, clicks);
             });
         }
 
-        // ATUALIZA O GRÁFICO (NOVA FUNÇÃO)
+        // --- FUNÇÃO DO GRÁFICO (Chart.js) ---
         function updateSourceChart(dataObj) {
-            const ctx = document.getElementById('sourceChart').getContext('2d');
+            const ctx = document.getElementById('sourceChart');
+            if(!ctx) return;
+            
+            // Dados padrão se vazio
+            if(Object.keys(dataObj).length === 0) dataObj = { "Sem dados": 1 };
+
             if(myChart) myChart.destroy();
+            
             myChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: Object.keys(dataObj),
                     datasets: [{
                         data: Object.values(dataObj),
-                        backgroundColor: ['#6366f1', '#10b981', '#f43f5e', '#f59e0b', '#8b5cf6', '#ec4899'],
-                        borderWidth: 0
+                        backgroundColor: ['#6366f1', '#10b981', '#f43f5e', '#f59e0b', '#ec4899', '#8b5cf6'],
+                        borderWidth: 0,
+                        hoverOffset: 4
                     }]
                 },
-                options: { plugins: { legend: { position: 'right', labels: { color: '#94a3b8', font: { size: 10 } } } } }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { color: '#94a3b8', font: { size: 9, family: 'monospace' }, boxWidth: 8 } }
+                    }
+                }
             });
         }
 
