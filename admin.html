@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PACO V13 | Sniper Fusion</title>
+    <title>PACO V14 | Correções Sniper</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -12,26 +12,14 @@
     <style>
         body { background-color: #0b0c15; color: #a5b4fc; font-family: 'Inter', sans-serif; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
-        
-        /* Glassmorphism do Sniper */
         .glass-panel { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; }
-        .glass-input { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(51, 65, 85, 0.5); color: white; padding: 10px; border-radius: 8px; width: 100%; font-size: 13px; transition: all 0.2s; }
-        .glass-input:focus { border-color: #6366f1; outline: none; box-shadow: 0 0 10px rgba(99, 102, 241, 0.1); }
-
-        /* Abas */
-        .tab-btn { padding: 8px 16px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; opacity: 0.6; }
-        .tab-btn:hover { opacity: 1; background: rgba(255,255,255,0.05); }
-        .tab-btn.active { background: rgba(99, 102, 241, 0.2); border-color: rgba(99, 102, 241, 0.5); color: #818cf8; opacity: 1; }
-        
-        /* Funil Visual */
-        .funnel-step { position: relative; padding-left: 15px; border-left: 2px solid #334155; margin-bottom: 15px; }
-        .funnel-step::before { content: ''; position: absolute; left: -5px; top: 0; width: 8px; height: 8px; background: #334155; border-radius: 50%; }
-        .funnel-step.active { border-left-color: #10b981; }
-        .funnel-step.active::before { background: #10b981; box-shadow: 0 0 8px #10b981; }
-
+        .glass-input { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(51, 65, 85, 0.5); color: white; padding: 10px; border-radius: 8px; width: 100%; font-size: 13px; }
+        .glass-input:focus { border-color: #6366f1; outline: none; }
+        .tab-btn { padding: 8px 16px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; opacity: 0.6; }
+        .tab-btn.active { background: rgba(99, 102, 241, 0.2); color: #818cf8; opacity: 1; border: 1px solid rgba(99, 102, 241, 0.5); }
         .hidden { display: none !important; }
         /* Scrollbar */
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #0b0c15; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
     </style>
@@ -40,38 +28,28 @@
 
     <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#0b0c15]">
         <div class="glass-panel p-8 w-full max-w-md text-center">
-            <h1 class="text-3xl font-black text-white tracking-tight mb-1">SNIPER <span class="text-indigo-500">PACO</span></h1>
-            <p class="text-xs text-slate-500 mb-6 font-mono">Central de Inteligência & Validação</p>
+            <h1 class="text-3xl font-black text-white mb-6">PACO <span class="text-emerald-500">V14</span></h1>
             <input type="email" id="email" class="glass-input mb-3" placeholder="Email">
             <input type="password" id="password" class="glass-input mb-6" placeholder="Senha">
-            <button onclick="fazerLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-indigo-500/20">ACESSAR SISTEMA</button>
+            <button onclick="fazerLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition">ENTRAR</button>
             <p id="error-msg" class="text-red-400 text-xs mt-4"></p>
         </div>
     </div>
 
     <div id="dashboard" class="max-w-7xl mx-auto hidden">
-        
-        <header class="flex flex-col md:flex-row justify-between items-end mb-8 border-b border-indigo-900/30 pb-4 gap-4">
+        <header class="flex justify-between items-end mb-8 border-b border-indigo-900/30 pb-4">
             <div>
-                <h1 class="text-3xl font-black text-white tracking-tight">SNIPER <span class="text-indigo-500">PACO</span></h1>
-                <div class="flex items-center gap-2 mt-1">
-                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                    <p class="text-xs text-emerald-400 font-mono">ONLINE & RODANDO</p>
-                </div>
+                <h1 class="text-2xl font-black text-white">SNIPER <span class="text-indigo-500">PACO</span></h1>
+                <p class="text-xs text-emerald-400 font-mono mt-1">SISTEMA INTEGRADO</p>
             </div>
             <div class="flex gap-2">
-                <button onclick="criarNovaOferta()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 shadow-lg shadow-indigo-500/20">
-                    <span>+</span> NOVA CAMPANHA
-                </button>
-                <button onclick="logout()" class="bg-slate-800 hover:bg-red-900/50 text-slate-300 px-4 py-2 rounded-lg text-xs font-bold transition border border-slate-700">SAIR</button>
+                <button onclick="criarNovaOferta()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition">+ NOVA CAMPANHA</button>
+                <button onclick="logout()" class="bg-slate-800 text-slate-300 px-4 py-2 rounded-lg text-xs font-bold border border-slate-700">SAIR</button>
             </div>
         </header>
 
         <div id="lista-ofertas" class="space-y-10">
-            <div class="text-center py-20">
-                <div class="inline-block w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-                <p class="text-slate-500 text-xs font-mono mt-4">Carregando inteligência...</p>
-            </div>
+            <div class="text-center py-20 text-slate-500 text-xs font-mono">Carregando dados...</div>
         </div>
     </div>
 
@@ -88,31 +66,22 @@
         window.logout = () => signOut(auth);
         onAuthStateChanged(auth, (u) => { if(u) { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('dashboard').classList.remove('hidden'); carregarPainel(); } });
 
-        // SISTEMA DE ABAS (Visual)
-        window.trocarAba = (offerId, abaName) => {
-            // Esconde todos os conteudos
-            document.querySelectorAll(`.content-${offerId}`).forEach(el => el.classList.add('hidden'));
-            // Remove active de todos os botões
-            document.querySelectorAll(`.tab-${offerId}`).forEach(el => el.classList.remove('active'));
-            
-            // Mostra o certo
-            document.getElementById(`tab-content-${offerId}-${abaName}`).classList.remove('hidden');
-            document.getElementById(`btn-tab-${offerId}-${abaName}`).classList.add('active');
+        window.trocarAba = (id, aba) => {
+            document.querySelectorAll(`.content-${id}`).forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll(`.tab-${id}`).forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-content-${id}-${aba}`).classList.remove('hidden');
+            document.getElementById(`btn-tab-${id}-${aba}`).classList.add('active');
         }
 
-        // CRUD PACO
+        // CRUD OFERTAS
         window.criarNovaOferta = async () => {
-            if(!confirm("Iniciar nova campanha?")) return;
-            const ref = await addDoc(collection(db, "offers"), { 
-                headline: "Nova Oferta", bodyText: "Texto...", ctaText: "COMPRAR", price: "4,99", 
-                layout: "dark", videoUrl: "", checkoutUrl: "", 
-                createdAt: serverTimestamp() 
-            });
+            if(!confirm("Criar nova oferta?")) return;
+            const ref = await addDoc(collection(db, "offers"), { headline: "Nova Oferta", bodyText: "Texto...", ctaText: "COMPRAR", price: "4,99", layout: "dark", videoUrl: "", checkoutUrl: "", createdAt: serverTimestamp() });
             await addDoc(collection(db, "metrics"), { offerId: ref.id, sales: 0, revenue: 0, views: 0, statusVisual: "cinza" });
             carregarPainel();
         }
 
-        window.excluirOferta = async (id) => { if(confirm("⚠️ PERIGO: Isso apagará os dados do painel.")) { await deleteDoc(doc(db, "metrics", id)); carregarPainel(); } }
+        window.excluirOferta = async (id) => { if(confirm("Apagar oferta?")) { await deleteDoc(doc(db, "metrics", id)); carregarPainel(); } }
 
         window.salvarTudo = async (offerId, metricId) => {
             try {
@@ -130,60 +99,76 @@
                     views: Number(document.getElementById(`views-${metricId}`).value),
                     statusVisual: document.getElementById(`status-${metricId}`).value
                 });
-                alert("✅ DADOS SINCRONIZADOS!");
+                alert("✅ Salvo!");
             } catch(e) { alert("Erro: " + e.message); }
         }
 
-        // ENCURTADOR SNIPER (Integrado no Card)
+        // --- ENCURTADOR SNIPER REAL ---
         window.gerarLinkCurto = async (offerId) => {
             const alias = document.getElementById(`short-alias-${offerId}`).value.replace(/[^a-zA-Z0-9]/g, '');
-            if(!alias) return alert("Digite um nome para o link!");
+            if(!alias) return alert("Digite um nome curto (apenas letras/números).");
             
-            const longUrl = `https://nucleoinsight.github.io/paco-core/index.html?id=${offerId}`; // Link Real
-            // Simulação de salvamento (Para funcionar real precisa criar a collection short_links e a página de redirecionamento)
-            // Por enquanto, vamos apenas gerar o link visual para o usuário ver
+            // Link de destino (Página da Oferta Real)
+            const targetUrl = `https://nucleoinsight.github.io/paco-core/index.html?id=${offerId}`;
             
-            const finalLink = `https://seusite.com/r/${alias}`;
-            document.getElementById(`short-result-${offerId}`).innerHTML = `<span class="text-emerald-400 font-mono">${finalLink}</span> <span class="text-[10px] text-slate-500">(Simulação)</span>`;
+            try {
+                // Salva na coleção short_links (para o r.html ler)
+                await setDoc(doc(db, "short_links", alias), {
+                    target: targetUrl,
+                    clicks: 0,
+                    created_at: serverTimestamp()
+                });
+                
+                const finalLink = `https://nucleoinsight.github.io/paco-core/r.html?id=${alias}`;
+                
+                document.getElementById(`short-result-${offerId}`).innerHTML = `
+                    <div class="mt-2 bg-emerald-900/20 p-2 rounded border border-emerald-500/30">
+                        <p class="text-[10px] text-emerald-400 font-bold mb-1">LINK CRIADO COM SUCESSO:</p>
+                        <a href="${finalLink}" target="_blank" class="text-xs text-white font-mono underline">${finalLink}</a>
+                    </div>
+                `;
+            } catch (e) {
+                alert("Erro ao criar link: " + e.message);
+            }
         }
 
-        // RENDERIZADOR
+        // RENDER
         window.carregarPainel = async () => {
             const container = document.getElementById('lista-ofertas');
             const snaps = await getDocs(collection(db, "metrics"));
-            if(snaps.empty) { container.innerHTML = "<div class='text-center text-slate-500'>Nenhuma campanha ativa.</div>"; return; }
             container.innerHTML = "";
+            if(snaps.empty) { container.innerHTML = "<p class='text-center text-slate-500'>Sem campanhas.</p>"; return; }
 
             for (const mDoc of snaps.docs) {
                 const m = mDoc.data();
                 const offerId = m.offerId;
-                let o = { headline:"...", layout:"dark", checkoutUrl: "" };
+                let o = { headline:"...", layout:"dark" };
                 try { const os = await getDoc(doc(db, "offers", offerId)); if(os.exists()) o = os.data(); } catch(e){}
 
-                // Links
                 const linkReal = `index.html?id=${offerId}`;
-                const linkTeste = `index.html?id=${offerId}&mode=test`; // Preparado para o futuro
+                // CORREÇÃO: Botão de teste agora força o modo de teste
+                const linkTeste = `index.html?id=${offerId}&mode=test`;
 
-                // Status Visual
-                let statusColor = "bg-slate-500";
-                if(m.statusVisual === 'verde') statusColor = "bg-emerald-500";
-                if(m.statusVisual === 'vermelho') statusColor = "bg-red-500";
+                let statusColor = m.statusVisual === 'verde' ? 'bg-emerald-500' : (m.statusVisual === 'vermelho' ? 'bg-red-500' : 'bg-slate-500');
 
                 const html = `
-                <div class="glass-panel p-1 relative overflow-hidden group">
+                <div class="glass-panel p-1 relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-1 h-full ${statusColor}"></div>
                     
                     <div class="p-4 border-b border-white/5 flex justify-between items-center bg-slate-900/30">
                         <div>
                             <div class="flex items-center gap-2 mb-1">
-                                <span class="text-[10px] font-mono text-slate-500 uppercase">ID: ${offerId}</span>
+                                <span class="text-[10px] font-mono text-slate-500">ID: ${offerId}</span>
                                 <span class="text-[9px] px-2 py-0.5 rounded bg-white/5 text-white/70 font-bold uppercase">${m.statusVisual}</span>
                             </div>
                             <h3 class="text-white font-bold truncate max-w-md">${o.headline}</h3>
                         </div>
                         <div class="flex gap-2">
-                             <a href="./${linkReal}" target="_blank" class="bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500 hover:text-white px-3 py-1.5 rounded text-xs font-bold border border-indigo-500/20 transition flex items-center gap-1">
+                             <a href="./${linkTeste}" target="_blank" class="bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-black px-3 py-1.5 rounded text-xs font-bold border border-amber-500/20 transition flex items-center gap-1">
                                 🧪 ABRIR TESTE
+                             </a>
+                             <a href="./${linkReal}" target="_blank" class="bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500 hover:text-white px-3 py-1.5 rounded text-xs font-bold border border-indigo-500/20 transition flex items-center gap-1">
+                                🔗 LINK REAL
                              </a>
                         </div>
                     </div>
@@ -192,7 +177,7 @@
                         <button id="btn-tab-${offerId}-editor" onclick="trocarAba('${offerId}', 'editor')" class="tab-btn tab-${offerId} active">✏️ EDITOR</button>
                         <button id="btn-tab-${offerId}-funil" onclick="trocarAba('${offerId}', 'funil')" class="tab-btn tab-${offerId}">📊 FUNIL & FEED</button>
                         <button id="btn-tab-${offerId}-links" onclick="trocarAba('${offerId}', 'links')" class="tab-btn tab-${offerId}">🔗 LINKS</button>
-                        <button id="btn-tab-${offerId}-perigo" onclick="trocarAba('${offerId}', 'perigo')" class="tab-btn tab-${offerId} text-red-400">⚠️ PERIGO</button>
+                        <button id="btn-tab-${offerId}-perigo" onclick="trocarAba('${offerId}', 'perigo')" class="tab-btn tab-${offerId} text-red-400">⚠️ APAGAR</button>
                     </div>
 
                     <div class="p-6 min-h-[300px]">
@@ -201,41 +186,26 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div class="space-y-3">
                                     <div class="bg-indigo-500/5 p-3 rounded border border-indigo-500/10">
-                                        <label class="text-indigo-300 mb-2">🎨 TEMA & VÍDEO</label>
-                                        <div class="flex gap-2 mb-2">
-                                            <select id="layout-${offerId}" class="glass-input">
-                                                <option value="dark" ${o.layout==='dark'?'selected':''}>🌑 Dark Mode</option>
-                                                <option value="clean" ${o.layout==='clean'?'selected':''}>⬜ Clean Mode</option>
-                                            </select>
-                                        </div>
-                                        <input type="text" id="video-${offerId}" value="${o.videoUrl||''}" class="glass-input" placeholder="Link do YouTube (Opcional)">
+                                        <label class="text-indigo-300 mb-2">TEMA & VÍDEO</label>
+                                        <select id="layout-${offerId}" class="glass-input mb-2">
+                                            <option value="dark" ${o.layout==='dark'?'selected':''}>🌑 Dark Mode</option>
+                                            <option value="clean" ${o.layout==='clean'?'selected':''}>⬜ Clean Mode</option>
+                                        </select>
+                                        <input type="text" id="video-${offerId}" value="${o.videoUrl||''}" class="glass-input" placeholder="Link do YouTube">
                                     </div>
-
-                                    <div>
-                                        <label>Headline</label>
-                                        <input type="text" id="headline-${offerId}" value="${o.headline}" class="glass-input font-bold">
-                                    </div>
-                                    <div>
-                                        <label>Corpo do Texto</label>
-                                        <textarea id="body-${offerId}" class="glass-input h-20">${o.bodyText||''}</textarea>
-                                    </div>
+                                    <label>Headline</label><input type="text" id="headline-${offerId}" value="${o.headline}" class="glass-input font-bold">
+                                    <label>Texto</label><textarea id="body-${offerId}" class="glass-input h-24">${o.bodyText||''}</textarea>
                                 </div>
-
                                 <div class="space-y-3">
                                     <div class="bg-emerald-500/5 p-3 rounded border border-emerald-500/10">
-                                        <label class="text-emerald-400 mb-2">💰 CHECKOUT & PREÇO</label>
-                                        <input type="text" id="checkout-${offerId}" value="${o.checkoutUrl||''}" class="glass-input border-emerald-500/30 mb-2" placeholder="Link do Kiwify/Stripe...">
+                                        <label class="text-emerald-400 mb-2">CHECKOUT</label>
+                                        <input type="text" id="checkout-${offerId}" value="${o.checkoutUrl||''}" class="glass-input border-emerald-500/30 mb-2" placeholder="Link Kiwify...">
                                         <div class="flex gap-2">
-                                            <input type="text" id="cta-${offerId}" value="${o.ctaText||'COMPRAR'}" class="glass-input" placeholder="Texto Botão">
-                                            <input type="text" id="price-${offerId}" value="${o.price}" class="glass-input w-24 text-center" placeholder="R$">
+                                            <input type="text" id="cta-${offerId}" value="${o.ctaText||'COMPRAR'}" class="glass-input" placeholder="Botão">
+                                            <input type="text" id="price-${offerId}" value="${o.price}" class="glass-input w-24 text-center" placeholder="Preço">
                                         </div>
                                     </div>
-
-                                    <div class="pt-4">
-                                        <button onclick="salvarTudo('${offerId}', '${mDoc.id}')" class="w-full bg-slate-100 hover:bg-white text-slate-900 font-bold py-3 rounded-lg transition shadow-lg">
-                                            💾 SALVAR ALTERAÇÕES
-                                        </button>
-                                    </div>
+                                    <button onclick="salvarTudo('${offerId}', '${mDoc.id}')" class="w-full bg-slate-100 hover:bg-white text-slate-900 font-bold py-3 rounded-lg mt-4">SALVAR</button>
                                 </div>
                             </div>
                         </div>
@@ -243,78 +213,44 @@
                         <div id="tab-content-${offerId}-funil" class="content-${offerId} hidden">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-4">Funil de Conversão</h4>
-                                    <div class="space-y-4">
-                                        <div class="funnel-step active">
-                                            <p class="text-[10px] text-slate-400 uppercase">Visitas Únicas</p>
-                                            <div class="flex justify-between items-end">
-                                                <span class="text-2xl font-black text-white">${m.views||0}</span>
-                                                <input type="number" id="views-${mDoc.id}" value="${m.views||0}" class="w-16 bg-transparent text-right text-xs text-slate-500 border-b border-slate-700 outline-none">
-                                            </div>
-                                        </div>
-                                        <div class="funnel-step ${m.sales > 0 ? 'active' : ''}" style="border-left-color: #10b981;">
-                                            <p class="text-[10px] text-emerald-400 uppercase font-bold">Vendas Confirmadas</p>
-                                            <div class="flex justify-between items-end">
-                                                <span class="text-2xl font-black text-emerald-400">${m.sales||0}</span>
-                                                <input type="number" id="sales-${mDoc.id}" value="${m.sales||0}" class="w-16 bg-transparent text-right text-xs text-slate-500 border-b border-slate-700 outline-none">
-                                            </div>
-                                        </div>
+                                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-4">Métricas Manuais</h4>
+                                    <div class="flex gap-4">
+                                        <div class="bg-black/20 p-2 rounded w-1/2 text-center"><span class="block text-xs text-slate-500">Visitas</span><input type="number" id="views-${mDoc.id}" value="${m.views||0}" class="bg-transparent text-center text-xl font-bold text-white w-full"></div>
+                                        <div class="bg-black/20 p-2 rounded w-1/2 text-center border border-emerald-500/20"><span class="block text-xs text-emerald-500">Vendas</span><input type="number" id="sales-${mDoc.id}" value="${m.sales||0}" class="bg-transparent text-center text-xl font-bold text-emerald-400 w-full"></div>
                                     </div>
-                                    
-                                    <div class="mt-6">
-                                        <label>STATUS DA CAMPANHA</label>
-                                        <select id="status-${mDoc.id}" class="glass-input font-bold text-center">
-                                            <option value="cinza" ${m.statusVisual==='cinza'?'selected':''}>🟡 EM TESTE</option>
-                                            <option value="verde" ${m.statusVisual==='verde'?'selected':''}>🟢 VALIDADA</option>
-                                            <option value="vermelho" ${m.statusVisual==='vermelho'?'selected':''}>🔴 MORTA</option>
+                                    <div class="mt-4">
+                                        <label>STATUS</label>
+                                        <select id="status-${mDoc.id}" class="glass-input text-center font-bold">
+                                            <option value="cinza" ${m.statusVisual==='cinza'?'selected':''}>🟡 TESTANDO</option>
+                                            <option value="verde" ${m.statusVisual==='verde'?'selected':''}>🟢 APROVADA</option>
+                                            <option value="vermelho" ${m.statusVisual==='vermelho'?'selected':''}>🔴 REPROVADA</option>
                                         </select>
                                     </div>
                                 </div>
-
-                                <div class="bg-black/30 rounded-lg border border-white/5 flex flex-col h-[300px]">
-                                    <div class="p-3 border-b border-white/5 flex justify-between items-center bg-slate-900/50">
-                                        <span class="text-[10px] font-bold text-white flex items-center gap-2">
-                                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> FEED AO VIVO
-                                        </span>
-                                    </div>
-                                    <div id="feed-${offerId}" class="p-2 overflow-y-auto flex-1 space-y-1">
-                                        <div class="text-center text-[10px] text-slate-600 mt-10">Aguardando tráfego...</div>
-                                    </div>
+                                <div class="bg-black/30 rounded border border-white/5 flex flex-col h-[300px]">
+                                    <div class="p-3 border-b border-white/5 flex justify-between bg-slate-900/50"><span class="text-[10px] font-bold text-white">📡 FEED AO VIVO</span></div>
+                                    <div id="feed-${offerId}" class="p-2 overflow-y-auto flex-1 space-y-1">Aguardando...</div>
                                 </div>
                             </div>
                         </div>
 
                         <div id="tab-content-${offerId}-links" class="content-${offerId} hidden">
-                            <h4 class="text-xs font-bold text-slate-500 uppercase mb-4">Gerador de Links da Oferta</h4>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="glass-panel p-4">
-                                    <label class="mb-2">🔗 Link Direto (Padrão)</label>
-                                    <div class="flex gap-2">
-                                        <input type="text" value="https://seusite.github.io/.../index.html?id=${offerId}" class="glass-input text-slate-400" readonly>
-                                        <button class="bg-slate-700 px-3 rounded text-xs font-bold">COPIAR</button>
-                                    </div>
+                            <div class="glass-panel p-6 border-emerald-500/20">
+                                <label class="text-emerald-400 mb-2">✂️ ENCURTADOR SNIPER</label>
+                                <p class="text-[10px] text-slate-500 mb-4">Crie um link curto (ex: promo1) que redireciona para esta oferta e conta os cliques.</p>
+                                <div class="flex gap-2">
+                                    <span class="py-2 text-slate-500 text-xs bg-black/20 px-3 rounded border border-white/5">/r.html?id=</span>
+                                    <input type="text" id="short-alias-${offerId}" placeholder="ex: zap" class="glass-input">
+                                    <button onclick="gerarLinkCurto('${offerId}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 rounded text-xs font-bold">CRIAR</button>
                                 </div>
-
-                                <div class="glass-panel p-4 border-emerald-500/20">
-                                    <label class="mb-2 text-emerald-400">✂️ Encurtador (Nome Curto)</label>
-                                    <div class="flex gap-2 mb-2">
-                                        <span class="py-2 text-slate-500 text-xs">/r/</span>
-                                        <input type="text" id="short-alias-${offerId}" placeholder="ex: oferta1" class="glass-input">
-                                        <button onclick="gerarLinkCurto('${offerId}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 rounded text-xs font-bold">CRIAR</button>
-                                    </div>
-                                    <div id="short-result-${offerId}" class="text-xs"></div>
-                                </div>
+                                <div id="short-result-${offerId}" class="mt-4 text-xs"></div>
                             </div>
                         </div>
 
                         <div id="tab-content-${offerId}-perigo" class="content-${offerId} hidden">
-                            <div class="border border-red-900/30 bg-red-900/5 p-6 rounded-lg">
-                                <h3 class="text-red-500 font-bold mb-2">ZONA DE PERIGO</h3>
-                                <p class="text-slate-500 text-xs mb-4">Esta ação apagará a oferta e todas as métricas associadas do painel. Não afeta o dinheiro na Kiwify.</p>
-                                <button onclick="excluirOferta('${mDoc.id}')" class="bg-red-900/20 hover:bg-red-900/50 text-red-500 border border-red-900/50 px-4 py-2 rounded text-xs font-bold transition">
-                                    🗑️ DELETAR ESTA OFERTA PERMANENTEMENTE
-                                </button>
+                            <div class="border border-red-900/30 bg-red-900/5 p-6 rounded text-center">
+                                <h3 class="text-red-500 font-bold mb-2">APAGAR OFERTA?</h3>
+                                <button onclick="excluirOferta('${mDoc.id}')" class="bg-red-900/20 text-red-500 border border-red-900/50 px-4 py-2 rounded text-xs font-bold hover:bg-red-900/50">SIM, DELETAR</button>
                             </div>
                         </div>
 
@@ -325,7 +261,6 @@
             }
         }
 
-        // FEED MONITOR
         function monitorarOferta(offerId) {
             const feed = document.getElementById(`feed-${offerId}`);
             const q = query(collection(db, "events"), where("offerId", "==", offerId), orderBy("createdAt", "desc"), limit(20));
@@ -335,10 +270,16 @@
                 snaps.forEach(d => {
                     const data = d.data();
                     const time = data.createdAt ? new Date(data.createdAt.seconds*1000).toLocaleTimeString() : "";
-                    let color = "text-slate-400"; let icon = "🔹";
-                    if(data.type==='cta_click') { color="text-emerald-400 font-bold"; icon="💰"; }
-                    if(data.type==='offer_view') { color="text-indigo-400"; icon="👀"; }
-                    feed.innerHTML += `<div class="flex justify-between border-b border-white/5 py-1 text-[10px] font-mono"><span>${time}</span><span class="${color} flex items-center gap-1">${icon} ${data.type}</span></div>`;
+                    
+                    // Ícones e cores para o Feed
+                    let icon="🔹"; let color="text-slate-400"; let text = data.type;
+                    if(data.type==='cta_click') { icon="💰"; color="text-emerald-400 font-bold"; text="CLICOU NO BOTÃO"; }
+                    if(data.type==='offer_view') { icon="👀"; color="text-indigo-400"; text="Acessou a Página"; }
+                    
+                    // Identificador de Teste
+                    let testBadge = data.isTest ? '<span class="text-[9px] bg-amber-500/20 text-amber-500 px-1 rounded ml-1">TESTE</span>' : '';
+
+                    feed.innerHTML += `<div class="flex justify-between border-b border-white/5 py-1 text-[10px] font-mono"><span>${time}</span><span class="${color} flex items-center gap-1">${icon} ${text} ${testBadge}</span></div>`;
                 });
             });
         }
