@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper PACO | V28 (Final Display Fix)</title>
+    <title>Sniper PACO | V26 (Quiz Added)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -148,7 +148,7 @@
                                     <option value="clean">⬜ Clean Mode</option>
                                     <option value="artigo">📰 Artigo</option>
                                     <option value="vsl">🎥 VSL</option>
-                                </select>
+                                    <option value="quiz">🧩 QUIZ MODE</option> </select>
                             </div>
                             <div class="w-1/2">
                                 <label>PREÇO</label>
@@ -293,21 +293,13 @@
                 const sessions = {};
                 events.forEach(e => {
                     const sid = e.sessionId || 'anon';
+                    
                     let source = e.campaign?.source || 'direto';
-                    // --- CORREÇÃO: CAPTURA A CAMPANHA TAMBÉM ---
                     let campaign = e.campaign?.campaign || ''; 
 
                     if(!sessions[sid]) {
-                        sessions[sid] = { 
-                            id: sid, 
-                            events: [], 
-                            source: source,
-                            campaign: campaign, // Guarda a campanha
-                            time: e.createdAt?.seconds || 0, 
-                            isTest: e.isTest 
-                        };
+                        sessions[sid] = { id: sid, events: [], source: source, campaign: campaign, time: e.createdAt?.seconds || 0, isTest: e.isTest };
                     } else {
-                        // Atualiza se encontrar uma origem melhor
                         if((sessions[sid].source === 'direto' || sessions[sid].source === 'encurtador') && (source !== 'direto' && source !== 'encurtador')) {
                             sessions[sid].source = source;
                             sessions[sid].campaign = campaign;
@@ -335,7 +327,6 @@
                     const timeStr = new Date(s.time * 1000).toLocaleTimeString();
                     const badge = s.isTest ? '<span class="text-[8px] bg-amber-500/20 text-amber-500 px-1 rounded ml-1">TESTE</span>' : '';
                     
-                    // --- CORREÇÃO: EXIBE ORIGEM + CAMPANHA ---
                     let originText = s.source;
                     if(s.campaign && s.campaign !== 'none') originText += ` • ${s.campaign}`;
 
@@ -352,7 +343,6 @@
                         details += `<div class="flex justify-between py-1 border-b border-white/5 last:border-0 hover:bg-white/5 px-2"><div class="flex items-center gap-2"><span>${icon}</span><span class="${color} text-[10px] font-mono">${txt}</span></div><span class="text-[9px] text-slate-600 font-mono">${new Date(e.createdAt.seconds*1000).toLocaleTimeString()}</span></div>`;
                     });
                     
-                    // --- AQUI APLICA A VARIÁVEL originText ---
                     feedContainer.innerHTML += `<div class="feed-session"><div class="feed-header" onclick="this.nextElementSibling.classList.toggle('open')"><div class="flex items-center gap-2"><span class="text-[10px] font-mono text-slate-400">${timeStr}</span><span class="tag-source">${originText}</span>${badge}</div><div class="flex items-center gap-2"><span class="text-[10px] font-bold text-slate-300">${s.events.length} ações</span><span class="text-[8px] text-indigo-400 border border-indigo-500/30 px-1 rounded">▼</span></div></div><div class="feed-body">${details}</div></div>`;
                 });
 
@@ -440,6 +430,176 @@
         }
         
         window.copiarLinkCurto = () => { navigator.clipboard.writeText(document.getElementById('final-link-display').innerText).then(() => alert("Copiado!")); }
+    </script>
+</body>
+</html>
+
+---
+
+### 2️⃣ PASSO 2: ATUALIZAR `index.html` (V26)
+*Adicionando a lógica do Quiz dentro do camaleão.*
+
+```html
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Oferta Especial</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="[https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap)" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; transition: 0.3s; }
+        
+        /* TEMAS */
+        body.dark { background-color: #0b0c15; color: white; }
+        body.dark .container { background-color: #1e293b; border: 1px solid rgba(255,255,255,0.05); }
+        body.clean { background-color: #f8fafc; color: #1e293b; }
+        body.clean .container { background-color: #ffffff; border: 1px solid #e2e8f0; }
+
+        /* QUIZ */
+        .quiz-option { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; cursor: pointer; text-align: left; transition: all 0.2s; }
+        .quiz-option:hover { border-color: #10b981; }
+        #progress-bar { height: 4px; background: #10b981; width: 0%; transition: width 0.3s; border-radius: 2px; margin-bottom: 20px; }
+
+        .container { max-width: 500px; width: 100%; padding: 40px; border-radius: 16px; margin: 40px auto; }
+        .hidden { display: none !important; }
+        .btn { width: 100%; padding: 18px; font-size: 18px; font-weight: 800; border-radius: 8px; background: #10b981; color: #064e3b; border: none; cursor: pointer; text-transform: uppercase; }
+        
+        /* VIDEO */
+        .video-box { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px; margin-bottom: 20px; background: black; display: none; }
+        .video-box iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        
+        #test-banner { background: #f59e0b; color: black; font-weight: bold; text-align: center; padding: 5px; position: fixed; top: 0; width: 100%; z-index: 99; display: none; font-size: 10px; }
+    </style>
+</head>
+<body class="dark">
+
+    <div id="test-banner">🧪 MODO TESTE</div>
+    <div id="loading" style="position:fixed; inset:0; background:#000; color:#0f0; display:flex; justify-content:center; align-items:center; z-index:998;">CARREGANDO...</div>
+
+    <div id="quiz-wrapper" class="container hidden">
+        <div style="background:#1e293b; height:4px; width:100%; border-radius:2px; margin-bottom:20px;">
+            <div id="progress-bar"></div>
+        </div>
+        <h2 id="quiz-question" style="font-size:20px; font-weight:bold; margin-bottom:20px;">...</h2>
+        <div id="quiz-options"></div>
+    </div>
+
+    <div id="app" class="container hidden">
+        <h1 id="headline" style="font-size:26px; font-weight:800; line-height:1.2; margin-bottom:20px;">...</h1>
+        <div id="videoArea" class="video-box"><iframe id="videoFrame" src="" frameborder="0" allowfullscreen></iframe></div>
+        <div id="bodyText" style="opacity:0.9; margin-bottom:20px; line-height:1.6;">...</div>
+        <div id="price" style="font-size:32px; font-weight:900; margin:20px 0;">...</div>
+        <button id="buyBtn" class="btn">...</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "[https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js](https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js)";
+        import { getFirestore, doc, getDoc, addDoc, collection, serverTimestamp } from "[https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js](https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js)";
+        import { trackEvent } from "./tracker.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
+        const app = initializeApp(firebaseConfig); const db = getFirestore(app);
+
+        // PERGUNTAS GENÉRICAS
+        const questions = [
+            { t: "Qual o seu principal objetivo hoje?", a: ["Ganhar Dinheiro", "Perder Peso", "Aprender algo novo", "Outros"] },
+            { t: "O que te impede de alcançar isso?", a: ["Falta de Tempo", "Falta de Dinheiro", "Procrastinação", "Não sei por onde começar"] },
+            { t: "Quanto você pode investir em você?", a: ["Até R$ 50", "Entre R$ 50 e R$ 100", "Acima de R$ 100", "Nada agora"] },
+            { t: "Se eu te mostrar a solução, você topa?", a: ["Sim, agora mesmo", "Talvez", "Preciso pensar", "Não"] }
+        ];
+
+        async function init() {
+            const params = new URLSearchParams(window.location.search);
+            const offerId = params.get('id');
+            const isTest = params.get('mode') === 'test';
+
+            if(!offerId) return document.body.innerHTML = "Link inválido";
+            if(isTest) document.getElementById('test-banner').style.display = 'block';
+
+            try {
+                const docSnap = await getDoc(doc(db, "offers", offerId));
+                if(docSnap.exists()) {
+                    const data = docSnap.data();
+                    
+                    // PREENCHE OFERTA
+                    document.getElementById('headline').innerText = data.headline;
+                    document.getElementById('bodyText').innerText = data.bodyText;
+                    document.getElementById('price').innerText = "R$ " + data.price;
+                    document.getElementById('buyBtn').innerText = data.ctaText;
+                    
+                    if(data.videoUrl) {
+                        document.getElementById('videoFrame').src = data.videoUrl.replace("watch?v=", "embed/");
+                        document.getElementById('videoArea').style.display = "block";
+                    }
+
+                    document.getElementById('loading').classList.add('hidden');
+
+                    // LÓGICA DO LAYOUT QUIZ
+                    if(data.layout === 'quiz') {
+                        startQuiz();
+                    } else {
+                        // Layouts normais (Dark/Clean)
+                        if(data.layout === 'clean') document.body.className = 'clean';
+                        document.getElementById('app').classList.remove('hidden');
+                        trackEvent('offer_view');
+                    }
+
+                    // CHECKOUT
+                    document.getElementById('buyBtn').onclick = () => {
+                        trackEvent('cta_click');
+                        if(data.checkoutUrl) window.location.href = data.checkoutUrl;
+                    };
+
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function startQuiz() {
+            document.getElementById('quiz-wrapper').classList.remove('hidden');
+            let currentQ = 0;
+
+            function showQ() {
+                const q = questions[currentQ];
+                document.getElementById('quiz-question').innerText = q.t;
+                const opts = document.getElementById('quiz-options');
+                opts.innerHTML = '';
+                
+                // Barra de progresso
+                document.getElementById('progress-bar').style.width = ((currentQ / questions.length) * 100) + "%";
+
+                q.a.forEach(ans => {
+                    const btn = document.createElement('div');
+                    btn.className = 'quiz-option';
+                    btn.innerText = ans;
+                    btn.onclick = () => {
+                        trackEvent('quiz_answer', { step: currentQ+1, answer: ans });
+                        currentQ++;
+                        if(currentQ < questions.length) {
+                            showQ();
+                        } else {
+                            finishQuiz();
+                        }
+                    };
+                    opts.appendChild(btn);
+                });
+            }
+            showQ();
+        }
+
+        function finishQuiz() {
+            document.getElementById('quiz-wrapper').classList.add('hidden');
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('loading').innerText = "ANALISANDO PERFIL...";
+            
+            setTimeout(() => {
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('app').classList.remove('hidden'); // MOSTRA A OFERTA
+                trackEvent('offer_view'); // Conta como view da oferta agora
+            }, 2000);
+        }
+
+        init();
     </script>
 </body>
 </html>
