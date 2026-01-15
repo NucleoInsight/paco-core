@@ -4,106 +4,150 @@
     <meta charset="UTF-8">
     <title>Oferta Especial</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    
     <style>
-        /* SEU ESTILO DARK MODE */
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #0f0f0f; color: #ffffff; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { max-width: 500px; margin: 0 auto; padding: 40px 20px; text-align: left; }
-        h1 { font-size: 26px; line-height: 1.3; margin-bottom: 20px; color: #fff; font-weight: 700; }
-        p { font-size: 17px; line-height: 1.6; color: #b0b0b0; margin-bottom: 20px; white-space: pre-wrap; }
-        .price-tag { font-size: 32px; color: #00ff88; font-weight: bold; display: block; margin: 20px 0; }
-        .cta-button { display: block; width: 100%; background: #00ff88; color: #000; text-align: center; padding: 18px; font-size: 18px; text-decoration: none; border-radius: 8px; font-weight: 800; cursor: pointer; border: none; text-transform: uppercase; transition: transform 0.2s; }
-        .cta-button:hover { transform: scale(1.02); opacity: 0.9; }
-        .note { margin-top: 25px; font-size: 13px; color: #555; text-align: center; }
-        .hidden { display: none; }
-        #loading { color: #00ff88; font-family: monospace; text-align: center; margin-top: 20%; }
-        .error { color: #ff4444; font-weight: bold; }
+        /* --- ESTILO BASE (CAMALEÃO) --- */
+        body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; transition: background 0.3s, color 0.3s; }
+        
+        /* MODO DARK (Padrão) */
+        body.mode-dark { background-color: #0b0c15; color: #ffffff; }
+        body.mode-dark .container { background-color: #1e293b; border: 1px solid rgba(255,255,255,0.05); }
+        body.mode-dark h1 { color: #ffffff; }
+        body.mode-dark p { color: #94a3b8; }
+        body.mode-dark .price-tag { color: #10b981; }
+
+        /* MODO CLEAN (Branco) */
+        body.mode-light { background-color: #f8fafc; color: #1e293b; }
+        body.mode-light .container { background-color: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        body.mode-light h1 { color: #0f172a; }
+        body.mode-light p { color: #475569; }
+        body.mode-light .price-tag { color: #2563eb; }
+
+        /* LAYOUT CENTRAL */
+        .wrapper { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .container { max-width: 500px; width: 100%; padding: 40px; border-radius: 16px; text-align: left; }
+        
+        h1 { font-size: 26px; font-weight: 800; line-height: 1.2; margin-bottom: 20px; letter-spacing: -0.5px; }
+        p { font-size: 16px; line-height: 1.6; margin-bottom: 20px; white-space: pre-wrap; }
+        
+        /* VÍDEO (Começa escondido) */
+        .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 10px; margin-bottom: 25px; background: #000; display: none; /* SEGREDO: SÓ APARECE SE TIVER LINK */ }
+        .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+
+        .price-tag { font-size: 36px; font-weight: 900; margin: 25px 0; display: block; }
+        
+        .btn { width: 100%; padding: 18px; font-size: 18px; font-weight: 800; border-radius: 10px; border: none; cursor: pointer; text-transform: uppercase; transition: transform 0.1s; }
+        .btn:active { transform: scale(0.98); }
+        
+        /* Botão Verde no Dark, Azul no Light */
+        body.mode-dark .btn { background: #10b981; color: #064e3b; }
+        body.mode-dark .btn:hover { background: #34d399; }
+        body.mode-light .btn { background: #2563eb; color: #ffffff; }
+        body.mode-light .btn:hover { background: #1d4ed8; }
+
+        .footer { margin-top: 30px; font-size: 12px; text-align: center; opacity: 0.5; }
+        #loading { position: fixed; inset: 0; background: #0b0c15; display: flex; justify-content: center; align-items: center; color: #10b981; font-weight: bold; z-index: 999; }
+        .hidden { display: none !important; }
     </style>
 </head>
-<body>
+<body class="mode-dark"> <div id="loading">CARREGANDO OFERTA...</div>
 
-    <div id="loading">Carregando oferta...</div>
+    <div class="wrapper">
+        <div id="app" class="container hidden">
+            
+            <h1 id="headline">...</h1>
 
-    <div id="app" class="container hidden">
-        <h1 id="headline">...</h1>
-        <p id="bodyText">...</p>
-        <div class="price-tag">R$ <span id="price">...</span></div>
-        <div class="cta">
-            <button id="buyBtn" class="cta-button">...</button>
+            <div id="videoArea" class="video-wrapper">
+                <iframe id="videoFrame" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+
+            <p id="bodyText">...</p>
+
+            <div class="price-tag">R$ <span id="price">...</span></div>
+
+            <button id="buyBtn" class="btn">...</button>
+
+            <div class="footer">Compra Segura • Garantia Total</div>
         </div>
-        <div class="note">Compra Segura • Garantia PACO</div>
     </div>
 
     <script type="module">
-        // 1. IMPORTS CERTOS PARA GITHUB PAGES (Web SDK)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg",
-            authDomain: "paco-core.firebaseapp.com",
-            projectId: "paco-core",
-            storageBucket: "paco-core.firebasestorage.app",
-            messagingSenderId: "88467987691",
-            appId: "1:88467987691:web:85892f360253aa957c72ae"
-        };
-
+        const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
         async function init() {
-            // 2. AQUI ESTÁ A MÁGICA: Pega o ID da URL, não deixa fixo!
             const params = new URLSearchParams(window.location.search);
             const offerId = params.get('id');
 
-            if (!offerId) {
-                document.getElementById('loading').innerHTML = "<span class='error'>Link inválido. Use o painel para gerar o link.</span>";
-                return;
-            }
+            if (!offerId) { document.getElementById('loading').innerText = "ERRO: Link sem ID da oferta."; return; }
 
             try {
-                // Busca a oferta no banco
                 const docSnap = await getDoc(doc(db, "offers", offerId));
-
+                
                 if (docSnap.exists()) {
                     const data = docSnap.data();
 
-                    // Preenche a tela com os dados do Painel
+                    // --- 1. RESOLVE O LAYOUT (Muda a cor sozinho) ---
+                    // Se no painel estiver 'clean.html', ele vira BRANCO. Se não, fica DARK.
+                    if (data.layout && data.layout.includes('clean')) {
+                        document.body.classList.remove('mode-dark');
+                        document.body.classList.add('mode-light');
+                    }
+
+                    // --- 2. PREENCHE TEXTOS ---
                     document.getElementById('headline').innerText = data.headline || "Sem Título";
                     document.getElementById('bodyText').innerText = data.bodyText || "";
                     document.getElementById('price').innerText = data.price || "0,00";
                     document.getElementById('buyBtn').innerText = data.ctaText || "COMPRAR";
 
-                    // Mostra o site
+                    // --- 3. RESOLVE O VÍDEO (Aparece sozinho se tiver link) ---
+                    if (data.videoUrl && data.videoUrl.trim() !== "") {
+                        // Correção automática: Se o usuário colou link normal do YouTube, transforma em Embed
+                        let finalUrl = data.videoUrl;
+                        if(finalUrl.includes("watch?v=")) {
+                            finalUrl = finalUrl.replace("watch?v=", "embed/");
+                        }
+                        document.getElementById('videoFrame').src = finalUrl;
+                        document.getElementById('videoArea').style.display = "block"; // MOSTRA O VÍDEO
+                    }
+
+                    // MOSTRA A PÁGINA
                     document.getElementById('loading').classList.add('hidden');
                     document.getElementById('app').classList.remove('hidden');
 
-                    // Registra Visualização no Banco
-                    addDoc(collection(db, "metrics"), { // Salvando direto em metrics para facilitar contagem simples se quiser, ou events
-                         offerId: offerId, type: "view_auto", timestamp: serverTimestamp() 
-                    });
-                    // Opcional: Atualizar contador de Views no documento da métrica (avançado, deixa pra depois)
+                    // Registra View
+                    addDoc(collection(db, "events"), { offerId: offerId, type: "offer_view", createdAt: serverTimestamp() });
 
-                    // Configura o Botão
+                    // --- 4. RESOLVE O CHECKOUT (O Botão funciona) ---
                     document.getElementById('buyBtn').onclick = async () => {
-                        document.getElementById('buyBtn').innerText = "PROCESSANDO...";
-                        
-                        // Registra o Clique
-                        await addDoc(collection(db, "events"), {
-                            offerId: offerId,
-                            type: "cta_click",
-                            createdAt: serverTimestamp()
-                        });
-                        
-                        alert("✅ Clique registrado! (Aqui iria para o Checkout)");
-                        document.getElementById('buyBtn').innerText = data.ctaText;
+                        const btn = document.getElementById('buyBtn');
+                        btn.innerText = "INICIANDO...";
+                        btn.style.opacity = "0.7";
+
+                        // Registra o clique
+                        await addDoc(collection(db, "events"), { offerId: offerId, type: "cta_click", createdAt: serverTimestamp() });
+
+                        // Verifica se tem link e redireciona
+                        if (data.checkoutUrl && data.checkoutUrl.startsWith('http')) {
+                            window.location.href = data.checkoutUrl;
+                        } else {
+                            alert("⚠️ Você esqueceu de colocar o Link de Checkout no Painel!");
+                            btn.innerText = data.ctaText;
+                            btn.style.opacity = "1";
+                        }
                     };
 
                 } else {
-                    document.getElementById('loading').innerHTML = "<span class='error'>Oferta não encontrada (Erro 404).</span>";
+                    document.getElementById('loading').innerText = "Oferta não encontrada.";
                 }
             } catch (error) {
                 console.error(error);
-                document.getElementById('loading').innerHTML = "<span class='error'>Erro de conexão.</span>";
+                document.getElementById('loading').innerText = "Erro de conexão.";
             }
         }
 
