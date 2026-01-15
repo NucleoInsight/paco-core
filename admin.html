@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper PACO | Fusion</title>
+    <title>Sniper PACO | Full Metrics</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -36,6 +36,9 @@
 
         .hidden { display: none !important; }
         
+        .metric-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; font-weight: 700; }
+        .metric-value { font-size: 1.25rem; font-weight: 800; color: white; line-height: 1; margin-top: 4px; }
+
         /* Scrollbar */
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #0b0c15; }
@@ -106,8 +109,16 @@
                         <p id="kpi-unique" class="metric-value">0</p>
                     </div>
                     <div class="glass-panel p-4 border-l-2 border-emerald-500">
-                        <p class="metric-label">Cliques ($)</p>
+                        <p class="metric-label">Checkout</p>
                         <p id="kpi-sales" class="metric-value">0</p>
+                    </div>
+                    <div class="glass-panel p-4 border-l-2 border-pink-500">
+                        <p class="metric-label">Retenção Quiz</p>
+                        <p id="kpi-retention" class="metric-value">0%</p>
+                    </div>
+                    <div class="glass-panel p-4 border-l-2 border-amber-500">
+                        <p class="metric-label">Melhor Canal</p>
+                        <p id="kpi-source" class="metric-value truncate text-base pt-1">...</p>
                     </div>
                 </div>
 
@@ -226,7 +237,6 @@
         window.criarNovaOferta = async () => {
             const headline = prompt("Headline da Nova Oferta:");
             if(!headline) return;
-            // Cria a oferta no banco
             const ref = await addDoc(collection(db, "offers"), { headline: headline, bodyText: "...", ctaText: "COMPRAR", price: "9,90", layout: "dark", videoUrl: "", checkoutUrl: "", createdAt: serverTimestamp() });
             iniciarSistema();
         }
@@ -237,15 +247,13 @@
             currentOfferId = select.value;
             const isTest = document.getElementById('toggle-test').checked;
             
-            // 1. Atualiza Link do Botão de Teste
+            // Atualiza Botões e Badges
             document.getElementById('btn-open-test').href = `index.html?id=${currentOfferId}&mode=test`;
-
-            // 2. Atualiza Badge
             const badge = document.getElementById('feed-badge');
             if(isTest) { badge.innerText = "MODO TESTE"; badge.className = "text-[9px] bg-amber-500/20 text-amber-400 px-2 py-1 rounded"; } 
             else { badge.innerText = "DADOS REAIS"; badge.className = "text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded"; }
 
-            // 3. Carrega Editor
+            // Carrega Editor
             const docSnap = await getDoc(doc(db, "offers", currentOfferId));
             if(docSnap.exists()) {
                 const d = docSnap.data();
@@ -256,45 +264,83 @@
                 document.getElementById('edit-checkout').value = d.checkoutUrl || '';
             }
 
-            // 4. Carrega Feed e Funil (Filtrado por Oferta)
+            // Carrega Feed e Dados (Com Filtros)
             const q = query(collection(db, "events"), where("offerId", "==", currentOfferId));
             
             if(unsubscribeFeed) unsubscribeFeed();
             
             unsubscribeFeed = onSnapshot(q, (snapshot) => {
                 let views = 0, clicks = 0;
+                let sources = {};
+                let quizStarts = 0;
                 const feedContainer = document.getElementById('live-feed');
                 feedContainer.innerHTML = "";
                 
                 let events = [];
                 snapshot.forEach(doc => events.push({ id: doc.id, ...doc.data() }));
                 
-                // Filtra pelo modo (Teste vs Real)
+                // Filtro de Modo
                 events = events.filter(e => !!e.isTest === isTest);
                 events.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
                 if(events.length === 0) feedContainer.innerHTML = "<p class='text-center text-slate-600 text-xs mt-10'>Sem dados neste modo.</p>";
 
-                events.slice(0, 50).forEach(d => {
-                    if(d.type === 'offer_view') views++;
-                    if(d.type === 'cta_click') clicks++;
+                // Processamento de KPIs (Iterando Eventos)
+                // Para métricas mais precisas, idealmente iteraríamos Sessões, mas vamos manter simples e robusto por evento
+                // Para "Melhor Canal" e "Retenção", precisamos agrupar
+                
+                const sessions = {};
+                events.forEach(e => {
+                    const sid = e.sessionId || 'anon';
+                    if(!sessions[sid]) sessions[sid] = { source: e.campaign?.source || 'direto', actions: [] };
+                    sessions[sid].actions.push(e.type);
                     
+                    // Contagem Simples
+                    if(e.type === 'offer_view') views++;
+                    if(e.type === 'cta_click') clicks++;
+                });
+
+                // Cálculo de Métricas Avançadas
+                let totalSessions = Object.keys(sessions).length;
+                let retentionCount = 0;
+                let sourceCounts = {};
+
+                Object.values(sessions).forEach(s => {
+                    // Contagem de Canais
+                    sourceCounts[s.source] = (sourceCounts[s.source] || 0) + 1;
+                    
+                    // Lógica de Retenção Quiz (Se tiver evento de quiz)
+                    // Como ainda não temos quiz, vamos assumir que 'cta_click' é a conversão final
+                    // Futuramente: if(s.actions.includes('quiz_answer')) retentionCount++;
+                });
+
+                // Melhor Canal
+                let bestChannel = "-";
+                if(Object.keys(sourceCounts).length > 0) {
+                    bestChannel = Object.keys(sourceCounts).reduce((a, b) => sourceCounts[a] > sourceCounts[b] ? a : b);
+                }
+
+                // Renderiza Feed Visual
+                events.slice(0, 50).forEach(d => {
                     const time = d.createdAt ? new Date(d.createdAt.seconds*1000).toLocaleTimeString() : "";
                     let icon="🔹", color="text-slate-400", txt=d.type;
                     if(d.type==='cta_click') { icon="💰"; color="text-emerald-400 font-bold"; txt="CLICOU NO CHECKOUT"; }
                     if(d.type==='offer_view') { icon="👀"; color="text-indigo-400"; txt="Visualizou Página"; }
                     if(d.type==='short_link_click') { icon="🔗"; color="text-amber-400"; txt="Encurtador"; }
                     
-                    // Mostra Origem (UTM)
                     let sourceTag = "";
                     if(d.campaign && d.campaign.source !== 'direto') sourceTag = `<span class="ml-2 bg-slate-700 text-[8px] px-1 rounded">${d.campaign.source}</span>`;
 
                     feedContainer.innerHTML += `<div class="flex justify-between border-b border-white/5 py-2 px-2 hover:bg-white/5 rounded transition"><div class="flex items-center gap-2"><span>${icon}</span><span class="text-[10px] ${color}">${txt}</span>${sourceTag}</div><span class="text-[9px] text-slate-600 font-mono">${time}</span></div>`;
                 });
 
-                document.getElementById('kpi-unique').innerText = views;
+                // Atualiza KPIs na Tela
+                document.getElementById('kpi-unique').innerText = totalSessions; // Visitantes Únicos (Aprox)
                 document.getElementById('kpi-sales').innerText = clicks;
-                renderFunnel(views, clicks);
+                document.getElementById('kpi-retention').innerText = "0%"; // Placeholder até ter Quiz
+                document.getElementById('kpi-source').innerText = bestChannel.toUpperCase();
+                
+                renderFunnel(totalSessions, clicks);
             });
         }
 
@@ -318,6 +364,8 @@
             } catch(e) { alert("Erro: " + e.message); }
         }
 
+        window.abrirLinkTeste = () => { window.open(`index.html?id=${currentOfferId}&mode=test`, '_blank'); }
+
         window.limparDados = async () => {
             const isTest = document.getElementById('toggle-test').checked;
             const modeName = isTest ? "MODO TESTE" : "MODO REAL";
@@ -328,6 +376,7 @@
             snapshot.forEach(doc => { if(!!doc.data().isTest === isTest) promises.push(deleteDoc(doc.ref)); });
             await Promise.all(promises);
             alert("Limpeza concluída.");
+            carregarDadosDaOferta();
         }
         
         window.excluirOferta = async () => {
@@ -341,7 +390,8 @@
             const alias = document.getElementById('short-alias').value.replace(/[^a-zA-Z0-9]/g, '');
             if(!alias) return alert("Nome inválido");
             const source = document.getElementById('utm-source').value;
-            const target = `https://nucleoinsight.github.io/paco-core/index.html?id=${currentOfferId}&utm_source=${source}`;
+            const campaign = document.getElementById('utm-campaign').value;
+            const target = `https://nucleoinsight.github.io/paco-core/index.html?id=${currentOfferId}&utm_source=${source}&utm_campaign=${campaign}`;
             try {
                 await setDoc(doc(db, "short_links", alias), { target: target, clicks: 0, offerId: currentOfferId, created_at: serverTimestamp() });
                 const finalLink = `https://nucleoinsight.github.io/paco-core/r.html?id=${alias}`;
