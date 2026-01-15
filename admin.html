@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper PACO | V33 (Unlocked)</title>
+    <title>Sniper PACO | V34 (Login Fixed)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -23,6 +23,7 @@
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #0b0c15; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        
         .feed-session { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 5px; border-radius: 6px; }
         .feed-session:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
         .feed-header { padding: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
@@ -37,6 +38,7 @@
             .text-white { color: black !important; }
             .text-slate-400 { color: #666 !important; }
             canvas { max-height: 250px; }
+            input, select, textarea { border: 1px solid #ccc !important; color: black !important; background: white !important; }
         }
     </style>
 </head>
@@ -44,8 +46,13 @@
 
     <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#0b0c15]">
         <div class="glass-panel p-8 w-full max-w-md text-center">
-            <h1 class="text-3xl font-black text-white tracking-tight mb-6">SNIPER <span class="text-indigo-500">PACO</span></h1>
-            <button onclick="fazerLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-lg transition shadow-lg shadow-indigo-500/20 text-lg">ACESSAR SISTEMA</button>
+            <h1 class="text-3xl font-black text-white tracking-tight mb-2">SNIPER <span class="text-indigo-500">PACO</span></h1>
+            <p class="text-xs text-slate-500 mb-6 font-mono">Central de Fusão</p>
+            
+            <input type="email" id="email" class="glass-input mb-3" placeholder="Email" value="gilvanxavierborges@gmail.com">
+            <input type="password" id="password" class="glass-input mb-6" placeholder="Senha">
+            
+            <button onclick="fazerLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-indigo-500/20">ACESSAR SISTEMA</button>
             <p id="error-msg" class="text-red-400 text-xs mt-4"></p>
         </div>
     </div>
@@ -54,7 +61,7 @@
         <header class="flex flex-col md:flex-row justify-between items-end mb-10 border-b border-indigo-900/30 pb-4 gap-4">
             <div>
                 <h1 class="text-3xl font-black text-white tracking-tight">SNIPER <span class="text-indigo-500">ANALYTICS</span></h1>
-                <p class="text-xs text-indigo-400 mt-1">Painel Oficial NucleoInsight</p>
+                <p class="text-xs text-indigo-400 mt-1">Gestão de Ofertas & Link Automático</p>
             </div>
             <div class="flex flex-wrap items-center gap-4">
                 <div class="glass-panel px-3 py-2 border-indigo-500/50">
@@ -69,9 +76,9 @@
                     </label>
                 </div>
                 <div class="flex gap-2 no-print">
-                    <button onclick="copiarRelatorio()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">📋</button>
-                    <button onclick="window.print()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">🖨️</button>
-                    <button onclick="criarNovaOferta()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition">NOVA +</button>
+                    <button onclick="copiarRelatorio()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">📋 COPIAR</button>
+                    <button onclick="window.print()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">🖨️ PDF</button>
+                    <button onclick="criarNovaOferta()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1"><span>+</span> NOVA</button>
                     <button onclick="carregarDadosDaOferta()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">🔄</button>
                     <button onclick="logout()" class="bg-slate-800 text-slate-300 px-3 py-2 rounded-lg text-xs font-bold border border-slate-700">SAIR</button>
                 </div>
@@ -103,10 +110,10 @@
                         <a href="#" id="btn-open-test" target="_blank" class="text-[10px] text-amber-400 border border-amber-500/30 px-2 py-1 rounded hover:bg-amber-500/10">🧪 ABRIR TESTE</a>
                     </div>
                     <div class="space-y-1">
-                        <label>HEADLINE</label><input type="text" id="edit-headline" class="glass-input">
+                        <label>HEADLINE</label><input type="text" id="edit-headline" class="input-sniper">
                         <div class="flex gap-2">
                             <div class="w-1/2"><label>LAYOUT</label>
-                                <select id="edit-layout" class="glass-input bg-slate-900">
+                                <select id="edit-layout" class="input-sniper bg-slate-900">
                                     <option value="dark">🌑 Dark Mode</option>
                                     <option value="clean">⬜ Clean Mode</option>
                                     <option value="artigo">📰 Artigo</option>
@@ -114,10 +121,10 @@
                                     <option value="quiz">🧩 QUIZ MODE</option>
                                 </select>
                             </div>
-                            <div class="w-1/2"><label>PREÇO</label><input type="text" id="edit-price" class="glass-input text-center font-bold text-emerald-400"></div>
+                            <div class="w-1/2"><label>PREÇO</label><input type="text" id="edit-price" class="input-sniper text-center font-bold text-emerald-400"></div>
                         </div>
-                        <label>CHECKOUT</label><input type="text" id="edit-checkout" class="glass-input border-emerald-500/30">
-                        <label>VÍDEO</label><input type="text" id="edit-video" class="glass-input">
+                        <label>CHECKOUT</label><input type="text" id="edit-checkout" class="input-sniper border-emerald-500/30">
+                        <label>VÍDEO</label><input type="text" id="edit-video" class="input-sniper">
                         <div class="pt-2"><button onclick="salvarOfertaAtual()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg text-xs transition">💾 SALVAR ALTERAÇÕES</button></div>
                     </div>
                 </div>
@@ -136,8 +143,8 @@
             <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">🔗 Encurtador Automático V2.0</h2>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                 <div class="md:col-span-2"><label class="text-[10px] font-bold text-slate-500 uppercase">Nome Curto (Alias)</label><div class="flex"><span class="bg-slate-700 text-slate-300 p-2 text-xs rounded-l border border-slate-600">/r.html?id=</span><input type="text" id="short-alias" placeholder="ex: zap" class="w-full bg-slate-900 border border-slate-600 text-white text-xs p-2 focus:border-emerald-500 outline-none"></div></div>
-                <div><label class="text-[10px] font-bold text-emerald-500 uppercase">Origem (Source)</label><input type="text" id="utm-source" value="instagram" class="glass-input m-0"></div>
-                <div><label class="text-[10px] font-bold text-emerald-500 uppercase">Campanha</label><input type="text" id="utm-campaign" placeholder="stories" class="glass-input m-0"></div>
+                <div><label class="text-[10px] font-bold text-emerald-500 uppercase">Origem (Source)</label><input type="text" id="utm-source" value="instagram" class="input-sniper m-0"></div>
+                <div><label class="text-[10px] font-bold text-emerald-500 uppercase">Campanha</label><input type="text" id="utm-campaign" placeholder="stories" class="input-sniper m-0"></div>
             </div>
             <button onclick="gerarLinkCurto()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg text-xs transition mb-4">💾 GERAR LINK RASTREÁVEL</button>
             <div id="short-result" class="hidden bg-black/50 p-4 rounded border border-slate-700 flex justify-between items-center"><code id="final-link-display" class="text-white text-xs font-mono">...</code><button onclick="copiarLinkCurto()" class="text-[10px] bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded">COPIAR</button></div>
@@ -152,19 +159,21 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, addDoc, deleteDoc, serverTimestamp, query, where, orderBy, limit, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // CONFIG (NUCLEOINSIGHT)
+        // CREDENCIAIS CORRETAS NUCLEOINSIGHT
         const firebaseConfig = { apiKey: "AIzaSyCFnz5Wis_b3CGGblNn-bfUjqEgTOlqGNE", authDomain: "nucleoinsight-e4566.firebaseapp.com", projectId: "nucleoinsight-e4566", storageBucket: "nucleoinsight-e4566.firebasestorage.app", messagingSenderId: "650150743348", appId: "1:650150743348:web:f62f3cc95a38a5e90ca961", measurementId: "G-M24P3TBP5J" };
         
         const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
         let currentOfferId = "", unsubscribeFeed = null, myChart = null;
 
-        // AUTH ANÔNIMO (PARA DESTRAVAR LOGIN)
-        window.fazerLogin = async () => { try { await signInAnonymously(auth); } catch(e) { document.getElementById('error-msg').innerText = e.message; } }
+        // AUTH LOGIN COM EMAIL E SENHA
+        window.fazerLogin = async () => { try { await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); } catch(e) { document.getElementById('error-msg').innerText = e.message; } }
         window.logout = () => signOut(auth);
         onAuthStateChanged(auth, (u) => { if(u) { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('dashboard').classList.remove('hidden'); iniciarSistema(); } });
 
+        // ... RESTANTE DO CÓDIGO ...
+        
         async function iniciarSistema() {
             const snaps = await getDocs(collection(db, "offers"));
             const select = document.getElementById('offer-selector');
@@ -200,11 +209,13 @@
             
             unsubscribeFeed = onSnapshot(q, (snapshot) => {
                 let views=0, clicks=0, sources={};
-                const sessions = {};
-                const events = [];
+                const feedDiv = document.getElementById('live-feed');
+                feedDiv.innerHTML = "";
+                let events = [];
                 snapshot.forEach(doc => events.push(doc.data()));
                 
                 const filtered = events.filter(e => !!e.isTest === isTest).sort((a,b) => b.createdAt - a.createdAt);
+                const sessions = {};
                 
                 filtered.forEach(e => {
                     const sid = e.sessionId || 'anon';
@@ -225,16 +236,13 @@
                 document.getElementById('kpi-unique').innerText = Object.keys(sessions).length;
                 document.getElementById('kpi-sales').innerText = clicks;
                 
-                // FEED V33
-                const feedDiv = document.getElementById('live-feed');
-                feedDiv.innerHTML = "";
                 Object.values(sessions).sort((a,b) => b.time - a.time).slice(0,30).forEach(s => {
                     let origin = s.source + (s.campaign && s.campaign !== 'none' ? ` • ${s.campaign}` : '');
                     let details = s.events.map(e => {
                         let icon="🔹", txt=e.type, color="text-slate-400";
                         if(e.type==='cta_click'||(e.data?.label||'').toLowerCase().includes('comprar')) { icon="💰"; color="text-emerald-400 font-bold"; txt=`Checkout (${e.data?.label||'btn'})`; }
                         else if(e.type==='click') { icon="👆"; txt=`Click (${e.data?.label})`; }
-                        else if(e.type==='quiz_answer') { icon="💬"; color="text-pink-400"; txt=`Quiz: ${e.data?.answer}`; }
+                        else if(e.type==='quiz_answer') { icon="💬"; color="text-pink-400"; txt=`Quiz: "${e.data?.answer}"`; }
                         else if(e.type==='video_progress') { icon="⏳"; txt=`Vídeo: ${e.data?.percent}%`; }
                         else if(e.type==='video_complete') { icon="✅"; color="text-green-400"; txt="Viu Tudo"; }
                         else if(e.type==='video_start') { icon="🎥"; txt="Play"; }
@@ -250,6 +258,11 @@
             const ctx = document.getElementById('sourceChart');
             if(myChart) myChart.destroy();
             myChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(data), datasets: [{ data: Object.values(data), backgroundColor: ['#6366f1', '#10b981', '#f43f5e', '#f59e0b'], borderWidth:0 }] }, options: { plugins: { legend: { position: 'right', labels: { color: '#64748b', font: { size: 9 } } } } } });
+        }
+
+        function renderFunnel(v, c) {
+            const cv = v>0?((c/v)*100).toFixed(1):0;
+            document.getElementById('funnel-container').innerHTML = `<div class="funnel-step active"><div class="flex justify-between"><div><p class="text-[10px] font-bold text-slate-500">VISITAS</p><p class="text-xl font-black text-white">${v}</p></div></div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:100%"></div></div></div><div class="funnel-step ${c>0?'active':''}"><div class="flex justify-between"><div><p class="text-[10px] font-bold text-emerald-500">CHECKOUT</p><p class="text-xl font-black text-emerald-400">${c}</p></div><div class="text-right"><p class="text-xs font-bold text-emerald-400">${cv}%</p></div></div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${cv}%; background:#10b981"></div></div></div>`;
         }
 
         window.salvarOfertaAtual = async () => { await updateDoc(doc(db,"offers",currentOfferId), { headline:document.getElementById('edit-headline').value, price:document.getElementById('edit-price').value, layout:document.getElementById('edit-layout').value, videoUrl:document.getElementById('edit-video').value, checkoutUrl:document.getElementById('edit-checkout').value }); alert("Salvo!"); }
