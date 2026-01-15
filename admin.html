@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper PACO | V30 (VSL Tracking)</title>
+    <title>Sniper PACO | V29 (Quiz Details)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -40,7 +40,6 @@
         ::-webkit-scrollbar-track { background: #0b0c15; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
 
-        /* CSS DO FEED DETALHADO */
         .feed-session { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 5px; border-radius: 6px; }
         .feed-session:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
         .feed-header { padding: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
@@ -120,22 +119,10 @@
 
             <div class="space-y-6">
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="glass-panel p-4 border-l-2 border-indigo-500">
-                        <p class="metric-label">Visitantes</p>
-                        <p id="kpi-unique" class="metric-value">0</p>
-                    </div>
-                    <div class="glass-panel p-4 border-l-2 border-emerald-500">
-                        <p class="metric-label">Checkout</p>
-                        <p id="kpi-sales" class="metric-value">0</p>
-                    </div>
-                    <div class="glass-panel p-4 border-l-2 border-pink-500">
-                        <p class="metric-label">Retenção Quiz</p>
-                        <p id="kpi-retention" class="metric-value">0%</p>
-                    </div>
-                    <div class="glass-panel p-4 border-l-2 border-amber-500">
-                        <p class="metric-label">Melhor Canal</p>
-                        <p id="kpi-source" class="metric-value truncate text-base pt-1">...</p>
-                    </div>
+                    <div class="glass-panel p-4 border-l-2 border-indigo-500"><p class="metric-label">Visitantes</p><p id="kpi-unique" class="metric-value">0</p></div>
+                    <div class="glass-panel p-4 border-l-2 border-emerald-500"><p class="metric-label">Checkout</p><p id="kpi-sales" class="metric-value">0</p></div>
+                    <div class="glass-panel p-4 border-l-2 border-pink-500"><p class="metric-label">Retenção Quiz</p><p id="kpi-retention" class="metric-value">0%</p></div>
+                    <div class="glass-panel p-4 border-l-2 border-amber-500"><p class="metric-label">Melhor Canal</p><p id="kpi-source" class="metric-value truncate text-base pt-1">...</p></div>
                 </div>
 
                 <div class="glass-panel p-4">
@@ -169,12 +156,8 @@
                                 <input type="text" id="edit-price" class="input-sniper text-center font-bold text-emerald-400">
                             </div>
                         </div>
-
-                        <label>CHECKOUT (Link Kiwify/Stripe)</label>
-                        <input type="text" id="edit-checkout" class="input-sniper border-emerald-500/30" placeholder="https://pay...">
-
-                        <label>VÍDEO (Opcional - Youtube)</label>
-                        <input type="text" id="edit-video" class="input-sniper" placeholder="Cole o link aqui...">
+                        <label>CHECKOUT</label><input type="text" id="edit-checkout" class="input-sniper border-emerald-500/30">
+                        <label>VÍDEO</label><input type="text" id="edit-video" class="input-sniper">
 
                         <div class="pt-2">
                             <button onclick="salvarOfertaAtual()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg text-xs transition">💾 SALVAR ALTERAÇÕES</button>
@@ -189,7 +172,7 @@
                     <span id="feed-badge" class="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded">REAL</span>
                 </div>
                 <div class="overflow-y-auto p-4 space-y-3 flex-1 custom-scroll" id="live-feed">
-                    <p class="text-center text-slate-600 mt-10 text-xs">Aguardando visitantes...</p>
+                    <p class="text-center text-slate-600 mt-10 text-xs">Aguardando...</p>
                 </div>
             </div>
         </div>
@@ -263,7 +246,6 @@
             iniciarSistema();
         }
 
-        // --- RELATÓRIO ---
         window.copiarRelatorio = () => {
             const views = document.getElementById('kpi-unique').innerText;
             const clicks = document.getElementById('kpi-sales').innerText;
@@ -271,7 +253,6 @@
             navigator.clipboard.writeText(text).then(() => alert("Copiado!"));
         }
 
-        // CARREGAMENTO INTELIGENTE (CORE)
         window.carregarDadosDaOferta = async () => {
             const select = document.getElementById('offer-selector');
             currentOfferId = select.value;
@@ -282,7 +263,6 @@
             if(isTest) { badge.innerText = "MODO TESTE"; badge.className = "text-[9px] bg-amber-500/20 text-amber-400 px-2 py-1 rounded"; } 
             else { badge.innerText = "DADOS REAIS"; badge.className = "text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded"; }
 
-            // Carrega Editor
             const docSnap = await getDoc(doc(db, "offers", currentOfferId));
             if(docSnap.exists()) {
                 const d = docSnap.data();
@@ -293,7 +273,6 @@
                 document.getElementById('edit-checkout').value = d.checkoutUrl || '';
             }
 
-            // FEED E ANALYTICS
             const q = query(collection(db, "events"), where("offerId", "==", currentOfferId));
             if(unsubscribeFeed) unsubscribeFeed();
             
@@ -302,34 +281,23 @@
                 let sources = {}; 
                 const feedContainer = document.getElementById('live-feed');
                 feedContainer.innerHTML = "";
-                
                 let events = [];
                 snapshot.forEach(doc => events.push({ id: doc.id, ...doc.data() }));
                 
-                // FILTRO DE MODO (TESTE vs REAL)
                 events = events.filter(e => !!e.isTest === isTest);
                 events.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
-                if(events.length === 0) feedContainer.innerHTML = "<p class='text-center text-slate-600 text-xs mt-10'>Sem dados neste modo.</p>";
+                if(events.length === 0) feedContainer.innerHTML = "<p class='text-center text-slate-600 text-xs mt-10'>Sem dados.</p>";
 
                 const sessions = {};
                 events.forEach(e => {
                     const sid = e.sessionId || 'anon';
                     let source = e.campaign?.source || 'direto';
-                    // --- CORREÇÃO: CAPTURA A CAMPANHA TAMBÉM ---
                     let campaign = e.campaign?.campaign || ''; 
 
                     if(!sessions[sid]) {
-                        sessions[sid] = { 
-                            id: sid, 
-                            events: [], 
-                            source: source,
-                            campaign: campaign, // Guarda a campanha
-                            time: e.createdAt?.seconds || 0, 
-                            isTest: e.isTest 
-                        };
+                        sessions[sid] = { id: sid, events: [], source: source, campaign: campaign, time: e.createdAt?.seconds || 0, isTest: e.isTest };
                     } else {
-                        // Atualiza se encontrar uma origem melhor
                         if((sessions[sid].source === 'direto' || sessions[sid].source === 'encurtador') && (source !== 'direto' && source !== 'encurtador')) {
                             sessions[sid].source = source;
                             sessions[sid].campaign = campaign;
@@ -343,20 +311,20 @@
                     if(e.type === 'cta_click') clicks++;
                 });
 
-                // Métricas
                 let totalSessions = Object.keys(sessions).length;
-                let sourceCounts = {};
-                Object.values(sessions).forEach(s => { sourceCounts[s.source] = (sourceCounts[s.source] || 0) + 1; });
-                let bestChannel = Object.keys(sourceCounts).length > 0 ? Object.keys(sourceCounts).reduce((a, b) => sourceCounts[a] > sourceCounts[b] ? a : b) : "-";
+                Object.values(sessions).forEach(s => { 
+                     if(s.source !== 'encurtador') sources[s.source] = (sources[s.source] || 0) + 1; 
+                });
+                
+                let bestChannel = Object.keys(sources).length > 0 ? Object.keys(sources).reduce((a, b) => sources[a] > sources[b] ? a : b) : "-";
 
-                // Feed Visual
+                updateSourceChart(sources);
+
                 const sortedSessions = Object.values(sessions).sort((a,b) => b.time - a.time);
-
                 sortedSessions.slice(0, 30).forEach(s => {
                     const timeStr = new Date(s.time * 1000).toLocaleTimeString();
                     const badge = s.isTest ? '<span class="text-[8px] bg-amber-500/20 text-amber-500 px-1 rounded ml-1">TESTE</span>' : '';
                     
-                    // --- CORREÇÃO: EXIBE ORIGEM + CAMPANHA ---
                     let originText = s.source;
                     if(s.campaign && s.campaign !== 'none') originText += ` • ${s.campaign}`;
 
@@ -366,21 +334,15 @@
                         let icon="🔹"; let color="text-slate-400"; let txt=e.type;
                         let label = e.data?.label || ''; 
                         
-                        // --- LÓGICA V30: EVENTOS DE VÍDEO ---
+                        // --- AQUI ESTÁ A LÓGICA DO FEED QUE VOCÊ PEDIU ---
                         if(e.type === 'cta_click' || label.toLowerCase().includes('comprar')) { 
                             icon="💰"; color="text-emerald-400 font-bold"; txt = `click ( ${label || 'CHECKOUT'} )`; 
                         } else if(e.type === 'click') { 
                             icon="👆"; color="text-slate-300"; txt = `click ( ${label} )`; 
                         } else if(e.type === 'quiz_answer') { 
-                            icon="💬"; color="text-pink-400 font-bold"; txt = `Quiz: "${e.data?.answer}"`;
+                            icon="💬"; color="text-pink-400 font-bold"; txt = `Quiz: "${e.data?.answer}"`; // MOSTRA A RESPOSTA
                         } else if(e.type === 'offer_view') { 
                             icon="👀"; color="text-indigo-400"; txt="Visualizou Página"; 
-                        } else if(e.type === 'video_start') { 
-                            icon="🎥"; color="text-amber-400"; txt="Deu Play no Vídeo";
-                        } else if(e.type === 'video_progress') {
-                            icon="⏳"; color="text-amber-200"; txt=`Viu ${e.data?.percent}% do Vídeo`;
-                        } else if(e.type === 'video_complete') {
-                            icon="✅"; color="text-green-400"; txt="Viu o Vídeo Todo";
                         } else if(e.type === 'short_link_click') { 
                             icon="🔗"; color="text-amber-400"; txt=`Encurtador (${e.alias})`; 
                         }
