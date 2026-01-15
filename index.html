@@ -4,150 +4,227 @@
     <meta charset="UTF-8">
     <title>Oferta Especial</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
+    
     <style>
-        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; transition: 0.3s; }
+        /* ESTILOS BASE */
+        body { margin: 0; padding: 0; transition: 0.3s; font-family: 'Inter', sans-serif; }
         .hidden { display: none !important; }
         #loading { position: fixed; inset: 0; background: #000; color: #0f0; display: flex; justify-content: center; align-items: center; z-index: 9999; font-weight: bold; }
-        
-        /* TEMAS */
+
+        /* --- TEMA 1: DARK (Padrão) --- */
         body.layout-dark { background-color: #0b0c15; color: white; }
         .layout-dark .container { max-width: 500px; margin: 0 auto; padding: 20px; }
+        .layout-dark h1 { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 20px; }
+        .layout-dark p { color: #94a3b8; line-height: 1.6; }
+        .layout-dark .btn { background: #10b981; color: #064e3b; width: 100%; padding: 18px; border-radius: 8px; font-weight: 800; text-transform: uppercase; border: none; cursor: pointer; }
+        
+        /* --- TEMA 2: CLEAN (Branco) --- */
         body.layout-clean { background-color: #f8fafc; color: #1e293b; }
-        .layout-clean .container { max-width: 600px; margin: 40px auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .layout-clean .container { max-width: 600px; margin: 40px auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .layout-clean h1 { color: #0f172a; font-size: 28px; }
+        .layout-clean .btn { background: #2563eb; color: white; width: 100%; padding: 18px; border-radius: 8px; font-weight: 800; text-transform: uppercase; border: none; cursor: pointer; }
+
+        /* --- TEMA 3: ARTIGO (Blog) --- */
+        body.layout-artigo { background-color: #fff; color: #333; font-family: 'Merriweather', serif; }
+        .layout-artigo .top-bar { background: #cc0000; color: white; text-align: center; padding: 5px; font-family: sans-serif; font-size: 10px; font-weight: bold; }
+        .layout-artigo .container { max-width: 700px; margin: 0 auto; padding: 20px; }
+        .layout-artigo h1 { font-family: sans-serif; font-size: 32px; font-weight: 900; color: #000; }
+        .layout-artigo .meta { color: #666; font-size: 12px; font-family: sans-serif; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+        .layout-artigo .btn { background: #cc0000; color: white; padding: 15px 30px; font-weight: bold; border: none; cursor: pointer; font-family: sans-serif; display: block; margin: 20px auto; }
+
+        /* --- TEMA 4: QUIZ (Preto e Verde) --- */
         body.layout-quiz { background-color: #0b0c15; color: white; }
         .layout-quiz .container { max-width: 500px; margin: 40px auto; padding: 20px; text-align: center; }
+        .quiz-option { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; cursor: pointer; text-align: left; transition: all 0.2s; font-weight: 600; }
+        .quiz-option:hover { border-color: #10b981; background: #334155; }
+        #progress-bar-bg { width: 100%; height: 6px; background: #334155; border-radius: 3px; margin-bottom: 30px; }
+        #progress-bar { height: 100%; background: #10b981; width: 0%; border-radius: 3px; transition: width 0.3s; }
 
-        /* VIDEO ZOOM HACK (SEM BORDAS) */
-        .video-box { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #000; margin: 20px 0; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
-        .video-box iframe { position: absolute; top: -17%; left: -17%; width: 134%; height: 134%; }
+        /* VÍDEO (HACK ZOOM + CORTE) */
+        .video-box { 
+            position: relative; 
+            padding-bottom: 56.25%; 
+            height: 0; 
+            overflow: hidden; 
+            background: #000; 
+            margin: 20px 0; 
+            display: none; 
+            border-radius: 8px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
         
-        .btn { background: #10b981; color: #064e3b; width: 100%; padding: 18px; border-radius: 8px; font-weight: 800; text-transform: uppercase; border: none; cursor: pointer; margin-top: 20px; }
-        .quiz-option { background: #1e293b; border: 1px solid #334155; padding: 15px; margin-bottom: 10px; border-radius: 8px; cursor: pointer; text-align: left; }
-        .quiz-option:hover { border-color: #10b981; }
+        .video-box iframe { 
+            position: absolute; 
+            /* ZOOM DE 140% PARA EMPURRAR AS BORDAS (TÍTULO E RODAPÉ) PRA FORA */
+            top: -20%; 
+            left: -20%; 
+            width: 140%; 
+            height: 140%; 
+        }
+
+        #test-banner { background: #f59e0b; color: black; text-align: center; font-size: 10px; font-weight: bold; padding: 5px; position: fixed; top: 0; width: 100%; z-index: 9999; display: none; }
     </style>
 </head>
 <body class="layout-dark">
 
+    <div id="test-banner">🧪 MODO TESTE ATIVADO</div>
     <div id="loading">CARREGANDO...</div>
 
+    <div id="top-bar" class="top-bar hidden">NOTÍCIA URGENTE • ECONOMIA</div>
+    
     <div id="quiz-area" class="container hidden">
-        <div style="background:#334155;height:4px;width:100%;margin-bottom:20px"><div id="progress-bar" style="background:#10b981;height:100%;width:0%"></div></div>
-        <h2 id="quiz-question" style="font-size:20px;font-weight:800;margin-bottom:20px">...</h2>
+        <div id="progress-bar-bg"><div id="progress-bar"></div></div>
+        <h2 id="quiz-question" style="font-size: 22px; font-weight: 800; margin-bottom: 20px;">...</h2>
         <div id="quiz-options"></div>
     </div>
 
     <div id="app" class="container hidden">
-        <h1 id="headline" style="font-size:24px;font-weight:800;margin-bottom:20px">...</h1>
-        <div id="videoArea" class="video-box" style="display:none">
+        <h1 id="headline">...</h1>
+        <div id="meta-info" class="meta hidden">Por <strong>Redação</strong> • Atualizado hoje</div>
+
+        <div id="videoArea" class="video-box">
             <iframe id="videoFrame" src="" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
         </div>
-        <div id="bodyText" style="opacity:0.8;line-height:1.6">...</div>
-        <p id="priceDisplay" style="font-size:24px;font-weight:bold;margin-top:20px;text-align:center">...</p>
-        <button id="buyBtn" class="btn">...</button>
+
+        <div id="bodyText">...</div>
+        
+        <div style="margin: 30px 0; text-align: center;">
+            <p id="priceDisplay" style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">...</p>
+            <button id="buyBtn" class="btn">...</button>
+        </div>
+        <div style="text-align: center; font-size: 10px; opacity: 0.5; margin-top: 20px;">Compra Segura • SSL</div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { trackEvent } from "./tracker.js"; 
 
-        // CHAVE PACO-CORE (CORRETA)
         const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
-        // TRACKER SIMPLIFICADO EMBUTIDO (PARA NÃO DEPENDER DE ARQUIVO EXTERNO E NÃO TRAVAR)
-        const urlParams = new URLSearchParams(window.location.search);
-        const offerId = urlParams.get('id');
-        const isTest = urlParams.get('mode') === 'test';
-        let sessionId = sessionStorage.getItem('paco_sid');
-        if(!sessionId) { sessionId = 'u_' + Math.random().toString(36).substr(2, 9); sessionStorage.setItem('paco_sid', sessionId); }
-
-        let source = urlParams.get('utm_source');
-        if (!source) {
-            const ref = document.referrer;
-            if (ref.includes('instagram')) source = 'instagram';
-            else if (ref.includes('facebook')) source = 'facebook';
-            else if (ref.includes('youtube')) source = 'youtube';
-            else if (ref) source = new URL(ref).hostname;
-            else source = 'direto';
-        }
-
-        async function track(name, data={}) {
-            if(!offerId) return;
-            try { await addDoc(collection(db, "events"), { offerId, sessionId, type: name, isTest, campaign: {source, campaign: urlParams.get('utm_campaign')||''}, createdAt: serverTimestamp(), data }); } catch(e){}
-        }
-
-        const questions = [ { t: "Objetivo?", a: ["Dinheiro", "Tempo", "Conhecimento"] }, { t: "Obstáculo?", a: ["Grana", "Foco", "Medo"] }, { t: "Investimento?", a: ["Pouco", "Médio", "Alto"] }, { t: "Bora?", a: ["Sim", "Talvez"] } ];
+        const questions = [
+            { t: "Qual seu principal objetivo?", a: ["Independência Financeira", "Liberdade de Tempo", "Conhecimento", "Outro"] },
+            { t: "O que te impede hoje?", a: ["Falta de Dinheiro", "Falta de Método", "Procrastinação", "Medo"] },
+            { t: "Quanto pode investir?", a: ["Até R$ 100", "Até R$ 500", "O necessário", "Nada"] },
+            { t: "Posso te ajudar?", a: ["Sim, mostre como", "Talvez", "Não sei", "Não"] }
+        ];
 
         async function init() {
-            if (!offerId) { document.body.innerHTML = "Link inválido"; return; }
+            const params = new URLSearchParams(window.location.search);
+            const offerId = params.get('id');
+            const isTest = params.get('mode') === 'test';
+
+            if (!offerId) { document.body.innerHTML = "<div style='color:white;text-align:center;padding:50px;'>Erro: Link inválido.</div>"; return; }
+            if (isTest) document.getElementById('test-banner').style.display = 'block';
+
             try {
                 const docSnap = await getDoc(doc(db, "offers", offerId));
                 if (docSnap.exists()) {
                     const data = docSnap.data();
+
                     let layout = data.layout || 'dark';
-                    if(layout === 'vsl') layout = 'dark';
+                    if(layout === 'vsl') layout = 'dark'; 
                     document.body.className = `layout-${layout}`;
 
-                    if(layout === 'quiz') { document.getElementById('loading').classList.add('hidden'); startQuiz(data); return; }
-                    
+                    if(layout === 'quiz') {
+                        document.getElementById('loading').classList.add('hidden');
+                        startQuiz(data);
+                        return;
+                    }
+
+                    if(layout === 'artigo') {
+                        document.getElementById('top-bar').classList.remove('hidden');
+                        document.getElementById('meta-info').classList.remove('hidden');
+                    }
+
                     renderOffer(data);
-                }
+
+                } else { document.body.innerHTML = "Oferta não encontrada"; }
             } catch (e) { console.error(e); }
         }
 
         function renderOffer(data) {
             document.getElementById('headline').innerText = data.headline;
-            document.getElementById('bodyText').innerText = data.bodyText;
+            document.getElementById('bodyText').innerHTML = data.bodyText ? data.bodyText.replace(/\n/g, '<br>') : '';
             document.getElementById('priceDisplay').innerText = "R$ " + data.price;
             document.getElementById('buyBtn').innerText = data.ctaText || "COMPRAR";
 
             if(data.videoUrl && data.videoUrl.length > 5) {
-                let vUrl = data.videoUrl.replace("watch?v=", "embed/").replace("youtu.be/", "www.youtube.com/embed/");
-                // Hack simples de URL para limpar
-                vUrl += (vUrl.includes('?') ? '&' : '?') + "controls=0&rel=0&playsinline=1&modestbranding=1&iv_load_policy=3&showinfo=0&fs=0";
-                document.getElementById('videoFrame').src = vUrl;
-                document.getElementById('videoArea').style.display = "block";
+                // EXTRAIR ID DO VÍDEO (ESSENCIAL PARA O HACK DA PLAYLIST)
+                let videoId = "";
+                if(data.videoUrl.includes("youtu.be/")) videoId = data.videoUrl.split("youtu.be/")[1];
+                else if(data.videoUrl.includes("v=")) videoId = data.videoUrl.split("v=")[1].split("&")[0];
+                
+                // SE ACHOU ID, MONTA A URL BLINDADA
+                if(videoId) {
+                    let vUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&rel=0&modestbranding=1&iv_load_policy=3&showinfo=0&loop=1&playlist=${videoId}`;
+                    document.getElementById('videoFrame').src = vUrl;
+                    document.getElementById('videoArea').style.display = "block";
+                }
             }
 
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('app').classList.remove('hidden');
-            track('offer_view');
             
+            trackEvent('offer_view');
+
             document.getElementById('buyBtn').onclick = () => {
-                track('cta_click');
+                trackEvent('cta_click');
                 const btn = document.getElementById('buyBtn');
                 btn.innerText = "AGUARDE...";
-                if(data.checkoutUrl) window.location.href = data.checkoutUrl;
-                else alert("Link não configurado");
+                if(data.checkoutUrl) {
+                    let url = data.checkoutUrl.startsWith('http') ? data.checkoutUrl : 'https://' + data.checkoutUrl;
+                    setTimeout(() => window.location.href = url, 500);
+                } else { alert("Link não configurado."); btn.innerText = data.ctaText; }
             };
         }
 
         function startQuiz(offerData) {
-            document.getElementById('quiz-area').classList.remove('hidden');
-            track('offer_view');
-            let qIdx = 0;
-            function showQ() {
-                const q = questions[qIdx];
+            const quizArea = document.getElementById('quiz-area');
+            quizArea.classList.remove('hidden');
+            trackEvent('offer_view');
+
+            let currentQ = 0;
+
+            function renderQuestion() {
+                const q = questions[currentQ];
                 document.getElementById('quiz-question').innerText = q.t;
                 const opts = document.getElementById('quiz-options');
-                opts.innerHTML = "";
-                document.getElementById('progress-bar').style.width = ((qIdx/questions.length)*100)+"%";
+                opts.innerHTML = '';
+                document.getElementById('progress-bar').style.width = ((currentQ / questions.length) * 100) + "%";
+
                 q.a.forEach(ans => {
-                    const d = document.createElement('div');
-                    d.className = 'quiz-option'; d.innerText = ans;
-                    d.onclick = () => { track('quiz_answer', {answer: ans}); qIdx++; if(qIdx<questions.length) showQ(); else finishQuiz(offerData); };
-                    opts.appendChild(d);
+                    const btn = document.createElement('div');
+                    btn.className = 'quiz-option';
+                    btn.innerText = ans;
+                    btn.onclick = () => {
+                        trackEvent('quiz_answer', { step: currentQ+1, answer: ans });
+                        currentQ++;
+                        if(currentQ < questions.length) {
+                            renderQuestion();
+                        } else {
+                            finishQuiz(offerData);
+                        }
+                    };
+                    opts.appendChild(btn);
                 });
             }
-            showQ();
+            renderQuestion();
         }
 
         function finishQuiz(offerData) {
             document.getElementById('quiz-area').classList.add('hidden');
-            document.getElementById('loading').classList.remove('hidden');
-            document.getElementById('loading').innerText = "ANALISANDO...";
-            setTimeout(() => { document.body.className = 'layout-dark'; renderOffer(offerData); }, 1500);
+            const load = document.getElementById('loading');
+            load.classList.remove('hidden');
+            load.innerText = "ANALISANDO...";
+            
+            setTimeout(() => {
+                document.body.className = 'layout-dark'; 
+                renderOffer(offerData);
+            }, 1500);
         }
 
         init();
