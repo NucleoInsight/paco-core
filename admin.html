@@ -3,16 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PACO V11 | Checkout Ready</title>
+    <title>PACO V12 | Final Control</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
     <style>
         body { background: #0b0c15; color: #a5b4fc; font-family: 'Inter', sans-serif; }
         .glass { background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(10px); }
-        .input-dark { background: #0f172a; border: 1px solid #334155; color: white; padding: 10px; border-radius: 6px; width: 100%; font-size: 13px; }
+        .input-dark { background: #0f172a; border: 1px solid #334155; color: white; padding: 10px; border-radius: 6px; width: 100%; font-size: 13px; margin-top: 5px;}
         .input-dark:focus { border-color: #6366f1; outline: none; }
-        label { font-size: 10px; font-weight: 900; color: #64748b; display: block; margin-bottom: 4px; uppercase; }
-        .highlight-select { background: #f59e0b; color: #000; font-weight: bold; border: none; }
+        label { font-size: 10px; font-weight: 900; color: #94a3b8; display: block; margin-top: 10px; uppercase; }
         .hidden { display: none; }
     </style>
 </head>
@@ -20,17 +19,17 @@
 
     <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#0b0c15]">
         <div class="glass p-8 w-full max-w-md text-center rounded-xl">
-            <h1 class="text-3xl font-black text-white mb-6">PACO <span class="text-indigo-500">V11</span></h1>
-            <input type="email" id="email" class="input-dark mb-2" placeholder="Email">
-            <input type="password" id="password" class="input-dark mb-4" placeholder="Senha">
-            <button onclick="fazerLogin()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-500 transition">ACESSAR</button>
+            <h1 class="text-3xl font-black text-white mb-6">PACO <span class="text-emerald-500">V12</span></h1>
+            <input type="email" id="email" class="input-dark" placeholder="Email">
+            <input type="password" id="password" class="input-dark" placeholder="Senha">
+            <button onclick="fazerLogin()" class="w-full bg-indigo-600 text-white font-bold py-3 mt-4 rounded-lg hover:bg-indigo-500 transition">ENTRAR</button>
             <p id="error-msg" class="text-red-400 text-xs mt-4"></p>
         </div>
     </div>
 
-    <div id="dashboard" class="max-w-6xl mx-auto hidden">
+    <div id="dashboard" class="max-w-5xl mx-auto hidden">
         <header class="flex justify-between items-center mb-8 pb-4 border-b border-white/5">
-            <h1 class="text-xl font-black text-white">GERENCIADOR DE <span class="text-emerald-400">VENDAS</span></h1>
+            <h1 class="text-xl font-black text-white">GERENCIADOR DE <span class="text-emerald-400">OFERTAS</span></h1>
             <div class="flex gap-2">
                 <button onclick="criarNovaOferta()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded font-bold text-xs">+ CRIAR OFERTA</button>
                 <button onclick="logout()" class="bg-slate-800 text-slate-400 px-4 py-2 rounded font-bold text-xs">SAIR</button>
@@ -38,13 +37,13 @@
         </header>
 
         <div id="lista-ofertas" class="space-y-8">
-            <div class="text-center text-slate-500 animate-pulse mt-10">Carregando sistema...</div>
+            <div class="text-center text-slate-500 animate-pulse mt-10">Conectando...</div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, addDoc, deleteDoc, serverTimestamp, query, where, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, addDoc, deleteDoc, serverTimestamp, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
@@ -56,7 +55,8 @@
 
         window.criarNovaOferta = async () => {
             if(!confirm("Criar nova oferta?")) return;
-            const ref = await addDoc(collection(db, "offers"), { headline: "Nova Oferta", bodyText: "Texto...", ctaText: "COMPRAR AGORA", price: "9,90", layout: "index.html", videoUrl: "", checkoutUrl: "", createdAt: serverTimestamp() });
+            // Layout padrão é 'dark'. Video vazio.
+            const ref = await addDoc(collection(db, "offers"), { headline: "Nova Oferta", bodyText: "Texto...", ctaText: "COMPRAR AGORA", price: "4,99", layout: "dark", videoUrl: "", checkoutUrl: "", createdAt: serverTimestamp() });
             await addDoc(collection(db, "metrics"), { offerId: ref.id, sales: 0, revenue: 0, views: 0, statusVisual: "cinza" });
             carregarPainel();
         }
@@ -70,122 +70,103 @@
                     bodyText: document.getElementById(`body-${offerId}`).value,
                     ctaText: document.getElementById(`cta-${offerId}`).value,
                     price: document.getElementById(`price-${offerId}`).value,
-                    layout: document.getElementById(`layout-${offerId}`).value,
-                    videoUrl: document.getElementById(`video-${offerId}`).value,
-                    checkoutUrl: document.getElementById(`checkout-${offerId}`).value // SALVANDO O LINK!
+                    layout: document.getElementById(`layout-${offerId}`).value, // dark ou clean
+                    videoUrl: document.getElementById(`video-${offerId}`).value, // link do video
+                    checkoutUrl: document.getElementById(`checkout-${offerId}`).value
                 });
                 await updateDoc(doc(db, "metrics", metricId), {
                     sales: Number(document.getElementById(`sales-${metricId}`).value),
                     views: Number(document.getElementById(`views-${metricId}`).value),
                     statusVisual: document.getElementById(`status-${metricId}`).value
                 });
-                alert("✅ SALVO! Link de checkout atualizado.");
+                alert("✅ SALVO!");
             } catch(e) { alert("Erro: " + e.message); }
         }
 
         window.carregarPainel = async () => {
             const container = document.getElementById('lista-ofertas');
             const snaps = await getDocs(collection(db, "metrics"));
-            if(snaps.empty) { container.innerHTML = "Nada aqui."; return; }
             container.innerHTML = "";
+
+            if(snaps.empty) { container.innerHTML = "Nenhuma oferta."; return; }
 
             for (const mDoc of snaps.docs) {
                 const m = mDoc.data();
                 const offerId = m.offerId;
-                let o = { headline:"...", layout:"index.html", checkoutUrl: "" };
+                let o = { headline:"...", layout:"dark", checkoutUrl: "" };
                 try { const os = await getDoc(doc(db, "offers", offerId)); if(os.exists()) o = os.data(); } catch(e){}
 
-                let statusColor = m.statusVisual === 'verde' ? 'border-emerald-500' : (m.statusVisual === 'vermelho' ? 'border-red-500' : 'border-slate-600');
-                const linkFinal = `${o.layout}?id=${offerId}`;
+                let statusBorder = m.statusVisual === 'verde' ? 'border-emerald-500' : (m.statusVisual === 'vermelho' ? 'border-red-500' : 'border-slate-600');
+                
+                // Link sempre aponta para index.html (ele resolve tudo)
+                const linkFinal = `index.html?id=${offerId}`;
 
                 const html = `
-                <div class="glass p-6 rounded-xl border-l-4 ${statusColor} relative">
+                <div class="glass p-6 rounded-xl border-l-4 ${statusBorder} relative">
                     
-                    <div class="absolute top-4 right-4 flex gap-2">
-                        <select id="layout-${offerId}" class="bg-amber-400 text-black font-bold text-xs px-2 py-1 rounded cursor-pointer border-none focus:ring-2 focus:ring-amber-500">
-                            <option value="index.html" ${o.layout==='index.html'?'selected':''}>📄 MODELO TEXTO (DARK)</option>
-                            <option value="clean.html" ${o.layout==='clean.html'?'selected':''}>⬜ MODELO CLEAN (BRANCO)</option>
-                            <option value="vsl.html" ${o.layout==='vsl.html'?'selected':''}>🎥 MODELO VÍDEO (VSL)</option>
-                            <option value="artigo.html" ${o.layout==='artigo.html'?'selected':''}>📰 MODELO NOTÍCIA</option>
-                        </select>
-                        <button onclick="excluirOferta('${mDoc.id}')" class="bg-red-900/20 text-red-500 px-3 rounded font-bold hover:bg-red-500 hover:text-white transition">X</button>
-                    </div>
-
-                    <div class="mb-6 pr-40">
-                        <div class="flex items-center gap-2 mb-2">
+                    <div class="flex justify-between items-start mb-6">
+                         <div>
                             <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono">ID: ${offerId}</span>
-                            <a href="./${linkFinal}" target="_blank" class="text-[10px] text-emerald-400 hover:underline">ABRIR LINK FINAL ↗</a>
+                            <h3 class="text-white font-bold text-lg mt-2">${o.headline}</h3>
                         </div>
-                        <input type="text" id="headline-${offerId}" value="${o.headline}" class="bg-transparent text-xl font-bold text-white w-full border-b border-dashed border-slate-600 focus:border-indigo-500 outline-none pb-1" placeholder="Escreva a Headline aqui...">
+                        <div class="flex gap-2">
+                             <a href="./${linkFinal}" target="_blank" class="bg-emerald-900/30 text-emerald-400 px-3 py-1 rounded text-xs font-bold border border-emerald-500/30">ABRIR SITE ↗</a>
+                             <button onclick="excluirOferta('${mDoc.id}')" class="bg-red-900/20 text-red-500 px-3 py-1 rounded font-bold text-xs">X</button>
+                        </div>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="space-y-4">
-                            <div>
-                                <label class="text-emerald-400">🔗 LINK DE CHECKOUT (Onde o dinheiro entra)</label>
-                                <input type="text" id="checkout-${offerId}" value="${o.checkoutUrl||''}" class="input-dark border-emerald-500/30 text-emerald-300" placeholder="https://pay.kiwify.com.br/...">
-                            </div>
-                            <div>
-                                <label>Corpo do Texto</label>
-                                <textarea id="body-${offerId}" class="input-dark h-24">${o.bodyText||''}</textarea>
-                            </div>
-                            <div>
-                                <label>Link Vídeo (Opcional)</label>
-                                <input type="text" id="video-${offerId}" value="${o.videoUrl||''}" class="input-dark">
-                            </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        
+                        <div class="bg-black/20 p-4 rounded border border-white/5">
+                            <h4 class="text-xs text-white font-bold mb-3 border-b border-white/10 pb-2">⚙️ CONFIGURAÇÃO</h4>
+                            
+                            <label class="text-emerald-400">TEMA DO SITE</label>
+                            <select id="layout-${offerId}" class="input-dark bg-slate-800 font-bold">
+                                <option value="dark" ${o.layout==='dark'?'selected':''}>🌑 DARK MODE (Preto)</option>
+                                <option value="clean" ${o.layout==='clean'?'selected':''}>⬜ CLEAN MODE (Branco)</option>
+                            </select>
+
+                            <label class="text-emerald-400">VÍDEO (OPCIONAL)</label>
+                            <input type="text" id="video-${offerId}" value="${o.videoUrl||''}" class="input-dark" placeholder="Cole link do YouTube aqui para ativar vídeo">
+                            <p class="text-[9px] text-slate-500 mt-1">*Se deixar vazio, o vídeo some do site.</p>
                         </div>
 
-                        <div class="space-y-4">
-                            <div class="grid grid-cols-2 gap-2">
-                                <div><label>Texto Botão</label><input type="text" id="cta-${offerId}" value="${o.ctaText||'COMPRAR'}" class="input-dark"></div>
-                                <div><label>Preço</label><input type="text" id="price-${offerId}" value="${o.price}" class="input-dark"></div>
+                        <div>
+                            <label>Headline</label>
+                            <input type="text" id="headline-${offerId}" value="${o.headline}" class="input-dark">
+                            
+                            <label>Link de Checkout (Pagamento)</label>
+                            <input type="text" id="checkout-${offerId}" value="${o.checkoutUrl||''}" class="input-dark border-emerald-500/50 text-emerald-300" placeholder="https://pay.kiwify...">
+
+                            <div class="flex gap-2">
+                                <div class="w-1/2"><label>Botão</label><input type="text" id="cta-${offerId}" value="${o.ctaText||'COMPRAR'}" class="input-dark"></div>
+                                <div class="w-1/2"><label>Preço</label><input type="text" id="price-${offerId}" value="${o.price}" class="input-dark"></div>
                             </div>
                             
-                            <div class="bg-slate-900/50 p-3 rounded border border-white/5 mt-4">
-                                <label class="mb-2">RESULTADOS</label>
-                                <div class="flex justify-between text-center gap-2 mb-2">
-                                    <div class="w-1/2 bg-black/20 rounded p-1"><span class="block text-[10px] text-slate-400">VIEWS</span><input type="number" id="views-${mDoc.id}" value="${m.views||0}" class="bg-transparent text-center font-bold w-full text-white"></div>
-                                    <div class="w-1/2 bg-black/20 rounded p-1 border border-emerald-500/20"><span class="block text-[10px] text-emerald-400">VENDAS</span><input type="number" id="sales-${mDoc.id}" value="${m.sales||0}" class="bg-transparent text-center font-bold w-full text-emerald-400"></div>
+                            <label>Corpo do Texto</label>
+                            <textarea id="body-${offerId}" class="input-dark h-20">${o.bodyText||''}</textarea>
+                        </div>
+
+                        <div class="flex flex-col justify-between">
+                             <div>
+                                <label>MÉTRICAS</label>
+                                <div class="flex gap-2 mb-2">
+                                    <input type="number" id="views-${mDoc.id}" value="${m.views||0}" class="input-dark text-center" placeholder="Views">
+                                    <input type="number" id="sales-${mDoc.id}" value="${m.sales||0}" class="input-dark text-center border-emerald-500 text-emerald-400" placeholder="Vendas">
                                 </div>
                                 <select id="status-${mDoc.id}" class="input-dark text-center font-bold">
                                     <option value="cinza" ${m.statusVisual==='cinza'?'selected':''}>EM VALIDAÇÃO</option>
-                                    <option value="verde" ${m.statusVisual==='verde'?'selected':''}>VALIDADA ($)</option>
-                                    <option value="vermelho" ${m.statusVisual==='vermelho'?'selected':''}>REPROVADA</option>
+                                    <option value="verde" ${m.statusVisual==='verde'?'selected':''}>VALIDADA 🤑</option>
+                                    <option value="vermelho" ${m.statusVisual==='vermelho'?'selected':''}>REPROVADA ☠️</option>
                                 </select>
-                            </div>
-                            
-                            <button onclick="salvarTudo('${offerId}', '${mDoc.id}')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded text-xs transition">💾 SALVAR ALTERAÇÕES</button>
+                             </div>
+                             <button onclick="salvarTudo('${offerId}', '${mDoc.id}')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded text-xs transition mt-4">💾 SALVAR TUDO</button>
                         </div>
 
-                        <div class="bg-black/20 rounded border border-white/5 overflow-hidden flex flex-col h-64 lg:h-auto">
-                            <div class="p-2 bg-slate-900/80 border-b border-white/5 text-[10px] font-bold text-slate-400">ATIVIDADE RECENTE</div>
-                            <div id="feed-${offerId}" class="p-2 overflow-y-auto flex-1 space-y-1 text-[10px] font-mono text-slate-500">
-                                Monitorando...
-                            </div>
-                        </div>
                     </div>
                 </div>`;
                 container.innerHTML += html;
-                monitorarOferta(offerId);
             }
-        }
-
-        function monitorarOferta(offerId) {
-            const feedContainer = document.getElementById(`feed-${offerId}`);
-            const q = query(collection(db, "events"), where("offerId", "==", offerId), orderBy("createdAt", "desc"), limit(10));
-            onSnapshot(q, (snapshot) => {
-                if(snapshot.empty) return;
-                feedContainer.innerHTML = "";
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    const time = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleTimeString() : "";
-                    let color = "text-slate-400";
-                    let text = "View";
-                    if(data.type === 'cta_click') { color = "text-emerald-400 font-bold"; text = "💰 CLICOU NO CHECKOUT"; }
-                    if(data.type === 'offer_view') { color = "text-indigo-300"; text = "👁️ Viu a página"; }
-                    feedContainer.innerHTML += `<div class="flex justify-between border-b border-white/5 py-1"><span>${time}</span><span class="${color}">${text}</span></div>`;
-                });
-            });
         }
     </script>
 </body>
