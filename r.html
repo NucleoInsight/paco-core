@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <title>Redirecionando...</title>
-    <style>body{background:#000;color:#0f0;display:flex;justify-content:center;align-items:center;height:100vh;font-family:monospace;}</style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>body{background:#0b0c15;color:#10b981;display:flex;justify-content:center;align-items:center;height:100vh;font-family:monospace;}</style>
 </head>
 <body>
-    <div id="msg">Conectando...</div>
+    <div id="msg">Acessando Link Seguro...</div>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, updateDoc, increment, serverTimestamp, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, updateDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // CONFIG PACO
         const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
@@ -23,13 +25,13 @@
                 const ref = doc(db, "short_links", id);
                 const snap = await getDoc(ref);
                 if(snap.exists()) {
-                    const data = snap.data();
-                    updateDoc(ref, { clicks: increment(1) }); // Conta clique no link curto
-                    window.location.href = data.target; // Redireciona
+                    updateDoc(ref, { clicks: increment(1) }); // Conta clique
+                    window.location.href = snap.data().target; // Redireciona
                 } else {
                     document.getElementById('msg').innerText = "Link não encontrado.";
+                    document.getElementById('msg').style.color = "red";
                 }
-            } catch(e) { document.getElementById('msg').innerText = "Erro."; }
+            } catch(e) { document.getElementById('msg').innerText = "Erro de conexão."; }
         }
         go();
     </script>
