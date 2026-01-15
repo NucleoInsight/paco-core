@@ -7,150 +7,153 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     
     <style>
-        /* --- ESTILO BASE (CAMALEÃO) --- */
-        body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; transition: background 0.3s, color 0.3s; }
+        /* BASE CSS */
+        body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; transition: 0.3s; }
         
-        /* MODO DARK (Padrão) */
-        body.mode-dark { background-color: #0b0c15; color: #ffffff; }
-        body.mode-dark .container { background-color: #1e293b; border: 1px solid rgba(255,255,255,0.05); }
-        body.mode-dark h1 { color: #ffffff; }
-        body.mode-dark p { color: #94a3b8; }
-        body.mode-dark .price-tag { color: #10b981; }
+        /* TEMAS */
+        body.dark { background-color: #0b0c15; color: #ffffff; }
+        body.dark .container { background-color: #1e293b; border: 1px solid rgba(255,255,255,0.05); }
+        body.dark .price-tag { color: #10b981; }
+        body.dark .btn { background: #10b981; color: #064e3b; }
+        
+        body.clean { background-color: #f8fafc; color: #1e293b; }
+        body.clean .container { background-color: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        body.clean .price-tag { color: #2563eb; }
+        body.clean .btn { background: #2563eb; color: #ffffff; }
 
-        /* MODO CLEAN (Branco) */
-        body.mode-light { background-color: #f8fafc; color: #1e293b; }
-        body.mode-light .container { background-color: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        body.mode-light h1 { color: #0f172a; }
-        body.mode-light p { color: #475569; }
-        body.mode-light .price-tag { color: #2563eb; }
+        /* MODO TESTE VISUAL */
+        .test-banner { background: #f59e0b; color: #000; text-align: center; font-size: 10px; font-weight: bold; padding: 5px; text-transform: uppercase; position: fixed; top: 0; width: 100%; z-index: 1000; display: none; }
 
-        /* LAYOUT CENTRAL */
         .wrapper { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .container { max-width: 500px; width: 100%; padding: 40px; border-radius: 16px; text-align: left; }
+        .container { max-width: 500px; width: 100%; padding: 40px; border-radius: 16px; text-align: left; position: relative; }
         
-        h1 { font-size: 26px; font-weight: 800; line-height: 1.2; margin-bottom: 20px; letter-spacing: -0.5px; }
+        h1 { font-size: 26px; font-weight: 800; line-height: 1.2; margin-bottom: 20px; }
         p { font-size: 16px; line-height: 1.6; margin-bottom: 20px; white-space: pre-wrap; }
         
-        /* VÍDEO (Começa escondido) */
-        .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 10px; margin-bottom: 25px; background: #000; display: none; /* SEGREDO: SÓ APARECE SE TIVER LINK */ }
-        .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .video-box { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px; margin-bottom: 20px; background: black; display: none; }
+        .video-box iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
-        .price-tag { font-size: 36px; font-weight: 900; margin: 25px 0; display: block; }
+        .price-tag { font-size: 32px; font-weight: 900; margin: 20px 0; display: block; }
+        .btn { width: 100%; padding: 18px; font-size: 18px; font-weight: 800; border-radius: 8px; border: none; cursor: pointer; text-transform: uppercase; }
         
-        .btn { width: 100%; padding: 18px; font-size: 18px; font-weight: 800; border-radius: 10px; border: none; cursor: pointer; text-transform: uppercase; transition: transform 0.1s; }
-        .btn:active { transform: scale(0.98); }
-        
-        /* Botão Verde no Dark, Azul no Light */
-        body.mode-dark .btn { background: #10b981; color: #064e3b; }
-        body.mode-dark .btn:hover { background: #34d399; }
-        body.mode-light .btn { background: #2563eb; color: #ffffff; }
-        body.mode-light .btn:hover { background: #1d4ed8; }
-
-        .footer { margin-top: 30px; font-size: 12px; text-align: center; opacity: 0.5; }
-        #loading { position: fixed; inset: 0; background: #0b0c15; display: flex; justify-content: center; align-items: center; color: #10b981; font-weight: bold; z-index: 999; }
+        #loading { position: fixed; inset: 0; z-index: 999; display: flex; justify-content: center; align-items: center; font-weight: bold; background: #0b0c15; color: #10b981; }
         .hidden { display: none !important; }
     </style>
 </head>
-<body class="mode-dark"> <div id="loading">CARREGANDO OFERTA...</div>
+<body class="dark"> 
+
+    <div id="test-banner" class="test-banner">🧪 MODO DE TESTE ATIVADO - DADOS NÃO CONTABILIZADOS</div>
+    <div id="loading">CARREGANDO...</div>
 
     <div class="wrapper">
         <div id="app" class="container hidden">
-            
             <h1 id="headline">...</h1>
-
-            <div id="videoArea" class="video-wrapper">
-                <iframe id="videoFrame" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-            </div>
-
+            <div id="videoArea" class="video-box"><iframe id="videoFrame" src="" frameborder="0" allowfullscreen></iframe></div>
             <p id="bodyText">...</p>
-
             <div class="price-tag">R$ <span id="price">...</span></div>
-
             <button id="buyBtn" class="btn">...</button>
-
-            <div class="footer">Compra Segura • Garantia Total</div>
+            <div style="margin-top:20px; text-align:center; font-size:11px; opacity:0.6;">Site Seguro</div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, addDoc, collection, serverTimestamp, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        const app = initializeApp(firebaseConfig); const db = getFirestore(app);
+
+        // Gera ID de Sessão (Para rastrear o mesmo usuário no feed)
+        const getSessionId = () => {
+            let sid = sessionStorage.getItem('paco_sid');
+            if(!sid) { sid = Math.random().toString(36).substring(2, 15); sessionStorage.setItem('paco_sid', sid); }
+            return sid;
+        };
 
         async function init() {
             const params = new URLSearchParams(window.location.search);
             const offerId = params.get('id');
+            const isTest = params.get('mode') === 'test'; // Detecta Modo Teste
 
-            if (!offerId) { document.getElementById('loading').innerText = "ERRO: Link sem ID da oferta."; return; }
+            if (!offerId) { document.getElementById('loading').innerText = "Erro: Link inválido."; return; }
+
+            // Se for teste, avisa visualmente
+            if(isTest) {
+                document.getElementById('test-banner').style.display = 'block';
+                console.log("⚠️ MODO TESTE: Eventos marcados com isTest=true");
+            }
 
             try {
                 const docSnap = await getDoc(doc(db, "offers", offerId));
-                
                 if (docSnap.exists()) {
                     const data = docSnap.data();
 
-                    // --- 1. RESOLVE O LAYOUT (Muda a cor sozinho) ---
-                    // Se no painel estiver 'clean.html', ele vira BRANCO. Se não, fica DARK.
-                    if (data.layout && data.layout.includes('clean')) {
-                        document.body.classList.remove('mode-dark');
-                        document.body.classList.add('mode-light');
-                    }
-
-                    // --- 2. PREENCHE TEXTOS ---
-                    document.getElementById('headline').innerText = data.headline || "Sem Título";
+                    // 1. RENDERIZAÇÃO
+                    if (data.layout === 'clean') { document.body.className = 'clean'; } else { document.body.className = 'dark'; }
+                    document.getElementById('headline').innerText = data.headline || "";
                     document.getElementById('bodyText').innerText = data.bodyText || "";
-                    document.getElementById('price').innerText = data.price || "0,00";
+                    document.getElementById('price').innerText = data.price || "";
                     document.getElementById('buyBtn').innerText = data.ctaText || "COMPRAR";
 
-                    // --- 3. RESOLVE O VÍDEO (Aparece sozinho se tiver link) ---
-                    if (data.videoUrl && data.videoUrl.trim() !== "") {
-                        // Correção automática: Se o usuário colou link normal do YouTube, transforma em Embed
-                        let finalUrl = data.videoUrl;
-                        if(finalUrl.includes("watch?v=")) {
-                            finalUrl = finalUrl.replace("watch?v=", "embed/");
-                        }
-                        document.getElementById('videoFrame').src = finalUrl;
-                        document.getElementById('videoArea').style.display = "block"; // MOSTRA O VÍDEO
+                    if (data.videoUrl && data.videoUrl.length > 5) {
+                        let vUrl = data.videoUrl;
+                        if(vUrl.includes("watch?v=")) vUrl = vUrl.replace("watch?v=", "embed/");
+                        document.getElementById('videoFrame').src = vUrl;
+                        document.getElementById('videoArea').style.display = "block";
                     }
 
-                    // MOSTRA A PÁGINA
                     document.getElementById('loading').classList.add('hidden');
                     document.getElementById('app').classList.remove('hidden');
 
-                    // Registra View
-                    addDoc(collection(db, "events"), { offerId: offerId, type: "offer_view", createdAt: serverTimestamp() });
+                    // 2. RASTREAMENTO (TRACKER)
+                    const sessionID = getSessionId();
+                    
+                    // Salva View no Eventos
+                    await addDoc(collection(db, "events"), { 
+                        offerId: offerId, 
+                        type: "offer_view", 
+                        isTest: isTest, // O SEGREDINHO TA AQUI
+                        sessionId: sessionID,
+                        createdAt: serverTimestamp() 
+                    });
 
-                    // --- 4. RESOLVE O CHECKOUT (O Botão funciona) ---
+                    // Se NÃO for teste, atualiza o contador oficial da oferta
+                    if(!isTest) {
+                        // Tenta buscar a métrica associada (isso exige saber o ID do documento metrics, 
+                        // como não sabemos, vamos confiar que o Painel vai ler a collection 'events' e somar, ou usamos Cloud Functions depois. 
+                        // Por enquanto, o feed do painel já vai funcionar).
+                    }
+
+                    // 3. CHECKOUT
                     document.getElementById('buyBtn').onclick = async () => {
                         const btn = document.getElementById('buyBtn');
-                        btn.innerText = "INICIANDO...";
-                        btn.style.opacity = "0.7";
+                        const originalText = btn.innerText;
+                        btn.innerText = "AGUARDE...";
+                        btn.style.opacity = 0.6;
 
-                        // Registra o clique
-                        await addDoc(collection(db, "events"), { offerId: offerId, type: "cta_click", createdAt: serverTimestamp() });
+                        // Salva Clique
+                        await addDoc(collection(db, "events"), { 
+                            offerId: offerId, 
+                            type: "cta_click", 
+                            isTest: isTest,
+                            sessionId: sessionID,
+                            createdAt: serverTimestamp() 
+                        });
 
-                        // Verifica se tem link e redireciona
-                        if (data.checkoutUrl && data.checkoutUrl.startsWith('http')) {
-                            window.location.href = data.checkoutUrl;
+                        if (data.checkoutUrl) {
+                            let url = data.checkoutUrl.trim();
+                            if (!url.startsWith("http")) url = "https://" + url;
+                            window.location.href = url;
                         } else {
-                            alert("⚠️ Você esqueceu de colocar o Link de Checkout no Painel!");
-                            btn.innerText = data.ctaText;
-                            btn.style.opacity = "1";
+                            alert("Link de pagamento não configurado!");
+                            btn.innerText = originalText;
+                            btn.style.opacity = 1;
                         }
                     };
 
-                } else {
-                    document.getElementById('loading').innerText = "Oferta não encontrada.";
-                }
-            } catch (error) {
-                console.error(error);
-                document.getElementById('loading').innerText = "Erro de conexão.";
-            }
+                } else { document.getElementById('loading').innerText = "Oferta não encontrada"; }
+            } catch (error) { console.error(error); }
         }
-
         init();
     </script>
 </body>
