@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Artigo do Dia</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* ESTILO NOTÍCIA/BLOG */
+        body { font-family: 'Georgia', serif; background: #fff; color: #222; margin: 0; padding: 0; }
+        .top-bar { background: #cc0000; color: white; padding: 10px; text-align: center; font-weight: bold; font-family: sans-serif; font-size: 12px; }
+        
+        .container { max-width: 700px; margin: 0 auto; padding: 20px; }
+        
+        .meta { color: #666; font-size: 14px; font-family: sans-serif; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .meta span { margin-right: 15px; }
+        
+        h1 { font-family: sans-serif; font-size: 32px; line-height: 1.2; margin-bottom: 10px; color: #111; font-weight: 900; }
+        
+        .content { font-size: 19px; line-height: 1.6; color: #333; margin-bottom: 30px; }
+        .content p { margin-bottom: 20px; }
+        
+        .offer-box { background: #fff9c4; border: 2px dashed #fbc02d; padding: 30px; text-align: center; font-family: sans-serif; }
+        .offer-title { font-weight: bold; font-size: 20px; margin-bottom: 10px; }
+        
+        .cta-button { display: inline-block; background: #cc0000; color: #fff; text-align: center; padding: 15px 30px; font-size: 18px; text-decoration: none; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; }
+        .cta-button:hover { background: #b30000; }
+        
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">NOTÍCIAS • ECONOMIA • ESTILO DE VIDA</div>
+
+    <div id="app" class="container hidden">
+        <h1 id="headline">...</h1>
+        
+        <div class="meta">
+            <span>Por <strong>Redação</strong></span>
+            <span>Atualizado hoje</span>
+        </div>
+
+        <div class="content">
+            <p id="bodyText">...</p>
+        </div>
+
+        <div class="offer-box">
+            <div class="offer-title">Oferta Limitada para Leitores</div>
+            <p style="font-size:14px;">Acesso liberado por apenas <strong>R$ <span id="price">...</span></strong></p>
+            <button id="buyBtn" class="cta-button">...</button>
+        </div>
+        
+        <br><br><br>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
+        const app = initializeApp(firebaseConfig); const db = getFirestore(app);
+
+        async function init() {
+            const params = new URLSearchParams(window.location.search); const offerId = params.get('id');
+            if (!offerId) return;
+            try {
+                const docSnap = await getDoc(doc(db, "offers", offerId));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('headline').innerText = data.headline;
+                    // No artigo, talvez você queira escrever muito texto. O <p> aguenta, mas use quebras de linha.
+                    document.getElementById('bodyText').innerText = data.bodyText;
+                    document.getElementById('price').innerText = data.price;
+                    document.getElementById('buyBtn').innerText = data.ctaText;
+                    
+                    document.getElementById('app').classList.remove('hidden');
+                    
+                    addDoc(collection(db, "metrics"), { offerId: offerId, type: "view_article", timestamp: serverTimestamp() });
+
+                    document.getElementById('buyBtn').onclick = async () => {
+                        await addDoc(collection(db, "events"), { offerId: offerId, type: "cta_click", createdAt: serverTimestamp() });
+                        alert("Indo para o checkout...");
+                    };
+                }
+            } catch (e) { console.error(e); }
+        }
+        init();
+    </script>
+</body>
+</html>
