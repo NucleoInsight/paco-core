@@ -41,30 +41,29 @@
         #progress-bar-bg { width: 100%; height: 6px; background: #334155; border-radius: 3px; margin-bottom: 30px; }
         #progress-bar { height: 100%; background: #10b981; width: 0%; border-radius: 3px; transition: width 0.3s; }
 
-        /* VÍDEO (HACK ZOOM) */
+        /* VÍDEO (ULTRA ZOOM HACK) */
         .video-box { 
             position: relative; 
-            padding-bottom: 56.25%; 
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
             height: 0; 
             overflow: hidden; 
             background: #000; 
             margin: 20px 0; 
             display: none; 
             border-radius: 8px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.1);
         }
         
         .video-box iframe { 
             position: absolute; 
-            top: -10%; /* Sobe um pouco para esconder titulo */
-            left: -10%; 
-            width: 120%; /* Aumenta largura */
-            height: 120%; /* Aumenta altura */
-            pointer-events: none; /* (Opcional) Impede clique se quiser travar pause */
+            /* AUMENTO AGRESSIVO PARA CORTAR O TÍTULO E RODAPÉ */
+            top: -17.5%; 
+            left: -17.5%; 
+            width: 135%; 
+            height: 135%; 
+            pointer-events: auto; /* Permite clicar no play */
         }
-        
-        /* Habilita clique apenas no play inicial (Gambiarra necessária pra mobile) */
-        .video-box.active iframe { pointer-events: auto; top: 0; left: 0; width: 100%; height: 100%; }
 
         #test-banner { background: #f59e0b; color: black; text-align: center; font-size: 10px; font-weight: bold; padding: 5px; position: fixed; top: 0; width: 100%; z-index: 9999; display: none; }
     </style>
@@ -158,16 +157,12 @@
                 let vUrl = data.videoUrl.replace("watch?v=", "embed/").replace("youtu.be/", "www.youtube.com/embed/");
                 
                 // --- TRUQUE DE LIMPEZA YOUTUBE ---
+                // Adicionando controles para garantir que o play funcione, mas o zoom esconde a barra
                 const symbol = vUrl.includes('?') ? '&' : '?';
                 vUrl += symbol + "controls=0&rel=0&playsinline=1&modestbranding=1&iv_load_policy=3&showinfo=0&fs=0";
 
                 document.getElementById('videoFrame').src = vUrl;
                 document.getElementById('videoArea').style.display = "block";
-                
-                // Destrava o vídeo ao clicar (para mobile)
-                document.getElementById('videoArea').onclick = function() {
-                    this.classList.add('active');
-                }
             }
 
             document.getElementById('loading').classList.add('hidden');
