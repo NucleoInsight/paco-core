@@ -2,34 +2,39 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Oferta</title>
+    <title>Oferta Especial</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
     <style>
         body { margin: 0; padding: 0; transition: 0.3s; font-family: 'Inter', sans-serif; }
         .hidden { display: none !important; }
         #loading { position: fixed; inset: 0; background: #000; color: #0f0; display: flex; justify-content: center; align-items: center; z-index: 9999; font-weight: bold; }
+        /* TEMA DARK */
         body.layout-dark { background-color: #0b0c15; color: white; }
         .layout-dark .container { max-width: 500px; margin: 0 auto; padding: 20px; }
         .layout-dark h1 { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 20px; }
         .layout-dark p { color: #94a3b8; line-height: 1.6; }
         .layout-dark .btn { background: #10b981; color: #064e3b; width: 100%; padding: 18px; border-radius: 8px; font-weight: 800; text-transform: uppercase; border: none; cursor: pointer; }
+        /* TEMA CLEAN */
         body.layout-clean { background-color: #f8fafc; color: #1e293b; }
         .layout-clean .container { max-width: 600px; margin: 40px auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
         .layout-clean h1 { color: #0f172a; font-size: 28px; }
         .layout-clean .btn { background: #2563eb; color: white; width: 100%; padding: 18px; border-radius: 8px; font-weight: 800; text-transform: uppercase; border: none; cursor: pointer; }
+        /* TEMA ARTIGO */
         body.layout-artigo { background-color: #fff; color: #333; font-family: 'Merriweather', serif; }
         .layout-artigo .top-bar { background: #cc0000; color: white; text-align: center; padding: 5px; font-family: sans-serif; font-size: 10px; font-weight: bold; }
         .layout-artigo .container { max-width: 700px; margin: 0 auto; padding: 20px; }
         .layout-artigo h1 { font-family: sans-serif; font-size: 32px; font-weight: 900; color: #000; }
         .layout-artigo .meta { color: #666; font-size: 12px; font-family: sans-serif; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
         .layout-artigo .btn { background: #cc0000; color: white; padding: 15px 30px; font-weight: bold; border: none; cursor: pointer; font-family: sans-serif; display: block; margin: 20px auto; }
+        /* TEMA QUIZ */
         body.layout-quiz { background-color: #0b0c15; color: white; }
         .layout-quiz .container { max-width: 500px; margin: 40px auto; padding: 20px; text-align: center; }
         .quiz-option { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; cursor: pointer; text-align: left; transition: all 0.2s; font-weight: 600; }
         .quiz-option:hover { border-color: #10b981; background: #334155; }
         #progress-bar-bg { width: 100%; height: 6px; background: #334155; border-radius: 3px; margin-bottom: 30px; }
         #progress-bar { height: 100%; background: #10b981; width: 0%; border-radius: 3px; transition: width 0.3s; }
+        /* VIDEO */
         .video-box { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #000; margin: 20px 0; display: none; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
         .video-box iframe { position: absolute; top: -17.5%; left: -17.5%; width: 135%; height: 135%; pointer-events: auto; }
         #test-banner { background: #f59e0b; color: black; text-align: center; font-size: 10px; font-weight: bold; padding: 5px; position: fixed; top: 0; width: 100%; z-index: 9999; display: none; }
@@ -63,8 +68,8 @@
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { trackEvent } from "./tracker.js";
 
-        // CHAVES NUCLEOINSIGHT
-        const firebaseConfig = { apiKey: "AIzaSyCFnz5Wis_b3CGGblNn-bfUjqEgTOlqGNE", authDomain: "nucleoinsight-e4566.firebaseapp.com", projectId: "nucleoinsight-e4566", storageBucket: "nucleoinsight-e4566.firebasestorage.app", messagingSenderId: "650150743348", appId: "1:650150743348:web:f62f3cc95a38a5e90ca961" };
+        // CHAVE PACO-CORE (IGUAL AO ADMIN)
+        const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
         const questions = [ { t: "Objetivo?", a: ["Dinheiro", "Tempo", "Conhecimento", "Outro"] }, { t: "Obstáculo?", a: ["Grana", "Método", "Procrastinação", "Medo"] }, { t: "Investimento?", a: ["Até R$100", "Até R$500", "O que precisar", "Nada"] }, { t: "Bora?", a: ["Sim", "Talvez", "Não sei", "Não"] } ];
