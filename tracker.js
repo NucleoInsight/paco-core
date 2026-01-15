@@ -1,62 +1,298 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Oferta Especial</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ESTILOS BASE */
+        body { margin: 0; padding: 0; transition: 0.3s; font-family: 'Inter', sans-serif; }
+        .hidden { display: none !important; }
+        #loading { position: fixed; inset: 0; background: #000; color: #0f0; display: flex; justify-content: center; align-items: center; z-index: 9999; font-weight: bold; }
 
-const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
-const app = initializeApp(firebaseConfig); const db = getFirestore(app);
+        /* --- TEMA 1: DARK (Padrão) --- */
+        body.layout-dark { background-color: #0b0c15; color: white; }
+        .layout-dark .container { max-width: 500px; margin: 0 auto; padding: 20px; }
+        .layout-dark h1 { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 20px; }
+        .layout-dark p { color: #94a3b8; line-height: 1.6; }
+        .layout-dark .btn { background: #10b981; color: #064e3b; width: 100%; padding: 18px; border-radius: 8px; font-weight: 800; text-transform: uppercase; border: none; cursor: pointer; }
+        
+        /* --- TEMA 2: CLEAN (Branco) --- */
+        body.layout-clean { background-color: #f8fafc; color: #1e293b; }
+        .layout-clean .container { max-width: 600px; margin: 40px auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .layout-clean h1 { color: #0f172a; font-size: 28px; }
+        .layout-clean .btn { background: #2563eb; color: white; width: 100%; padding: 18px; border-radius: 8px; font-weight: 800; text-transform: uppercase; border: none; cursor: pointer; }
 
-const urlParams = new URLSearchParams(window.location.search);
-const offerId = urlParams.get('id');
-const isTestMode = urlParams.get('mode') === 'test';
+        /* --- TEMA 3: ARTIGO (Blog) --- */
+        body.layout-artigo { background-color: #fff; color: #333; font-family: 'Merriweather', serif; }
+        .layout-artigo .top-bar { background: #cc0000; color: white; text-align: center; padding: 5px; font-family: sans-serif; font-size: 10px; font-weight: bold; }
+        .layout-artigo .container { max-width: 700px; margin: 0 auto; padding: 20px; }
+        .layout-artigo h1 { font-family: sans-serif; font-size: 32px; font-weight: 900; color: #000; }
+        .layout-artigo .meta { color: #666; font-size: 12px; font-family: sans-serif; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+        .layout-artigo .btn { background: #cc0000; color: white; padding: 15px 30px; font-weight: bold; border: none; cursor: pointer; font-family: sans-serif; display: block; margin: 20px auto; }
 
-// LÓGICA DE ORIGEM (UTM > Referrer > Direto)
-let source = urlParams.get('utm_source');
-if (!source) {
-    const ref = document.referrer;
-    if (ref.includes('instagram')) source = 'instagram';
-    else if (ref.includes('facebook')) source = 'facebook';
-    else if (ref.includes('google')) source = 'google';
-    else if (ref.includes('youtube')) source = 'youtube';
-    else if (ref) source = new URL(ref).hostname;
-    else source = 'direto';
-}
+        /* --- TEMA 4: QUIZ (Preto e Verde) --- */
+        body.layout-quiz { background-color: #0b0c15; color: white; }
+        .layout-quiz .container { max-width: 500px; margin: 40px auto; padding: 20px; text-align: center; }
+        .quiz-option { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; cursor: pointer; text-align: left; transition: all 0.2s; font-weight: 600; }
+        .quiz-option:hover { border-color: #10b981; background: #334155; }
+        #progress-bar-bg { width: 100%; height: 6px; background: #334155; border-radius: 3px; margin-bottom: 30px; }
+        #progress-bar { height: 100%; background: #10b981; width: 0%; border-radius: 3px; transition: width 0.3s; }
 
-const campaignData = {
-    source: source,
-    medium: urlParams.get('utm_medium') || '',
-    campaign: urlParams.get('utm_campaign') || ''
-};
-
-let sessionId = sessionStorage.getItem('paco_sid');
-if(!sessionId) {
-    sessionId = 'u_' + Math.random().toString(36).substr(2, 9);
-    sessionStorage.setItem('paco_sid', sessionId);
-}
-
-export async function trackEvent(eventName, eventData = {}) {
-    if (!offerId) return;
-
-    const payload = {
-        offerId: offerId,
-        sessionId: sessionId,
-        type: eventName,
-        isTest: isTestMode,
-        campaign: campaignData, // ENVIA A ORIGEM CORRETA
-        createdAt: serverTimestamp(),
-        device: { ua: navigator.userAgent, url: window.location.href },
-        data: eventData
-    };
-
-    try { await addDoc(collection(db, "events"), payload); } catch (e) { console.error(e); }
-}
-
-if(offerId) {
-    trackEvent("offer_view");
-    document.addEventListener('click', (e) => {
-        const target = e.target.closest('button, a, .btn');
-        if (target) {
-            let label = target.innerText || target.id || "Botão";
-            trackEvent("click", { label: label.substring(0, 30) });
-            if(target.id === 'buyBtn') trackEvent("cta_click"); 
+        /* VÍDEO (ULTRA ZOOM HACK) */
+        .video-box { 
+            position: relative; 
+            padding-bottom: 56.25%; 
+            height: 0; 
+            overflow: hidden; 
+            background: #000; 
+            margin: 20px 0; 
+            display: none; 
+            border-radius: 8px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.1);
         }
-    });
-}
+        
+        /* O Player gerado pela API vai herdar isso */
+        .video-box iframe { 
+            position: absolute; 
+            top: -17.5%; 
+            left: -17.5%; 
+            width: 135%; 
+            height: 135%; 
+            pointer-events: auto; 
+        }
+
+        #test-banner { background: #f59e0b; color: black; text-align: center; font-size: 10px; font-weight: bold; padding: 5px; position: fixed; top: 0; width: 100%; z-index: 9999; display: none; }
+    </style>
+</head>
+<body class="layout-dark">
+
+    <div id="test-banner">🧪 MODO TESTE ATIVADO</div>
+    <div id="loading">CARREGANDO...</div>
+
+    <div id="top-bar" class="top-bar hidden">NOTÍCIA URGENTE • ECONOMIA</div>
+    
+    <div id="quiz-area" class="container hidden">
+        <div id="progress-bar-bg"><div id="progress-bar"></div></div>
+        <h2 id="quiz-question" style="font-size: 22px; font-weight: 800; margin-bottom: 20px;">...</h2>
+        <div id="quiz-options"></div>
+    </div>
+
+    <div id="app" class="container hidden">
+        <h1 id="headline">...</h1>
+        <div id="meta-info" class="meta hidden">Por <strong>Redação</strong> • Atualizado hoje</div>
+
+        <div id="videoArea" class="video-box">
+            <div id="player"></div>
+        </div>
+
+        <div id="bodyText">...</div>
+        
+        <div style="margin: 30px 0; text-align: center;">
+            <p id="priceDisplay" style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">...</p>
+            <button id="buyBtn" class="btn">...</button>
+        </div>
+        <div style="text-align: center; font-size: 10px; opacity: 0.5; margin-top: 20px;">Compra Segura • SSL</div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { trackEvent } from "./tracker.js"; 
+
+        const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
+        const app = initializeApp(firebaseConfig); const db = getFirestore(app);
+
+        const questions = [
+            { t: "Qual seu principal objetivo?", a: ["Independência Financeira", "Liberdade de Tempo", "Conhecimento", "Outro"] },
+            { t: "O que te impede hoje?", a: ["Falta de Dinheiro", "Falta de Método", "Procrastinação", "Medo"] },
+            { t: "Quanto pode investir?", a: ["Até R$ 100", "Até R$ 500", "O necessário", "Nada"] },
+            { t: "Posso te ajudar?", a: ["Sim, mostre como", "Talvez", "Não sei", "Não"] }
+        ];
+
+        let player;
+        let videoDuration = 0;
+        let tracked50 = false;
+        let tracked90 = false;
+
+        async function init() {
+            const params = new URLSearchParams(window.location.search);
+            const offerId = params.get('id');
+            const isTest = params.get('mode') === 'test';
+
+            if (!offerId) { document.body.innerHTML = "<div style='color:white;text-align:center;padding:50px;'>Erro: Link inválido.</div>"; return; }
+            if (isTest) document.getElementById('test-banner').style.display = 'block';
+
+            try {
+                const docSnap = await getDoc(doc(db, "offers", offerId));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+
+                    let layout = data.layout || 'dark';
+                    if(layout === 'vsl') layout = 'dark'; 
+                    document.body.className = `layout-${layout}`;
+
+                    if(layout === 'quiz') {
+                        document.getElementById('loading').classList.add('hidden');
+                        startQuiz(data);
+                        return;
+                    }
+
+                    if(layout === 'artigo') {
+                        document.getElementById('top-bar').classList.remove('hidden');
+                        document.getElementById('meta-info').classList.remove('hidden');
+                    }
+
+                    renderOffer(data);
+
+                } else { document.body.innerHTML = "Oferta não encontrada"; }
+            } catch (e) { console.error(e); }
+        }
+
+        function renderOffer(data) {
+            document.getElementById('headline').innerText = data.headline;
+            document.getElementById('bodyText').innerHTML = data.bodyText ? data.bodyText.replace(/\n/g, '<br>') : '';
+            document.getElementById('priceDisplay').innerText = "R$ " + data.price;
+            document.getElementById('buyBtn').innerText = data.ctaText || "COMPRAR";
+
+            // --- CARREGA API DO YOUTUBE SE TIVER VÍDEO ---
+            if(data.videoUrl && data.videoUrl.length > 5) {
+                let videoId = "";
+                if(data.videoUrl.includes("youtu.be/")) videoId = data.videoUrl.split("youtu.be/")[1];
+                else if(data.videoUrl.includes("v=")) videoId = data.videoUrl.split("v=")[1].split("&")[0];
+
+                if(videoId) {
+                    document.getElementById('videoArea').style.display = "block";
+                    // Carrega Script da API
+                    var tag = document.createElement('script');
+                    tag.src = "https://www.youtube.com/iframe_api";
+                    var firstScriptTag = document.getElementsByTagName('script')[0];
+                    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+                    // Função global que o YouTube chama quando a API está pronta
+                    window.onYouTubeIframeAPIReady = function() {
+                        player = new YT.Player('player', {
+                            height: '100%',
+                            width: '100%',
+                            videoId: videoId,
+                            playerVars: {
+                                'playsinline': 1,
+                                'controls': 0,
+                                'rel': 0,
+                                'showinfo': 0,
+                                'modestbranding': 1,
+                                'iv_load_policy': 3
+                            },
+                            events: {
+                                'onStateChange': onPlayerStateChange,
+                                'onReady': onPlayerReady
+                            }
+                        });
+                    };
+                }
+            }
+
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            
+            trackEvent('offer_view');
+
+            document.getElementById('buyBtn').onclick = () => {
+                trackEvent('cta_click');
+                const btn = document.getElementById('buyBtn');
+                btn.innerText = "AGUARDE...";
+                if(data.checkoutUrl) {
+                    let url = data.checkoutUrl.startsWith('http') ? data.checkoutUrl : 'https://' + data.checkoutUrl;
+                    setTimeout(() => window.location.href = url, 500);
+                } else { alert("Link não configurado."); btn.innerText = data.ctaText; }
+            };
+        }
+
+        function onPlayerReady(event) {
+            videoDuration = player.getDuration();
+            // Inicia monitoramento de tempo a cada 5 segundos
+            setInterval(checkVideoProgress, 5000);
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data == YT.PlayerState.PLAYING) {
+                // Evita disparar start várias vezes (se pausar e der play)
+                // Uma solução simples é não filtrar, ou usar sessionStorage
+                if(!sessionStorage.getItem('vsl_started')) {
+                    trackEvent('video_start');
+                    sessionStorage.setItem('vsl_started', 'true');
+                }
+            }
+            if (event.data == YT.PlayerState.ENDED) {
+                trackEvent('video_complete');
+            }
+        }
+
+        function checkVideoProgress() {
+            if(!player || !videoDuration) return;
+            const currentTime = player.getCurrentTime();
+            const percent = (currentTime / videoDuration) * 100;
+
+            if (percent > 50 && !tracked50) {
+                trackEvent('video_progress', { percent: 50 });
+                tracked50 = true;
+            }
+            
+            if (percent > 90 && !tracked90) {
+                trackEvent('video_progress', { percent: 90 });
+                tracked90 = true;
+            }
+        }
+
+        function startQuiz(offerData) {
+            const quizArea = document.getElementById('quiz-area');
+            quizArea.classList.remove('hidden');
+            trackEvent('offer_view');
+
+            let currentQ = 0;
+
+            function renderQuestion() {
+                const q = questions[currentQ];
+                document.getElementById('quiz-question').innerText = q.t;
+                const opts = document.getElementById('quiz-options');
+                opts.innerHTML = '';
+                document.getElementById('progress-bar').style.width = ((currentQ / questions.length) * 100) + "%";
+
+                q.a.forEach(ans => {
+                    const btn = document.createElement('div');
+                    btn.className = 'quiz-option';
+                    btn.innerText = ans;
+                    btn.onclick = () => {
+                        trackEvent('quiz_answer', { step: currentQ+1, answer: ans });
+                        currentQ++;
+                        if(currentQ < questions.length) {
+                            renderQuestion();
+                        } else {
+                            finishQuiz(offerData);
+                        }
+                    };
+                    opts.appendChild(btn);
+                });
+            }
+            renderQuestion();
+        }
+
+        function finishQuiz(offerData) {
+            document.getElementById('quiz-area').classList.add('hidden');
+            const load = document.getElementById('loading');
+            load.classList.remove('hidden');
+            load.innerText = "ANALISANDO...";
+            
+            setTimeout(() => {
+                document.body.className = 'layout-dark'; 
+                renderOffer(offerData);
+            }, 1500);
+        }
+
+        init();
+    </script>
+</body>
+</html>
