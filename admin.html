@@ -3,59 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PACO - Central de Comando V5</title>
+    <title>PACO - Painel V7</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; padding: 20px; }
         .container { max-width: 1000px; margin: 0 auto; }
+        .hidden { display: none; }
         
+        /* LOGIN */
         #login-screen { text-align: center; margin-top: 100px; }
-        input.login-input { padding: 15px; background: #1e293b; color: white; border: none; margin-bottom: 10px; }
-        button { padding: 10px 20px; cursor: pointer; font-weight: bold; border: none; border-radius: 5px; }
+        input.login-input { padding: 15px; background: #1e293b; color: white; border: none; margin-bottom: 10px; width: 250px; border-radius: 5px; }
+        
+        /* BOTÕES */
+        button { padding: 10px 20px; cursor: pointer; font-weight: bold; border: none; border-radius: 5px; margin-left: 5px; }
         .btn-green { background: #10b981; color: white; }
         .btn-red { background: #ef4444; color: white; }
         .btn-blue { background: #3b82f6; color: white; }
-        .btn-gray { background: #475569; color: white; font-size: 11px; padding: 5px;}
+        .btn-trash { background: #334155; color: #ef4444; font-size: 14px; padding: 5px 10px; border: 1px solid #ef4444; }
+        .btn-trash:hover { background: #ef4444; color: white; }
 
-        .card { background: #1e293b; padding: 25px; margin-bottom: 25px; border-radius: 12px; border-left: 6px solid gray; }
-        .card.verde { border-left-color: #10b981; }
+        /* CARTÃO DA OFERTA */
+        .card { background: #1e293b; padding: 25px; margin-bottom: 25px; border-radius: 12px; border-left: 6px solid gray; position: relative; }
+        .card.verde { border-left-color: #10b981; } 
         .card.vermelho { border-left-color: #ef4444; }
-        
-        /* DIAGNÓSTICO */
-        .diagnosis-box { background: #334155; padding: 15px; margin: 15px 0; border-radius: 8px; border: 1px dashed #64748b; }
-        .diagnosis-text { font-size: 16px; font-weight: bold; color: #fff; }
-        
-        /* INPUTS */
-        label { display: block; font-size: 11px; color: #94a3b8; margin-bottom: 3px; margin-top: 10px; }
-        input.edit-field, textarea.edit-field { 
+
+        /* CAMPOS */
+        input.edit-field, textarea.edit-field, select.edit-field { 
             background: #0f172a; border: 1px solid #334155; color: white; padding: 10px; 
-            border-radius: 6px; width: 95%; font-family: sans-serif;
+            border-radius: 6px; width: 96%; font-family: sans-serif; margin-bottom: 10px;
         }
-        textarea.edit-field { height: 60px; resize: vertical; }
+        textarea.edit-field { height: 70px; resize: vertical; }
+        label { font-size: 11px; color: #94a3b8; display: block; margin-top: 5px; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
         
-        .row { display: flex; gap: 15px; }
+        .row { display: flex; gap: 15px; } 
         .col { flex: 1; }
-        .hidden { display: none; }
+        
+        /* HEADER DO CARD */
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #334155; padding-bottom: 10px; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
     <div class="container">
         <div id="login-screen">
-            <h2 style="color:#10b981;">PACO V5 (Controle Total)</h2>
+            <h2 style="color:#10b981;">PACO V7 (Corrigido)</h2>
             <input type="email" id="email" class="login-input" placeholder="Email"><br>
             <input type="password" id="password" class="login-input" placeholder="Senha"><br>
             <button onclick="fazerLogin()" class="btn-green">ENTRAR</button>
+            <p id="error-msg" style="color:red; margin-top:10px;"></p>
         </div>
 
         <div id="dashboard" class="hidden">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:15px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
                 <h1>Gerenciador de Ofertas</h1>
                 <div>
                     <button onclick="criarNovaOferta()" class="btn-green">+ NOVA OFERTA</button>
                     <button onclick="logout()" class="btn-red">Sair</button>
                 </div>
             </div>
-            <div id="lista-ofertas">Carregando...</div>
+            <div id="lista-ofertas">Carregando dados...</div>
         </div>
     </div>
 
@@ -77,41 +82,39 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // LOGIN
-        window.fazerLogin = async () => {
-            try { await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); }
-            catch (e) { alert("Erro: " + e.message); }
+        // --- AUTH ---
+        window.fazerLogin = async () => { 
+            try { await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); } 
+            catch(e) { document.getElementById('error-msg').innerText = e.message; } 
         }
         window.logout = () => signOut(auth);
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('dashboard').classList.remove('hidden');
-                carregarPainel();
-            }
+        onAuthStateChanged(auth, (user) => { 
+            if(user) { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('dashboard').classList.remove('hidden'); carregarPainel(); } 
         });
 
-        // ALGORITMO
-        function analisarOferta(views, sales, currentStatus) {
-            if (currentStatus === 'verde') return { text: "VALIDADA", color: "#10b981" };
-            if (currentStatus === 'vermelho') return { text: "REPROVADA", color: "#ef4444" };
-            if (sales >= 3) return { text: "BATEU A META! PODE VALIDAR.", color: "#10b981" };
-            if (views > 100 && sales === 0) return { text: "NÃO VENDE. MUDE A HEADLINE.", color: "#ef4444" };
-            return { text: "COLETANDO DADOS...", color: "#f59e0b" };
-        }
+        // --- FUNÇÕES PRINCIPAIS ---
 
-        // CRUD
         window.criarNovaOferta = async () => {
-            if(!confirm("Criar nova oferta?")) return;
-            const offerRef = await addDoc(collection(db, "offers"), {
-                headline: "Nova Promessa Matadora",
-                bodyText: "Escreva aqui o texto persuasivo que vai convencer o cliente.",
-                ctaText: "QUERO COMPRAR AGORA",
-                price: "4,99",
+            if(!confirm("Criar nova oferta em branco?")) return;
+            // Cria a oferta padrão (Texto)
+            const ref = await addDoc(collection(db, "offers"), {
+                headline: "Nova Oferta", bodyText: "Texto da oferta...", ctaText: "QUERO COMPRAR", price: "4,99", 
+                layout: "index.html", // Padrão é Texto
+                videoUrl: "", 
                 createdAt: serverTimestamp()
             });
-            await addDoc(collection(db, "metrics"), { offerId: offerRef.id, sales: 0, revenue: 0, views: 0, statusVisual: "cinza" });
+            await addDoc(collection(db, "metrics"), { offerId: ref.id, sales: 0, revenue: 0, views: 0, statusVisual: "cinza" });
             carregarPainel();
+        }
+
+        window.excluirOferta = async (metricId) => {
+            if(!confirm("⚠️ TEM CERTEZA? Isso apaga a oferta do painel.")) return;
+            try {
+                await deleteDoc(doc(db, "metrics", metricId));
+                // Nota: Não apagamos a "offer" do banco pra segurança, só tiramos do painel (metrics).
+                alert("Oferta removida.");
+                carregarPainel();
+            } catch(e) { alert(e.message); }
         }
 
         window.salvarTudo = async (offerId, metricId) => {
@@ -120,7 +123,9 @@
                     headline: document.getElementById(`headline-${offerId}`).value,
                     bodyText: document.getElementById(`body-${offerId}`).value,
                     ctaText: document.getElementById(`cta-${offerId}`).value,
-                    price: document.getElementById(`price-${offerId}`).value
+                    price: document.getElementById(`price-${offerId}`).value,
+                    layout: document.getElementById(`layout-${offerId}`).value,
+                    videoUrl: document.getElementById(`video-${offerId}`).value
                 });
                 await updateDoc(doc(db, "metrics", metricId), {
                     sales: Number(document.getElementById(`sales-${metricId}`).value),
@@ -128,78 +133,88 @@
                     views: Number(document.getElementById(`views-${metricId}`).value),
                     statusVisual: document.getElementById(`status-${metricId}`).value
                 });
-                alert("✅ ATUALIZADO!");
-                carregarPainel();
-            } catch (e) { alert("Erro: " + e.message); }
+                alert("✅ Salvo com sucesso!");
+                carregarPainel(); // Recarrega para atualizar o link do botão "Ver Página"
+            } catch(e) { alert("Erro ao salvar: " + e.message); }
         }
 
         async function carregarPainel() {
-            const container = document.getElementById('lista-ofertas');
-            container.innerHTML = ""; 
-            const metricsSnap = await getDocs(collection(db, "metrics"));
+            const container = document.getElementById('lista-ofertas'); container.innerHTML = "Carregando..."; 
+            const snaps = await getDocs(collection(db, "metrics"));
+            
+            if(snaps.empty) { container.innerHTML = "Nenhuma oferta criada."; return; }
+            container.innerHTML = "";
 
-            metricsSnap.forEach(async (metricDoc) => {
-                const mData = metricDoc.data();
-                const offerId = mData.offerId;
-                let offerData = { headline: "...", bodyText: "...", ctaText: "...", price: "0" };
+            snaps.forEach(async (mDoc) => {
+                const m = mDoc.data();
+                const offerId = m.offerId;
+                let o = { headline:"", layout:"index.html", videoUrl:"" };
                 
-                try {
-                    const offerSnap = await getDoc(doc(db, "offers", offerId));
-                    if (offerSnap.exists()) offerData = offerSnap.data();
-                } catch(e) {}
+                try { const os = await getDoc(doc(db, "offers", offerId)); if(os.exists()) o = os.data(); } catch(e){}
 
-                const analise = analisarOferta(mData.views || 0, mData.sales || 0, mData.statusVisual);
+                // Define qual link abrir baseado na escolha do usuário
+                const layoutFile = o.layout === 'vsl.html' ? 'vsl.html' : 'index.html'; // Garante que se não tiver nada, vai pro index
+                const linkFinal = `${layoutFile}?id=${offerId}`;
+                const isVideo = o.layout === 'vsl.html';
 
                 const html = `
-                    <div class="card ${mData.statusVisual}">
-                        <div style="display:flex; justify-content:space-between;">
-                            <h3 style="margin:0; color:#fff;">OFERTA: ${offerId}</h3>
-                            <span style="background:${analise.color}; padding:5px 10px; border-radius:4px; font-size:12px; font-weight:bold;">${mData.statusVisual.toUpperCase()}</span>
+                    <div class="card ${m.statusVisual}">
+                        <div class="card-header">
+                            <div>
+                                <h3 style="margin:0; color:#fff;">${offerId}</h3>
+                                <div style="margin-top:5px;">
+                                    <span style="background:#000; padding:3px 8px; border-radius:4px; font-size:12px;">${m.statusVisual.toUpperCase()}</span>
+                                </div>
+                            </div>
+                            <button onclick="excluirOferta('${mDoc.id}')" class="btn-trash">🗑️ EXCLUIR</button>
                         </div>
 
-                        <div class="diagnosis-box" style="border-color:${analise.color}">
-                            <div class="diagnosis-text" style="color:${analise.color}">🤖 ${analise.text}</div>
+                        <div style="background:#111; padding:15px; border-radius:8px; margin-bottom:15px; border:1px dashed #444;">
+                            <strong style="color:#00ff88; display:block; margin-bottom:10px;">CONFIGURAÇÃO DA PÁGINA</strong>
+                            <div class="row">
+                                <div class="col">
+                                    <label>TIPO DE PÁGINA</label>
+                                    <select id="layout-${offerId}" class="edit-field">
+                                        <option value="index.html" ${!isVideo ? 'selected' : ''}>📄 Texto (Padrão)</option>
+                                        <option value="vsl.html" ${isVideo ? 'selected' : ''}>🎥 Vídeo (VSL)</option>
+                                    </select>
+                                </div>
+                                <div class="col">
+                                    <label>Link do YouTube (Embed) - Só se usar Vídeo</label>
+                                    <input type="text" class="edit-field" id="video-${offerId}" value="${o.videoUrl || ''}" placeholder="Ex: https://www.youtube.com/embed/...">
+                                </div>
+                            </div>
                         </div>
+
+                        <label>Headline (Título)</label>
+                        <input type="text" class="edit-field" id="headline-${offerId}" value="${o.headline}">
+                        
+                        <label>Texto do Corpo</label>
+                        <textarea class="edit-field" id="body-${offerId}">${o.bodyText || ''}</textarea>
 
                         <div class="row">
-                            <div class="col" style="flex:2;">
-                                <strong style="color:#94a3b8;">EDITAR SITE</strong>
-                                <label>Headline (Título)</label>
-                                <input type="text" class="edit-field" id="headline-${offerId}" value="${offerData.headline}">
-                                
-                                <label>Texto do Corpo (A Dor e a Solução)</label>
-                                <textarea class="edit-field" id="body-${offerId}">${offerData.bodyText || ''}</textarea>
-                                
-                                <div class="row">
-                                    <div class="col">
-                                        <label>Texto do Botão</label>
-                                        <input type="text" class="edit-field" id="cta-${offerId}" value="${offerData.ctaText || 'QUERO COMPRAR'}">
-                                    </div>
-                                    <div class="col">
-                                        <label>Preço (R$)</label>
-                                        <input type="text" class="edit-field" id="price-${offerId}" value="${offerData.price}">
-                                    </div>
-                                </div>
-                            </div>
+                            <div class="col"><label>Texto Botão</label><input type="text" class="edit-field" id="cta-${offerId}" value="${o.ctaText || 'QUERO COMPRAR'}"></div>
+                            <div class="col"><label>Preço</label><input type="text" class="edit-field" id="price-${offerId}" value="${o.price}"></div>
+                        </div>
 
-                            <div class="col" style="border-left:1px solid #334155; padding-left:20px;">
-                                <strong style="color:#94a3b8;">EDITAR RESULTADOS</strong>
-                                <div class="row">
-                                    <div class="col"><label>Views</label><input type="number" class="edit-field" id="views-${metricDoc.id}" value="${mData.views || 0}"></div>
-                                    <div class="col"><label>Vendas</label><input type="number" class="edit-field" id="sales-${metricDoc.id}" value="${mData.sales || 0}"></div>
+                        <div style="background:#2d3748; padding:15px; border-radius:8px; margin-top:15px;">
+                            <div class="row">
+                                <div class="col"><label>Views</label><input type="number" class="edit-field" id="views-${mDoc.id}" value="${m.views||0}"></div>
+                                <div class="col"><label>Vendas</label><input type="number" class="edit-field" id="sales-${mDoc.id}" value="${m.sales||0}"></div>
+                                <div class="col"><label>Receita</label><input type="number" class="edit-field" id="rev-${mDoc.id}" value="${m.revenue||0}"></div>
+                                <div class="col"><label>Status</label>
+                                    <select id="status-${mDoc.id}" class="edit-field">
+                                        <option value="cinza" ${m.statusVisual==='cinza'?'selected':''}>🟡 Teste</option>
+                                        <option value="verde" ${m.statusVisual==='verde'?'selected':''}>🟢 Validada</option>
+                                        <option value="vermelho" ${m.statusVisual==='vermelho'?'selected':''}>🔴 Reprovada</option>
+                                    </select>
                                 </div>
-                                <label>Receita Total</label><input type="number" class="edit-field" id="rev-${metricDoc.id}" value="${mData.revenue || 0}">
-                                <label>Status</label>
-                                <select id="status-${metricDoc.id}" class="edit-field">
-                                    <option value="cinza" ${mData.statusVisual==='cinza'?'selected':''}>🟡 Testando</option>
-                                    <option value="verde" ${mData.statusVisual==='verde'?'selected':''}>🟢 Validada</option>
-                                    <option value="vermelho" ${mData.statusVisual==='vermelho'?'selected':''}>🔴 Reprovada</option>
-                                </select>
                             </div>
                         </div>
+
                         <div style="margin-top:20px; text-align:right;">
-                            <a href="./?id=${offerId}" target="_blank" style="color:#aaa; font-size:12px; margin-right:15px;">Ver Página</a>
-                            <button class="btn-blue" onclick="salvarTudo('${offerId}', '${metricDoc.id}')">💾 SALVAR TUDO</button>
+                            <a href="./${linkFinal}" target="_blank" style="color:#00ff88; text-decoration:none; margin-right:15px; font-weight:bold;">VER PÁGINA REAL ↗</a>
+                            <button class="btn-blue" onclick="salvarTudo('${offerId}', '${mDoc.id}')">💾 SALVAR ALTERAÇÕES</button>
                         </div>
                     </div>`;
                 container.innerHTML += html;
