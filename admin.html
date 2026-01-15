@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper PACO | V22 (Reports)</title>
+    <title>Sniper PACO | V21 (Reports)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -44,7 +44,7 @@
         ::-webkit-scrollbar-track { background: #0b0c15; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
 
-        /* --- CSS DO FEED DETALHADO --- */
+        /* --- CSS DO FEED DETALHADO (Mantido) --- */
         .feed-session { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 5px; border-radius: 6px; }
         .feed-session:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
         .feed-header { padding: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
@@ -52,10 +52,10 @@
         .feed-body.open { display: block; }
         .tag-source { background: #334155; color: #cbd5e1; padding: 1px 4px; border-radius: 3px; font-size: 9px; font-weight: bold; border: 1px solid #475569; }
 
-        /* --- MODO IMPRESSÃO (NOVO) --- */
+        /* --- MODO IMPRESSÃO (ADICIONADO) --- */
         @media print {
             body { background-color: white !important; color: black !important; }
-            .no-print { display: none !important; }
+            .no-print, button, #login-screen { display: none !important; }
             .glass-panel { border: 1px solid #ccc !important; background: none !important; box-shadow: none !important; color: black !important; }
             .text-white { color: black !important; }
             .text-slate-400 { color: #666 !important; }
@@ -92,7 +92,7 @@
                     </select>
                 </div>
 
-                <div class="flex items-center gap-2 bg-slate-800/50 p-2 rounded-lg border border-slate-700">
+                <div class="flex items-center gap-2 bg-slate-800/50 p-2 rounded-lg border border-slate-700 no-print">
                     <span class="text-[10px] text-slate-400 uppercase font-bold">Modo Teste</span>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="toggle-test" class="sr-only peer" onchange="carregarDadosDaOferta()">
@@ -261,11 +261,12 @@
             iniciarSistema();
         }
 
-        // --- NOVA FUNÇÃO DE RELATÓRIO ---
+        // --- FUNÇÃO COPIAR RELATÓRIO (ADICIONADA) ---
         window.copiarRelatorio = () => {
             const views = document.getElementById('kpi-unique').innerText;
             const clicks = document.getElementById('kpi-sales').innerText;
-            const text = `📊 RELATÓRIO PACO\n\n- Visitas: ${views}\n- Checkout: ${clicks}\n\nGerado em: ${new Date().toLocaleString()}`;
+            const headline = document.getElementById('edit-headline').value;
+            const text = `📊 RELATÓRIO PACO\nOferta: ${headline}\n\n- Visitas: ${views}\n- Checkout: ${clicks}\n\nGerado em: ${new Date().toLocaleString()}`;
             navigator.clipboard.writeText(text).then(() => alert("Relatório copiado!"));
         }
 
@@ -304,7 +305,7 @@
                 let events = [];
                 snapshot.forEach(doc => events.push({ id: doc.id, ...doc.data() }));
                 
-                // FILTRO DE MODO (TESTE vs REAL)
+                // Filtro de Modo
                 events = events.filter(e => !!e.isTest === isTest);
                 events.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
