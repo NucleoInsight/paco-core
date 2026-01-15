@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper PACO | V31 (Unlocked)</title>
+    <title>Sniper PACO | V30 (VSL Tracking)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -13,11 +13,24 @@
         body { background-color: #0b0c15; color: #a5b4fc; font-family: 'Inter', sans-serif; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
         .glass-panel { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; }
-        .glass-input { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(51, 65, 85, 0.5); color: white; padding: 10px; border-radius: 8px; width: 100%; font-size: 13px; margin-bottom: 5px; }
-        .glass-input:focus { border-color: #6366f1; outline: none; }
         
+        .funnel-step { position: relative; padding-left: 20px; border-left: 2px solid #334155; margin-bottom: 20px; }
+        .funnel-step.active { border-left-color: #10b981; }
+        .funnel-step::before { content: ''; position: absolute; left: -6px; top: 0; width: 10px; height: 10px; background: #334155; border-radius: 50%; }
+        .funnel-step.active::before { background: #10b981; box-shadow: 0 0 10px #10b981; }
+        
+        .progress-bar-bg { background: #1e293b; height: 6px; border-radius: 3px; overflow: hidden; margin-top: 5px; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #a855f7); width: 0%; transition: width 1s; }
+        
+        .loading-pulse { animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
         .toggle-checkbox:checked { right: 0; border-color: #10b981; }
         .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
+
+        .input-sniper { background: #0f172a; border: 1px solid #334155; color: white; padding: 8px; border-radius: 6px; width: 100%; font-size: 12px; margin-bottom: 8px; font-family: sans-serif; }
+        .input-sniper:focus { border-color: #6366f1; outline: none; }
+        label { font-size: 10px; text-transform: uppercase; font-weight: bold; color: #64748b; display: block; margin-bottom: 2px; }
 
         .hidden { display: none !important; }
         .metric-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; font-weight: 700; }
@@ -27,6 +40,7 @@
         ::-webkit-scrollbar-track { background: #0b0c15; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
 
+        /* CSS DO FEED DETALHADO */
         .feed-session { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 5px; border-radius: 6px; }
         .feed-session:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
         .feed-header { padding: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
@@ -34,18 +48,14 @@
         .feed-body.open { display: block; }
         .tag-source { background: #334155; color: #cbd5e1; padding: 1px 4px; border-radius: 3px; font-size: 9px; font-weight: bold; border: 1px solid #475569; }
 
-        /* ABAS */
-        .tab-btn { padding: 8px 16px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; opacity: 0.6; }
-        .tab-btn:hover { opacity: 1; background: rgba(255,255,255,0.05); }
-        .tab-btn.active { background: rgba(99, 102, 241, 0.2); border-color: rgba(99, 102, 241, 0.5); color: #818cf8; opacity: 1; }
-
         @media print {
             body { background-color: white !important; color: black !important; }
-            .no-print, button, #login-screen, .tab-btn { display: none !important; }
-            .glass-panel { border: 1px solid #ccc !important; background: none !important; color: black !important; box-shadow: none !important; }
+            .no-print, button, #login-screen { display: none !important; }
+            .glass-panel { border: 1px solid #ccc !important; background: none !important; box-shadow: none !important; color: black !important; }
             .text-white { color: black !important; }
             .text-slate-400 { color: #666 !important; }
             canvas { max-height: 250px; }
+            input, select, textarea { border: 1px solid #ccc !important; color: black !important; background: white !important; }
         }
     </style>
 </head>
@@ -54,21 +64,30 @@
     <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#0b0c15]">
         <div class="glass-panel p-8 w-full max-w-md text-center">
             <h1 class="text-3xl font-black text-white tracking-tight mb-2">SNIPER <span class="text-indigo-500">PACO</span></h1>
-            <button onclick="fazerLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition">ACESSAR SISTEMA</button>
+            <p class="text-xs text-slate-500 mb-6 font-mono">Central de Fusão</p>
+            <input type="email" id="email" class="input-sniper mb-3" placeholder="Email">
+            <input type="password" id="password" class="input-sniper mb-6" placeholder="Senha">
+            <button onclick="fazerLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-indigo-500/20">ACESSAR SISTEMA</button>
+            <p id="error-msg" class="text-red-400 text-xs mt-4"></p>
         </div>
     </div>
 
     <div id="dashboard" class="max-w-7xl mx-auto hidden">
+        
         <header class="flex flex-col md:flex-row justify-between items-end mb-10 border-b border-indigo-900/30 pb-4 gap-4">
             <div>
                 <h1 class="text-3xl font-black text-white tracking-tight">SNIPER <span class="text-indigo-500">ANALYTICS</span></h1>
-                <p class="text-xs text-indigo-400 mt-1">Painel Oficial NucleoInsight</p>
+                <p class="text-xs text-indigo-400 mt-1">Gestão de Ofertas & Link Automático</p>
             </div>
+            
             <div class="flex flex-wrap items-center gap-4">
                 <div class="glass-panel px-3 py-2 border-indigo-500/50">
                     <label class="text-[9px] text-indigo-400 uppercase font-bold block">Oferta Ativa</label>
-                    <select id="offer-selector" onchange="carregarDadosDaOferta()" class="bg-transparent text-white font-bold text-sm outline-none w-48 cursor-pointer"></select>
+                    <select id="offer-selector" onchange="carregarDadosDaOferta()" class="bg-transparent text-white font-bold text-sm outline-none w-48 cursor-pointer">
+                        <option value="">Carregando...</option>
+                    </select>
                 </div>
+
                 <div class="flex items-center gap-2 bg-slate-800/50 p-2 rounded-lg border border-slate-700 no-print">
                     <span class="text-[10px] text-slate-400 uppercase font-bold">Modo Teste</span>
                     <label class="relative inline-flex items-center cursor-pointer">
@@ -76,90 +95,155 @@
                         <div class="w-9 h-5 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:bg-amber-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
                     </label>
                 </div>
+
                 <div class="flex gap-2 no-print">
-                    <button onclick="copiarRelatorio()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">📋</button>
-                    <button onclick="window.print()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">🖨️</button>
-                    <button onclick="criarNovaOferta()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition">NOVA +</button>
+                    <button onclick="copiarRelatorio()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">📋 COPIAR</button>
+                    <button onclick="window.print()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">🖨️ PDF</button>
+                    <button onclick="criarNovaOferta()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1"><span>+</span> NOVA</button>
                     <button onclick="carregarDadosDaOferta()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">🔄</button>
+                    <button onclick="logout()" class="bg-slate-800 text-slate-300 px-3 py-2 rounded-lg text-xs font-bold border border-slate-700">SAIR</button>
                 </div>
             </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+            
             <div class="glass-panel p-6">
-                <h2 class="text-sm font-bold text-white mb-6">FUNIL DE RETENÇÃO</h2>
-                <div id="funnel-container" class="space-y-6">Loading...</div>
+                <h2 class="text-sm font-bold text-white mb-6 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+                    FUNIL DE RETENÇÃO
+                </h2>
+                <div id="funnel-container" class="space-y-6">
+                    <div class="text-center text-slate-600 text-xs py-10 loading-pulse">Carregando dados...</div>
+                </div>
             </div>
 
             <div class="space-y-6">
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="glass-panel p-4 border-l-2 border-indigo-500"><p class="metric-label">Visitantes</p><p id="kpi-unique" class="metric-value">0</p></div>
-                    <div class="glass-panel p-4 border-l-2 border-emerald-500"><p class="metric-label">Checkout</p><p id="kpi-sales" class="metric-value">0</p></div>
-                    <div class="glass-panel p-4 border-l-2 border-pink-500"><p class="metric-label">Retenção Quiz</p><p id="kpi-retention" class="metric-value">0%</p></div>
-                    <div class="glass-panel p-4 border-l-2 border-amber-500"><p class="metric-label">Melhor Canal</p><p id="kpi-source" class="metric-value truncate text-base pt-1">...</p></div>
+                    <div class="glass-panel p-4 border-l-2 border-indigo-500">
+                        <p class="metric-label">Visitantes</p>
+                        <p id="kpi-unique" class="metric-value">0</p>
+                    </div>
+                    <div class="glass-panel p-4 border-l-2 border-emerald-500">
+                        <p class="metric-label">Checkout</p>
+                        <p id="kpi-sales" class="metric-value">0</p>
+                    </div>
+                    <div class="glass-panel p-4 border-l-2 border-pink-500">
+                        <p class="metric-label">Retenção Quiz</p>
+                        <p id="kpi-retention" class="metric-value">0%</p>
+                    </div>
+                    <div class="glass-panel p-4 border-l-2 border-amber-500">
+                        <p class="metric-label">Melhor Canal</p>
+                        <p id="kpi-source" class="metric-value truncate text-base pt-1">...</p>
+                    </div>
                 </div>
 
                 <div class="glass-panel p-4">
-                    <h3 class="text-xs font-bold text-slate-500 mb-2 uppercase">Origem do Tráfego</h3>
-                    <div style="height: 150px; position: relative;"><canvas id="sourceChart"></canvas></div>
+                    <h3 class="text-xs font-bold text-slate-500 mb-2 uppercase flex justify-between">Origem do Tráfego</h3>
+                    <div style="height: 150px; position: relative;">
+                        <canvas id="sourceChart"></canvas>
+                    </div>
                 </div>
 
                 <div class="glass-panel p-4 border border-indigo-500/30">
-                    <h3 class="text-xs font-bold text-indigo-400 mb-3 flex justify-between">CONFIGURAR <a href="#" id="btn-open-test" target="_blank" class="text-[9px] text-amber-400 border border-amber-500/30 px-2 py-1 rounded">🧪 TESTAR</a></h3>
-                    <div class="space-y-2">
-                        <input type="text" id="edit-headline" class="glass-input" placeholder="Headline">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-xs font-bold text-indigo-400 uppercase">CONFIGURAR OFERTA</h3>
+                        <a href="#" id="btn-open-test" target="_blank" class="text-[10px] text-amber-400 border border-amber-500/30 px-2 py-1 rounded hover:bg-amber-500/10">🧪 ABRIR TESTE</a>
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <label>HEADLINE</label><input type="text" id="edit-headline" class="input-sniper">
                         <div class="flex gap-2">
-                            <select id="edit-layout" class="glass-input bg-slate-900 w-1/2">
-                                <option value="dark">🌑 Dark</option>
-                                <option value="clean">⬜ Clean</option>
-                                <option value="artigo">📰 Artigo</option>
-                                <option value="vsl">🎥 VSL</option>
-                                <option value="quiz">🧩 QUIZ</option>
-                            </select>
-                            <input type="text" id="edit-price" class="glass-input w-1/2 text-center text-emerald-400 font-bold" placeholder="Preço">
+                            <div class="w-1/2">
+                                <label>LAYOUT</label>
+                                <select id="edit-layout" class="input-sniper bg-slate-900">
+                                    <option value="dark">🌑 Dark Mode</option>
+                                    <option value="clean">⬜ Clean Mode</option>
+                                    <option value="artigo">📰 Artigo</option>
+                                    <option value="vsl">🎥 VSL</option>
+                                    <option value="quiz">🧩 QUIZ MODE</option>
+                                </select>
+                            </div>
+                            <div class="w-1/2">
+                                <label>PREÇO</label>
+                                <input type="text" id="edit-price" class="input-sniper text-center font-bold text-emerald-400">
+                            </div>
                         </div>
-                        <input type="text" id="edit-checkout" class="glass-input border-emerald-500/30" placeholder="Checkout URL">
-                        <input type="text" id="edit-video" class="glass-input" placeholder="Video URL">
-                        <button onclick="salvarOfertaAtual()" class="w-full bg-slate-700 hover:bg-white hover:text-black text-white font-bold py-2 rounded-lg text-xs transition">💾 SALVAR</button>
+
+                        <label>CHECKOUT (Link Kiwify/Stripe)</label>
+                        <input type="text" id="edit-checkout" class="input-sniper border-emerald-500/30" placeholder="https://pay...">
+
+                        <label>VÍDEO (Opcional - Youtube)</label>
+                        <input type="text" id="edit-video" class="input-sniper" placeholder="Cole o link aqui...">
+
+                        <div class="pt-2">
+                            <button onclick="salvarOfertaAtual()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg text-xs transition">💾 SALVAR ALTERAÇÕES</button>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div class="glass-panel p-0 overflow-hidden flex flex-col h-[600px]">
-                <div class="p-4 border-b border-white/5 bg-slate-900/50"><h3 class="text-xs font-bold text-white">📡 FEED AO VIVO</h3></div>
-                <div class="overflow-y-auto p-4 space-y-3 flex-1 custom-scroll" id="live-feed"></div>
+                <div class="p-4 border-b border-white/5 bg-slate-900/50 flex justify-between items-center">
+                    <h3 class="text-xs font-bold text-white">📡 FEED AO VIVO</h3>
+                    <span id="feed-badge" class="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded">REAL</span>
+                </div>
+                <div class="overflow-y-auto p-4 space-y-3 flex-1 custom-scroll" id="live-feed">
+                    <p class="text-center text-slate-600 mt-10 text-xs">Aguardando visitantes...</p>
+                </div>
             </div>
         </div>
 
         <div class="glass-panel p-6 mb-10 no-print border border-emerald-500/30">
-            <h2 class="text-lg font-bold text-white mb-2">🔗 Encurtador V2.0</h2>
+            <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
+                🔗 Encurtador Automático <span class="text-[10px] bg-emerald-900 text-emerald-400 px-2 py-1 rounded border border-emerald-500/50">V2.0</span>
+            </h2>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                <div class="md:col-span-2 flex"><span class="bg-slate-700 text-slate-300 p-2 text-xs rounded-l">/r.html?id=</span><input type="text" id="short-alias" placeholder="ex: zap" class="w-full bg-slate-900 text-white text-xs p-2 outline-none"></div>
-                <input type="text" id="utm-source" placeholder="Origem (ex: insta)" class="glass-input m-0">
-                <input type="text" id="utm-campaign" placeholder="Campanha (ex: stories)" class="glass-input m-0">
+                <div class="md:col-span-2">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase">Nome Curto (Alias)</label>
+                    <div class="flex">
+                        <span class="bg-slate-700 text-slate-300 p-2 text-xs rounded-l border border-slate-600">/r.html?id=</span>
+                        <input type="text" id="short-alias" placeholder="ex: zap" class="w-full bg-slate-900 border border-slate-600 text-white text-xs p-2 focus:border-emerald-500 outline-none">
+                    </div>
+                </div>
+                <div><label class="text-[10px] font-bold text-emerald-500 uppercase">Origem (Source)</label><input type="text" id="utm-source" value="instagram" class="input-sniper m-0"></div>
+                <div><label class="text-[10px] font-bold text-emerald-500 uppercase">Campanha</label><input type="text" id="utm-campaign" placeholder="stories" class="input-sniper m-0"></div>
             </div>
-            <button onclick="gerarLinkCurto()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded text-xs">CRIAR LINK</button>
-            <div id="short-result" class="hidden mt-2 p-2 bg-black/50 text-white text-xs flex justify-between"><code id="final-link-display">...</code><button onclick="copiarLinkCurto()">COPIAR</button></div>
+            <button onclick="gerarLinkCurto()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg text-xs transition mb-4">💾 GERAR LINK RASTREÁVEL</button>
+            <div id="short-result" class="hidden bg-black/50 p-4 rounded border border-slate-700 flex justify-between items-center">
+                <code id="final-link-display" class="text-white text-xs font-mono">...</code>
+                <button onclick="copiarLinkCurto()" class="text-[10px] bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded">COPIAR</button>
+            </div>
         </div>
 
         <div class="border border-red-900/30 bg-red-950/10 rounded-xl p-6 no-print flex justify-between items-center">
-            <div><h3 class="text-red-500 font-bold text-sm">⚠️ Zona de Perigo</h3><p class="text-xs text-slate-400">Apagar dados do modo atual.</p></div>
-            <button onclick="limparDados()" class="bg-red-900/50 text-red-200 border border-red-800 px-4 py-2 rounded text-xs font-bold">LIMPAR DADOS</button>
+            <div>
+                <h3 class="text-red-500 font-bold text-sm mb-1 uppercase">⚠️ Zona de Perigo</h3>
+                <p class="text-xs text-slate-400">Apagar dados de tráfego do modo atual (Teste ou Real). A oferta continua existindo.</p>
+            </div>
+            <div class="flex gap-4 items-center">
+                <button onclick="limparDados()" class="bg-red-900/50 hover:bg-red-800 text-red-200 border border-red-800 px-4 py-2 rounded-lg text-xs font-bold transition">🗑️ LIMPAR DADOS</button>
+                <button onclick="excluirOferta()" class="text-slate-500 hover:text-red-500 text-xs underline">Excluir Oferta</button>
+            </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, addDoc, deleteDoc, serverTimestamp, query, where, orderBy, limit, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // --- CREDENCIAIS CORRETAS PARA NUCLEOINSIGHT ---
-        const firebaseConfig = { apiKey: "AIzaSyCFnz5Wis_b3CGGblNn-bfUjqEgTOlqGNE", authDomain: "nucleoinsight-e4566.firebaseapp.com", projectId: "nucleoinsight-e4566", storageBucket: "nucleoinsight-e4566.firebasestorage.app", messagingSenderId: "650150743348", appId: "1:650150743348:web:f62f3cc95a38a5e90ca961", measurementId: "G-M24P3TBP5J" };
-        
+        // CONFIG
+        const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
-        let currentOfferId = "", unsubscribeFeed = null, myChart = null;
 
-        window.fazerLogin = () => signInAnonymously(auth).catch(e => alert(e.message));
+        let currentOfferId = "";
+        let unsubscribeFeed = null;
+        let myChart = null; 
+
+        // AUTH
+        window.fazerLogin = async () => { try { await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); } catch(e) { document.getElementById('error-msg').innerText = e.message; } }
+        window.logout = () => signOut(auth);
         onAuthStateChanged(auth, (u) => { if(u) { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('dashboard').classList.remove('hidden'); iniciarSistema(); } });
 
         async function iniciarSistema() {
@@ -172,84 +256,225 @@
             carregarDadosDaOferta();
         }
 
-        window.carregarDadosDaOferta = async () => {
-            const isTest = document.getElementById('toggle-test').checked;
-            currentOfferId = document.getElementById('offer-selector').value;
-            document.getElementById('btn-open-test').href = `index.html?id=${currentOfferId}&mode=test`;
+        window.criarNovaOferta = async () => {
+            const headline = prompt("Headline da Nova Oferta:");
+            if(!headline) return;
+            const ref = await addDoc(collection(db, "offers"), { headline: headline, bodyText: "...", ctaText: "COMPRAR", price: "9,90", layout: "dark", videoUrl: "", checkoutUrl: "", createdAt: serverTimestamp() });
+            iniciarSistema();
+        }
 
+        // --- RELATÓRIO ---
+        window.copiarRelatorio = () => {
+            const views = document.getElementById('kpi-unique').innerText;
+            const clicks = document.getElementById('kpi-sales').innerText;
+            const text = `📊 RELATÓRIO PACO\n\n- Visitas: ${views}\n- Checkout: ${clicks}\n\nGerado em: ${new Date().toLocaleString()}`;
+            navigator.clipboard.writeText(text).then(() => alert("Copiado!"));
+        }
+
+        // CARREGAMENTO INTELIGENTE (CORE)
+        window.carregarDadosDaOferta = async () => {
+            const select = document.getElementById('offer-selector');
+            currentOfferId = select.value;
+            const isTest = document.getElementById('toggle-test').checked;
+            
+            document.getElementById('btn-open-test').href = `index.html?id=${currentOfferId}&mode=test`;
+            const badge = document.getElementById('feed-badge');
+            if(isTest) { badge.innerText = "MODO TESTE"; badge.className = "text-[9px] bg-amber-500/20 text-amber-400 px-2 py-1 rounded"; } 
+            else { badge.innerText = "DADOS REAIS"; badge.className = "text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded"; }
+
+            // Carrega Editor
             const docSnap = await getDoc(doc(db, "offers", currentOfferId));
             if(docSnap.exists()) {
                 const d = docSnap.data();
                 document.getElementById('edit-headline').value = d.headline;
                 document.getElementById('edit-price').value = d.price;
-                document.getElementById('edit-layout').value = d.layout;
-                document.getElementById('edit-video').value = d.videoUrl;
-                document.getElementById('edit-checkout').value = d.checkoutUrl;
+                document.getElementById('edit-layout').value = d.layout || 'dark';
+                document.getElementById('edit-video').value = d.videoUrl || '';
+                document.getElementById('edit-checkout').value = d.checkoutUrl || '';
             }
 
-            if(unsubscribeFeed) unsubscribeFeed();
+            // FEED E ANALYTICS
             const q = query(collection(db, "events"), where("offerId", "==", currentOfferId));
+            if(unsubscribeFeed) unsubscribeFeed();
             
             unsubscribeFeed = onSnapshot(q, (snapshot) => {
-                let views=0, clicks=0, sources={};
+                let views = 0, clicks = 0;
+                let sources = {}; 
+                const feedContainer = document.getElementById('live-feed');
+                feedContainer.innerHTML = "";
+                
+                let events = [];
+                snapshot.forEach(doc => events.push({ id: doc.id, ...doc.data() }));
+                
+                // FILTRO DE MODO (TESTE vs REAL)
+                events = events.filter(e => !!e.isTest === isTest);
+                events.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+                if(events.length === 0) feedContainer.innerHTML = "<p class='text-center text-slate-600 text-xs mt-10'>Sem dados neste modo.</p>";
+
                 const sessions = {};
-                const events = [];
-                snapshot.forEach(doc => events.push(doc.data()));
-                
-                const filtered = events.filter(e => !!e.isTest === isTest).sort((a,b) => b.createdAt - a.createdAt);
-                
-                filtered.forEach(e => {
+                events.forEach(e => {
                     const sid = e.sessionId || 'anon';
                     let source = e.campaign?.source || 'direto';
-                    let campaign = e.campaign?.campaign || '';
-                    if(!sessions[sid]) sessions[sid] = { id: sid, events: [], source: source, campaign: campaign, time: e.createdAt?.seconds||0 };
-                    
-                    // Prioriza origem detalhada
-                    if((sessions[sid].source === 'direto' || sessions[sid].source === 'encurtador') && (source !== 'direto' && source !== 'encurtador')) {
-                        sessions[sid].source = source;
-                        sessions[sid].campaign = campaign;
+                    // --- CORREÇÃO: CAPTURA A CAMPANHA TAMBÉM ---
+                    let campaign = e.campaign?.campaign || ''; 
+
+                    if(!sessions[sid]) {
+                        sessions[sid] = { 
+                            id: sid, 
+                            events: [], 
+                            source: source,
+                            campaign: campaign, // Guarda a campanha
+                            time: e.createdAt?.seconds || 0, 
+                            isTest: e.isTest 
+                        };
+                    } else {
+                        // Atualiza se encontrar uma origem melhor
+                        if((sessions[sid].source === 'direto' || sessions[sid].source === 'encurtador') && (source !== 'direto' && source !== 'encurtador')) {
+                            sessions[sid].source = source;
+                            sessions[sid].campaign = campaign;
+                        }
                     }
+
                     sessions[sid].events.push(e);
-                    if(e.type==='offer_view') views++;
-                    if(e.type==='cta_click') clicks++;
+                    if(e.createdAt?.seconds > sessions[sid].time) sessions[sid].time = e.createdAt.seconds;
+                    
+                    if(e.type === 'offer_view') views++;
+                    if(e.type === 'cta_click') clicks++;
                 });
 
-                // Atualiza Gráfico e KPIs
-                Object.values(sessions).forEach(s => { if(s.source !== 'encurtador') sources[s.source] = (sources[s.source]||0)+1; });
-                updateChart(sources);
-                document.getElementById('kpi-unique').innerText = Object.keys(sessions).length;
+                // Métricas
+                let totalSessions = Object.keys(sessions).length;
+                let sourceCounts = {};
+                Object.values(sessions).forEach(s => { sourceCounts[s.source] = (sourceCounts[s.source] || 0) + 1; });
+                let bestChannel = Object.keys(sourceCounts).length > 0 ? Object.keys(sourceCounts).reduce((a, b) => sourceCounts[a] > sourceCounts[b] ? a : b) : "-";
+
+                // Feed Visual
+                const sortedSessions = Object.values(sessions).sort((a,b) => b.time - a.time);
+
+                sortedSessions.slice(0, 30).forEach(s => {
+                    const timeStr = new Date(s.time * 1000).toLocaleTimeString();
+                    const badge = s.isTest ? '<span class="text-[8px] bg-amber-500/20 text-amber-500 px-1 rounded ml-1">TESTE</span>' : '';
+                    
+                    // --- CORREÇÃO: EXIBE ORIGEM + CAMPANHA ---
+                    let originText = s.source;
+                    if(s.campaign && s.campaign !== 'none') originText += ` • ${s.campaign}`;
+
+                    s.events.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+                    let details = "";
+                    s.events.forEach(e => {
+                        let icon="🔹"; let color="text-slate-400"; let txt=e.type;
+                        let label = e.data?.label || ''; 
+                        
+                        // --- LÓGICA V30: EVENTOS DE VÍDEO ---
+                        if(e.type === 'cta_click' || label.toLowerCase().includes('comprar')) { 
+                            icon="💰"; color="text-emerald-400 font-bold"; txt = `click ( ${label || 'CHECKOUT'} )`; 
+                        } else if(e.type === 'click') { 
+                            icon="👆"; color="text-slate-300"; txt = `click ( ${label} )`; 
+                        } else if(e.type === 'quiz_answer') { 
+                            icon="💬"; color="text-pink-400 font-bold"; txt = `Quiz: "${e.data?.answer}"`;
+                        } else if(e.type === 'offer_view') { 
+                            icon="👀"; color="text-indigo-400"; txt="Visualizou Página"; 
+                        } else if(e.type === 'video_start') { 
+                            icon="🎥"; color="text-amber-400"; txt="Deu Play no Vídeo";
+                        } else if(e.type === 'video_progress') {
+                            icon="⏳"; color="text-amber-200"; txt=`Viu ${e.data?.percent}% do Vídeo`;
+                        } else if(e.type === 'video_complete') {
+                            icon="✅"; color="text-green-400"; txt="Viu o Vídeo Todo";
+                        } else if(e.type === 'short_link_click') { 
+                            icon="🔗"; color="text-amber-400"; txt=`Encurtador (${e.alias})`; 
+                        }
+
+                        details += `<div class="flex justify-between py-1 border-b border-white/5 last:border-0 hover:bg-white/5 px-2"><div class="flex items-center gap-2"><span>${icon}</span><span class="${color} text-[10px] font-mono">${txt}</span></div><span class="text-[9px] text-slate-600 font-mono">${new Date(e.createdAt.seconds*1000).toLocaleTimeString()}</span></div>`;
+                    });
+                    
+                    feedContainer.innerHTML += `<div class="feed-session"><div class="feed-header" onclick="this.nextElementSibling.classList.toggle('open')"><div class="flex items-center gap-2"><span class="text-[10px] font-mono text-slate-400">${timeStr}</span><span class="tag-source">${originText}</span>${badge}</div><div class="flex items-center gap-2"><span class="text-[10px] font-bold text-slate-300">${s.events.length} ações</span><span class="text-[8px] text-indigo-400 border border-indigo-500/30 px-1 rounded">▼</span></div></div><div class="feed-body">${details}</div></div>`;
+                });
+
+                document.getElementById('kpi-unique').innerText = totalSessions;
                 document.getElementById('kpi-sales').innerText = clicks;
-                
-                // Renderiza Feed
-                const feedDiv = document.getElementById('live-feed');
-                feedDiv.innerHTML = "";
-                Object.values(sessions).sort((a,b) => b.time - a.time).slice(0,30).forEach(s => {
-                    let origin = s.source + (s.campaign ? ` • ${s.campaign}` : '');
-                    let details = s.events.map(e => {
-                        let icon="🔹", txt=e.type, color="text-slate-400";
-                        if(e.type==='cta_click') { icon="💰"; color="text-emerald-400 font-bold"; txt=`Checkout (${e.data?.label||'btn'})`; }
-                        else if(e.type==='quiz_answer') { icon="💬"; color="text-pink-400"; txt=`Quiz: ${e.data?.answer}`; }
-                        else if(e.type==='video_progress') { icon="⏳"; txt=`Vídeo: ${e.data?.percent}%`; }
-                        else if(e.type==='click') { icon="👆"; txt=`Click (${e.data?.label})`; }
-                        return `<div class="flex justify-between py-1 border-b border-white/5 text-[10px] ${color}"><span>${icon} ${txt}</span><span>${new Date(e.createdAt.seconds*1000).toLocaleTimeString()}</span></div>`;
-                    }).join('');
-
-                    feedDiv.innerHTML += `<div class="feed-session"><div class="feed-header" onclick="this.nextElementSibling.classList.toggle('open')"><div class="flex items-center gap-2"><span class="text-[10px] text-slate-400">${new Date(s.time*1000).toLocaleTimeString()}</span><span class="tag-source">${origin}</span></div><span class="text-[10px] font-bold text-slate-300">${s.events.length} ações ▼</span></div><div class="feed-body">${details}</div></div>`;
-                });
+                document.getElementById('kpi-retention').innerText = "0%";
+                document.getElementById('kpi-source').innerText = bestChannel.toUpperCase();
+                renderFunnel(totalSessions, clicks);
             });
         }
 
-        function updateChart(data) {
+        function updateSourceChart(dataObj) {
             const ctx = document.getElementById('sourceChart');
+            if(!ctx) return;
+            if(Object.keys(dataObj).length === 0) dataObj = { "Sem dados": 1 };
             if(myChart) myChart.destroy();
-            myChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(data), datasets: [{ data: Object.values(data), backgroundColor: ['#6366f1', '#10b981', '#f43f5e', '#f59e0b'], borderWidth:0 }] }, options: { plugins: { legend: { position: 'right', labels: { color: '#64748b', font: { size: 9 } } } } } });
+            myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(dataObj),
+                    datasets: [{
+                        data: Object.values(dataObj),
+                        backgroundColor: ['#6366f1', '#10b981', '#f43f5e', '#f59e0b', '#ec4899'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#94a3b8', font: { size: 9, family: 'monospace' }, boxWidth: 8 } } } }
+            });
         }
 
-        window.criarNovaOferta = async () => { /* Mesma lógica anterior */ const headline = prompt("Nome:"); if(headline) { await addDoc(collection(db,"offers"), {headline, price:"0", layout:"dark", createdAt: serverTimestamp()}); location.reload(); } }
-        window.salvarOfertaAtual = async () => { /* UpdateDoc logic */ alert("Salvo!"); }
-        window.copiarRelatorio = () => { /* Clipboard logic */ alert("Copiado!"); }
-        window.gerarLinkCurto = async () => { /* Shortlink logic */ alert("Link criado!"); }
-        window.limparDados = async () => { /* Delete logic */ alert("Limpo!"); }
+        function renderFunnel(views, clicks) {
+            const container = document.getElementById('funnel-container');
+            const conv = views > 0 ? ((clicks/views)*100).toFixed(1) : 0;
+            container.innerHTML = `<div class="funnel-step active"><div class="flex justify-between items-end"><div><p class="text-[10px] uppercase text-slate-500 font-bold">VISITAS</p><p class="text-xl font-black text-white">${views}</p></div><div class="text-right"><p class="text-xs font-bold text-slate-400">100%</p></div></div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 100%"></div></div></div><div class="funnel-step ${clicks > 0 ? 'active' : ''}" style="border-left-color: #10b981;"><div class="flex justify-between items-end"><div><p class="text-[10px] uppercase text-emerald-500 font-bold">CHECKOUT (INTENÇÃO)</p><p class="text-xl font-black text-emerald-400">${clicks}</p></div><div class="text-right"><p class="text-xs font-bold text-emerald-400">${conv}%</p></div></div><div class="progress-bar-bg"><div class="progress-bar-fill" style="background:#10b981; width: ${conv}%"></div></div></div>`;
+        }
+
+        window.salvarOfertaAtual = async () => {
+            try {
+                await updateDoc(doc(db, "offers", currentOfferId), {
+                    headline: document.getElementById('edit-headline').value,
+                    price: document.getElementById('edit-price').value,
+                    layout: document.getElementById('edit-layout').value,
+                    videoUrl: document.getElementById('edit-video').value,
+                    checkoutUrl: document.getElementById('edit-checkout').value
+                });
+                alert("✅ Oferta Atualizada!");
+                carregarDadosDaOferta();
+            } catch(e) { alert("Erro: " + e.message); }
+        }
+
+        window.abrirLinkTeste = () => { window.open(`index.html?id=${currentOfferId}&mode=test`, '_blank'); }
+
+        window.limparDados = async () => {
+            const isTest = document.getElementById('toggle-test').checked;
+            const modeName = isTest ? "MODO TESTE" : "MODO REAL";
+            if(!confirm(`⚠️ APAGAR TODOS os dados desta oferta no ${modeName}?`)) return;
+            const q = query(collection(db, "events"), where("offerId", "==", currentOfferId));
+            const snapshot = await getDocs(q);
+            const promises = [];
+            snapshot.forEach(doc => { if(!!doc.data().isTest === isTest) promises.push(deleteDoc(doc.ref)); });
+            await Promise.all(promises);
+            alert("Limpeza concluída.");
+            carregarDadosDaOferta();
+        }
+        
+        window.excluirOferta = async () => {
+            if(!confirm("⚠️ EXCLUIR ESTA OFERTA PERMANENTEMENTE?")) return;
+            await deleteDoc(doc(db, "offers", currentOfferId));
+            alert("Oferta Excluída.");
+            iniciarSistema();
+        }
+
+        window.gerarLinkCurto = async () => {
+            const alias = document.getElementById('short-alias').value.replace(/[^a-zA-Z0-9]/g, '');
+            if(!alias) return alert("Nome inválido");
+            const source = document.getElementById('utm-source').value;
+            const campaign = document.getElementById('utm-campaign').value;
+            const target = `https://nucleoinsight.github.io/paco-core/index.html?id=${currentOfferId}&utm_source=${source}&utm_campaign=${campaign}`;
+            try {
+                await setDoc(doc(db, "short_links", alias), { target: target, clicks: 0, offerId: currentOfferId, created_at: serverTimestamp() });
+                const finalLink = `https://nucleoinsight.github.io/paco-core/r.html?id=${alias}`;
+                document.getElementById('final-link-display').innerText = finalLink;
+                document.getElementById('short-result').classList.remove('hidden');
+            } catch(e) { alert("Erro: " + e.message); }
+        }
+        
+        window.copiarLinkCurto = () => { navigator.clipboard.writeText(document.getElementById('final-link-display').innerText).then(() => alert("Copiado!")); }
     </script>
 </body>
 </html>
