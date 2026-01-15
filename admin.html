@@ -21,14 +21,12 @@
         .progress-bar-bg { background: #1e293b; height: 6px; border-radius: 3px; overflow: hidden; margin-top: 5px; }
         .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #a855f7); width: 0%; transition: width 1s; }
         
-        /* Toggle Switch */
         .toggle-checkbox:checked { right: 0; border-color: #10b981; }
         .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
 
         .input-dark { background: #0f172a; border: 1px solid #334155; color: white; padding: 8px; border-radius: 6px; width: 100%; font-size: 12px; }
         .hidden { display: none !important; }
         
-        /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #0b0c15; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
@@ -71,10 +69,7 @@
                 </div>
 
                 <div class="flex gap-2">
-                    <button onclick="criarNovaOferta()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1">
-                        <span>+</span> NOVA
-                    </button>
-                    <button onclick="copiarRelatorio()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">📋 COPIAR</button>
+                    <button onclick="criarNovaOferta()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1"><span>+</span> NOVA</button>
                     <button onclick="carregarDadosDaOferta()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">🔄</button>
                 </div>
             </div>
@@ -99,7 +94,7 @@
                         <p id="kpi-unique" class="metric-value">0</p>
                     </div>
                     <div class="glass-panel p-4 border-l-2 border-emerald-500">
-                        <p class="metric-label">Vendas ($)</p>
+                        <p class="metric-label">Cliques ($)</p>
                         <p id="kpi-sales" class="metric-value">0</p>
                     </div>
                 </div>
@@ -121,15 +116,8 @@
                         <input type="text" id="edit-checkout" class="input-dark border-emerald-500/30" placeholder="Link Checkout">
                         
                         <div class="flex gap-2 pt-2">
-                            <button onclick="abrirLinkTeste()" class="w-1/2 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded font-bold text-xs py-2 hover:bg-amber-500 hover:text-black transition">
-                                🧪 ABRIR TESTE
-                            </button>
-                            <button onclick="salvarOfertaAtual()" class="w-1/2 bg-indigo-600 hover:bg-indigo-500 text-white rounded font-bold text-xs py-2 transition">
-                                💾 SALVAR
-                            </button>
-                        </div>
-                        <div class="text-center pt-1">
-                            <button onclick="deletarOfertaAtual()" class="text-[10px] text-red-500 hover:text-red-400 underline">Apagar esta oferta</button>
+                            <button onclick="abrirLinkTeste()" class="w-1/2 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded font-bold text-xs py-2 hover:bg-amber-500 hover:text-black transition">🧪 ABRIR TESTE</button>
+                            <button onclick="salvarOfertaAtual()" class="w-1/2 bg-indigo-600 hover:bg-indigo-500 text-white rounded font-bold text-xs py-2 transition">💾 SALVAR</button>
                         </div>
                     </div>
                 </div>
@@ -147,34 +135,33 @@
         </div>
 
         <div class="glass-panel p-6 mb-10 border border-emerald-500/30">
-            <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
-                🔗 Encurtador Automático (Firestore) <span class="text-[10px] bg-emerald-900 text-emerald-400 px-2 py-1 rounded">V2.0</span>
-            </h2>
-            <p class="text-xs text-slate-400 mb-6">Gera links curtos para a oferta selecionada.</p>
-
+            <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">🔗 Encurtador Automático <span class="text-[10px] bg-emerald-900 text-emerald-400 px-2 py-1 rounded">V2.0</span></h2>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                 <div class="md:col-span-2">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase">Nome Curto (Alias)</label>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase">Nome Curto</label>
                     <div class="flex">
                         <span class="bg-slate-700 text-slate-300 p-2 text-xs rounded-l border border-slate-600">/r.html?id=</span>
-                        <input type="text" id="short-alias" placeholder="ex: oferta1" class="w-full bg-slate-900 border border-slate-600 text-white text-xs p-2 focus:border-emerald-500 outline-none">
+                        <input type="text" id="short-alias" placeholder="ex: zap" class="w-full bg-slate-900 border border-slate-600 text-white text-xs p-2 outline-none">
                     </div>
                 </div>
-                <div>
-                    <label class="text-[10px] font-bold text-emerald-500 uppercase">Origem (UTM Source)</label>
-                    <input type="text" id="utm-source" value="instagram" class="input-dark">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-emerald-500 uppercase">Campanha</label>
-                    <input type="text" id="utm-campaign" placeholder="stories" class="input-dark">
-                </div>
+                <div><label class="text-[10px] font-bold text-emerald-500 uppercase">Origem (Source)</label><input type="text" id="utm-source" value="instagram" class="input-dark"></div>
+                <div><label class="text-[10px] font-bold text-emerald-500 uppercase">Campanha</label><input type="text" id="utm-campaign" placeholder="stories" class="input-dark"></div>
             </div>
-            <button onclick="gerarLinkCurto()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg text-xs transition mb-4">
-                💾 GERAR LINK DE RASTREAMENTO
-            </button>
+            <button onclick="gerarLinkCurto()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg text-xs transition mb-4">💾 GERAR LINK DE RASTREAMENTO</button>
             <div id="short-result" class="hidden bg-black/50 p-4 rounded border border-slate-700 flex justify-between items-center">
                 <code id="final-link-display" class="text-white text-xs font-mono">...</code>
                 <button onclick="copiarLinkCurto()" class="text-[10px] bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded">COPIAR</button>
+            </div>
+        </div>
+
+        <div class="border border-red-900/30 bg-red-950/10 rounded-xl p-6 no-print mt-10">
+            <h3 class="text-red-500 font-bold text-sm mb-2 uppercase">⚠️ Zona de Perigo (Gerenciamento de Dados)</h3>
+            <p class="text-xs text-slate-400 mb-4">Ações aqui são irreversíveis. O botão abaixo apaga <strong>apenas os dados de rastreamento</strong> (cliques, views) da oferta selecionada, baseados no modo atual (Teste ou Real). A oferta NÃO será apagada.</p>
+            <div class="flex items-center gap-4">
+                <button onclick="limparDados()" class="bg-red-900/50 hover:bg-red-800 text-red-200 border border-red-800 px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2">
+                    🗑️ APAGAR TODOS OS DADOS DO MODO ATUAL
+                </button>
+                <p id="delete-status" class="text-xs text-slate-500 italic"></p>
             </div>
         </div>
 
@@ -188,137 +175,74 @@
         const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
 
-        // VARIÁVEIS GLOBAIS
         let currentOfferId = "";
-        let currentOfferData = {};
         let unsubscribeFeed = null;
 
-        // AUTH
         window.fazerLogin = async () => { try { await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); } catch(e) { document.getElementById('error-msg').innerText = e.message; } }
         window.logout = () => signOut(auth);
         onAuthStateChanged(auth, (u) => { if(u) { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('dashboard').classList.remove('hidden'); iniciarSistema(); } });
 
-        // INICIALIZAÇÃO
         async function iniciarSistema() {
-            // 1. Carrega lista de ofertas no Select
             const snaps = await getDocs(collection(db, "offers"));
             const select = document.getElementById('offer-selector');
             select.innerHTML = "";
-            
-            if(snaps.empty) {
-                const opt = document.createElement('option');
-                opt.text = "Nenhuma oferta criada";
-                select.add(opt);
-                return;
-            }
-
-            snaps.forEach(doc => {
-                const opt = document.createElement('option');
-                opt.value = doc.id;
-                opt.text = doc.data().headline || "Sem Título";
-                select.add(opt);
-            });
-
-            // Seleciona a primeira e carrega
+            if(snaps.empty) { select.add(new Option("Sem Ofertas", "")); return; }
+            snaps.forEach(doc => select.add(new Option(doc.data().headline, doc.id)));
             currentOfferId = select.value;
             carregarDadosDaOferta();
         }
 
         window.criarNovaOferta = async () => {
-            const headline = prompt("Nome da nova oferta (Headline):");
+            const headline = prompt("Nome da oferta:");
             if(!headline) return;
-            const ref = await addDoc(collection(db, "offers"), { 
-                headline: headline, bodyText: "Texto base...", ctaText: "COMPRAR", price: "9,90", 
-                layout: "dark", videoUrl: "", checkoutUrl: "", createdAt: serverTimestamp() 
-            });
-            // Cria métricas zeradas
+            const ref = await addDoc(collection(db, "offers"), { headline: headline, bodyText: "...", ctaText: "COMPRAR", price: "9,90", layout: "dark", videoUrl: "", checkoutUrl: "", createdAt: serverTimestamp() });
             await addDoc(collection(db, "metrics"), { offerId: ref.id, sales: 0, revenue: 0, views: 0, statusVisual: "cinza" });
-            alert("Criada! Recarregando...");
             iniciarSistema();
         }
 
-        // CARREGAMENTO INTELIGENTE (CORE DO SNIPER)
         window.carregarDadosDaOferta = async () => {
             const select = document.getElementById('offer-selector');
             currentOfferId = select.value;
             const isTest = document.getElementById('toggle-test').checked;
-
-            // Atualiza Badge de Status
+            
             const badge = document.getElementById('feed-badge');
             if(isTest) { badge.innerText = "MODO TESTE"; badge.className = "text-[9px] bg-amber-500/20 text-amber-400 px-2 py-1 rounded"; } 
             else { badge.innerText = "DADOS REAIS"; badge.className = "text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded"; }
 
-            // 1. Carrega Dados da Oferta (Firestore)
             const docSnap = await getDoc(doc(db, "offers", currentOfferId));
             if(docSnap.exists()) {
-                currentOfferData = docSnap.data();
-                // Preenche formulário de edição
-                document.getElementById('edit-headline').value = currentOfferData.headline;
-                document.getElementById('edit-price').value = currentOfferData.price;
-                document.getElementById('edit-layout').value = currentOfferData.layout || 'dark';
-                document.getElementById('edit-video').value = currentOfferData.videoUrl || '';
-                document.getElementById('edit-checkout').value = currentOfferData.checkoutUrl || '';
+                const d = docSnap.data();
+                document.getElementById('edit-headline').value = d.headline;
+                document.getElementById('edit-price').value = d.price;
+                document.getElementById('edit-layout').value = d.layout || 'dark';
+                document.getElementById('edit-video').value = d.videoUrl || '';
+                document.getElementById('edit-checkout').value = d.checkoutUrl || '';
             }
 
-            // 2. Carrega Métricas (Funil) via EVENTOS (Sniper Logic)
-            // Query: Busca eventos desta oferta, filtrando por Teste ou Real
-            const q = query(collection(db, "events"), 
-                where("offerId", "==", currentOfferId), 
-                where("isTest", "==", isTest),
-                orderBy("createdAt", "desc")
-            );
-
-            // Escuta em Tempo Real
-            if(unsubscribeFeed) unsubscribeFeed(); // Limpa listener anterior
+            const q = query(collection(db, "events"), where("offerId", "==", currentOfferId), where("isTest", "==", isTest), orderBy("createdAt", "desc"));
+            if(unsubscribeFeed) unsubscribeFeed();
             
             unsubscribeFeed = onSnapshot(q, (snapshot) => {
-                let views = 0;
-                let clicks = 0;
+                let views = 0, clicks = 0;
                 const feedContainer = document.getElementById('live-feed');
                 feedContainer.innerHTML = "";
-
-                if(snapshot.empty) {
-                    feedContainer.innerHTML = "<p class='text-center text-slate-600 text-xs mt-10'>Sem dados recentes.</p>";
-                }
+                if(snapshot.empty) feedContainer.innerHTML = "<p class='text-center text-slate-600 text-xs mt-10'>Sem dados.</p>";
 
                 snapshot.forEach(doc => {
                     const d = doc.data();
-                    // Contagem Funil
                     if(d.type === 'offer_view') views++;
                     if(d.type === 'cta_click') clicks++;
-
-                    // Render Feed Item
                     const time = d.createdAt ? new Date(d.createdAt.seconds*1000).toLocaleTimeString() : "";
-                    let icon="🔹"; let color="text-slate-400"; let txt = d.type;
-                    
+                    let icon="🔹", color="text-slate-400", txt=d.type;
                     if(d.type==='cta_click') { icon="💰"; color="text-emerald-400 font-bold"; txt="CLICOU NO CHECKOUT"; }
                     if(d.type==='offer_view') { icon="👀"; color="text-indigo-400"; txt="Visualizou Página"; }
                     if(d.type==='short_link_click') { icon="🔗"; color="text-amber-400"; txt="Link Encurtado"; }
-
-                    // Origem UTM
-                    let sourceTag = "";
-                    if(d.campaign && d.campaign.source !== 'direct' && d.campaign.source !== 'none') {
-                        sourceTag = `<span class="text-[9px] bg-slate-700 px-1 rounded ml-1">${d.campaign.source}</span>`;
-                    }
-
-                    feedContainer.innerHTML += `
-                        <div class="flex justify-between border-b border-white/5 py-2 hover:bg-white/5 px-2 rounded transition">
-                            <div class="flex items-center gap-2">
-                                <span>${icon}</span>
-                                <div>
-                                    <span class="text-[10px] ${color} block">${txt}</span>
-                                    ${sourceTag}
-                                </div>
-                            </div>
-                            <span class="text-[9px] text-slate-600 font-mono">${time}</span>
-                        </div>`;
+                    
+                    feedContainer.innerHTML += `<div class="flex justify-between border-b border-white/5 py-2 px-2 hover:bg-white/5 rounded transition"><div class="flex items-center gap-2"><span>${icon}</span><span class="text-[10px] ${color}">${txt}</span></div><span class="text-[9px] text-slate-600 font-mono">${time}</span></div>`;
                 });
 
-                // Atualiza KPIs
                 document.getElementById('kpi-unique').innerText = views;
-                document.getElementById('kpi-sales').innerText = clicks; // Usando cliques como proxy de intenção por enquanto
-
-                // Atualiza Funil Visual
+                document.getElementById('kpi-sales').innerText = clicks;
                 renderFunnel(views, clicks);
             });
         }
@@ -326,26 +250,9 @@
         function renderFunnel(views, clicks) {
             const container = document.getElementById('funnel-container');
             const conv = views > 0 ? ((clicks/views)*100).toFixed(1) : 0;
-            
-            container.innerHTML = `
-                <div class="funnel-step active">
-                    <div class="flex justify-between items-end">
-                        <div><p class="text-[10px] uppercase text-slate-500 font-bold">VISITAS</p><p class="text-xl font-black text-white">${views}</p></div>
-                        <div class="text-right"><p class="text-xs font-bold text-slate-400">100%</p></div>
-                    </div>
-                    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 100%"></div></div>
-                </div>
-                <div class="funnel-step ${clicks > 0 ? 'active' : ''}" style="border-left-color: #10b981;">
-                    <div class="flex justify-between items-end">
-                        <div><p class="text-[10px] uppercase text-emerald-500 font-bold">CHECKOUT (INTENÇÃO)</p><p class="text-xl font-black text-emerald-400">${clicks}</p></div>
-                        <div class="text-right"><p class="text-xs font-bold text-emerald-400">${conv}%</p></div>
-                    </div>
-                    <div class="progress-bar-bg"><div class="progress-bar-fill" style="background:#10b981; width: ${conv}%"></div></div>
-                </div>
-            `;
+            container.innerHTML = `<div class="funnel-step active"><div class="flex justify-between items-end"><div><p class="text-[10px] uppercase text-slate-500 font-bold">VISITAS</p><p class="text-xl font-black text-white">${views}</p></div><div class="text-right"><p class="text-xs font-bold text-slate-400">100%</p></div></div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 100%"></div></div></div><div class="funnel-step ${clicks > 0 ? 'active' : ''}" style="border-left-color: #10b981;"><div class="flex justify-between items-end"><div><p class="text-[10px] uppercase text-emerald-500 font-bold">CHECKOUT (INTENÇÃO)</p><p class="text-xl font-black text-emerald-400">${clicks}</p></div><div class="text-right"><p class="text-xs font-bold text-emerald-400">${conv}%</p></div></div><div class="progress-bar-bg"><div class="progress-bar-fill" style="background:#10b981; width: ${conv}%"></div></div></div>`;
         }
 
-        // SALVAR EDIÇÕES
         window.salvarOfertaAtual = async () => {
             try {
                 await updateDoc(doc(db, "offers", currentOfferId), {
@@ -355,57 +262,48 @@
                     videoUrl: document.getElementById('edit-video').value,
                     checkoutUrl: document.getElementById('edit-checkout').value
                 });
-                alert("✅ Oferta atualizada com sucesso!");
-                carregarDadosDaOferta(); // Recarrega para garantir
+                alert("✅ Atualizado!");
+                carregarDadosDaOferta();
             } catch(e) { alert("Erro: " + e.message); }
         }
 
-        window.deletarOfertaAtual = async () => {
-            if(confirm("TEM CERTEZA? Isso apaga a oferta para sempre.")) {
-                await deleteDoc(doc(db, "offers", currentOfferId));
-                alert("Apagado.");
-                iniciarSistema();
-            }
+        window.abrirLinkTeste = () => { window.open(`index.html?id=${currentOfferId}&mode=test`, '_blank'); }
+
+        window.limparDados = async () => {
+            const isTest = document.getElementById('toggle-test').checked;
+            const modeName = isTest ? "MODO TESTE" : "MODO REAL";
+            if(!confirm(`⚠️ ATENÇÃO!\n\nApagar TODOS os eventos (cliques e views) desta oferta no ${modeName}?\n\nA oferta NÃO será apagada.`)) return;
+            
+            const statusEl = document.getElementById('delete-status');
+            statusEl.innerText = "Apagando...";
+            
+            const q = query(collection(db, "events"), where("offerId", "==", currentOfferId), where("isTest", "==", isTest));
+            const snapshot = await getDocs(q);
+            const promises = [];
+            snapshot.forEach(doc => promises.push(deleteDoc(doc.ref)));
+            await Promise.all(promises);
+            
+            statusEl.innerText = "Limpo!";
+            setTimeout(() => statusEl.innerText = "", 2000);
         }
 
-        window.abrirLinkTeste = () => {
-            const url = `index.html?id=${currentOfferId}&mode=test`;
-            window.open(url, '_blank');
-        }
-
-        // ENCURTADOR SNIPER
         window.gerarLinkCurto = async () => {
             const alias = document.getElementById('short-alias').value.replace(/[^a-zA-Z0-9]/g, '');
+            if(!alias) return alert("Nome inválido");
             const source = document.getElementById('utm-source').value;
             const campaign = document.getElementById('utm-campaign').value;
+            const target = `https://nucleoinsight.github.io/paco-core/index.html?id=${currentOfferId}&utm_source=${source}&utm_campaign=${campaign}`;
             
-            if(!alias) return alert("Digite um nome curto!");
-
-            // Constrói URL com UTMs
-            let target = `https://nucleoinsight.github.io/paco-core/index.html?id=${currentOfferId}`;
-            target += `&utm_source=${source}&utm_campaign=${campaign}`;
-
             try {
-                await setDoc(doc(db, "short_links", alias), {
-                    target: target,
-                    clicks: 0,
-                    offerId: currentOfferId,
-                    created_at: serverTimestamp()
-                });
+                await setDoc(doc(db, "short_links", alias), { target: target, clicks: 0, offerId: currentOfferId, created_at: serverTimestamp() });
                 const finalLink = `https://nucleoinsight.github.io/paco-core/r.html?id=${alias}`;
                 document.getElementById('final-link-display').innerText = finalLink;
                 document.getElementById('short-result').classList.remove('hidden');
             } catch(e) { alert("Erro: " + e.message); }
         }
-
-        window.copiarLinkCurto = () => {
-            navigator.clipboard.writeText(document.getElementById('final-link-display').innerText).then(() => alert("Copiado!"));
-        }
         
-        window.copiarRelatorio = () => {
-            alert("Função de relatório copiada para área de transferência!");
-        }
-
+        window.copiarLinkCurto = () => { navigator.clipboard.writeText(document.getElementById('final-link-display').innerText).then(() => alert("Copiado!")); }
+        window.copiarRelatorio = () => { alert("Em breve: PDF do Relatório"); }
     </script>
 </body>
 </html>
