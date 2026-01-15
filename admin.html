@@ -3,54 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PACO V10 | Sniper Edition</title>
-    
+    <title>PACO V11 | Checkout Ready</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #0b0c15; color: #a5b4fc; font-family: 'Inter', sans-serif; }
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
-        
-        .glass-panel { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; }
-        
-        .input-dark { background: #0f172a; border: 1px solid #334155; color: white; padding: 8px; border-radius: 6px; width: 100%; font-size: 13px; margin-bottom: 8px; }
+        body { background: #0b0c15; color: #a5b4fc; font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(10px); }
+        .input-dark { background: #0f172a; border: 1px solid #334155; color: white; padding: 10px; border-radius: 6px; width: 100%; font-size: 13px; }
         .input-dark:focus { border-color: #6366f1; outline: none; }
-        
-        label { font-size: 10px; text-transform: uppercase; font-weight: 800; color: #64748b; display: block; margin-bottom: 2px; }
-        
-        /* Scrollbar fina para o feed */
-        .custom-scroll::-webkit-scrollbar { width: 4px; }
-        .custom-scroll::-webkit-scrollbar-track { background: #0f172a; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
-
-        .feed-item:hover { background: rgba(255,255,255,0.05); }
+        label { font-size: 10px; font-weight: 900; color: #64748b; display: block; margin-bottom: 4px; uppercase; }
+        .highlight-select { background: #f59e0b; color: #000; font-weight: bold; border: none; }
         .hidden { display: none; }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-8">
+<body class="p-4 md:p-8 min-h-screen">
 
     <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#0b0c15]">
-        <div class="glass-panel p-8 w-full max-w-md text-center">
-            <h1 class="text-3xl font-black text-white mb-2">PACO <span class="text-indigo-500">V10</span></h1>
+        <div class="glass p-8 w-full max-w-md text-center rounded-xl">
+            <h1 class="text-3xl font-black text-white mb-6">PACO <span class="text-indigo-500">V11</span></h1>
             <input type="email" id="email" class="input-dark mb-2" placeholder="Email">
             <input type="password" id="password" class="input-dark mb-4" placeholder="Senha">
-            <button onclick="fazerLogin()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-500 transition">ENTRAR</button>
+            <button onclick="fazerLogin()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-500 transition">ACESSAR</button>
             <p id="error-msg" class="text-red-400 text-xs mt-4"></p>
         </div>
     </div>
 
-    <div id="dashboard" class="max-w-7xl mx-auto hidden">
-        <header class="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
-            <h1 class="text-xl font-black text-white">GERENCIADOR <span class="text-indigo-500">SNIPER</span></h1>
+    <div id="dashboard" class="max-w-6xl mx-auto hidden">
+        <header class="flex justify-between items-center mb-8 pb-4 border-b border-white/5">
+            <h1 class="text-xl font-black text-white">GERENCIADOR DE <span class="text-emerald-400">VENDAS</span></h1>
             <div class="flex gap-2">
-                <button onclick="criarNovaOferta()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition">+ NOVA OFERTA</button>
-                <button onclick="logout()" class="bg-slate-800 text-slate-400 px-4 py-2 rounded-lg text-xs font-bold transition">SAIR</button>
+                <button onclick="criarNovaOferta()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded font-bold text-xs">+ CRIAR OFERTA</button>
+                <button onclick="logout()" class="bg-slate-800 text-slate-400 px-4 py-2 rounded font-bold text-xs">SAIR</button>
             </div>
         </header>
 
         <div id="lista-ofertas" class="space-y-8">
-            <div class="text-center text-slate-500 animate-pulse mt-10">Carregando inteligência...</div>
+            <div class="text-center text-slate-500 animate-pulse mt-10">Carregando sistema...</div>
         </div>
     </div>
 
@@ -59,33 +47,21 @@
         import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, addDoc, deleteDoc, serverTimestamp, query, where, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg",
-            authDomain: "paco-core.firebaseapp.com",
-            projectId: "paco-core",
-            storageBucket: "paco-core.firebasestorage.app",
-            messagingSenderId: "88467987691",
-            appId: "1:88467987691:web:85892f360253aa957c72ae"
-        };
+        const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
+        const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-
-        // AUTH
         window.fazerLogin = async () => { try { await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); } catch(e) { document.getElementById('error-msg').innerText = e.message; } }
         window.logout = () => signOut(auth);
         onAuthStateChanged(auth, (u) => { if(u) { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('dashboard').classList.remove('hidden'); carregarPainel(); } });
 
-        // CORE
         window.criarNovaOferta = async () => {
-            if(!confirm("Criar oferta?")) return;
-            const ref = await addDoc(collection(db, "offers"), { headline: "Nova Oferta", bodyText: "Texto...", ctaText: "COMPRAR", price: "4,99", layout: "index.html", videoUrl: "", createdAt: serverTimestamp() });
+            if(!confirm("Criar nova oferta?")) return;
+            const ref = await addDoc(collection(db, "offers"), { headline: "Nova Oferta", bodyText: "Texto...", ctaText: "COMPRAR AGORA", price: "9,90", layout: "index.html", videoUrl: "", checkoutUrl: "", createdAt: serverTimestamp() });
             await addDoc(collection(db, "metrics"), { offerId: ref.id, sales: 0, revenue: 0, views: 0, statusVisual: "cinza" });
             carregarPainel();
         }
 
-        window.excluirOferta = async (id) => { if(confirm("Apagar oferta?")) { await deleteDoc(doc(db, "metrics", id)); carregarPainel(); } }
+        window.excluirOferta = async (id) => { if(confirm("Apagar?")) { await deleteDoc(doc(db, "metrics", id)); carregarPainel(); } }
 
         window.salvarTudo = async (offerId, metricId) => {
             try {
@@ -95,18 +71,18 @@
                     ctaText: document.getElementById(`cta-${offerId}`).value,
                     price: document.getElementById(`price-${offerId}`).value,
                     layout: document.getElementById(`layout-${offerId}`).value,
-                    videoUrl: document.getElementById(`video-${offerId}`).value
+                    videoUrl: document.getElementById(`video-${offerId}`).value,
+                    checkoutUrl: document.getElementById(`checkout-${offerId}`).value // SALVANDO O LINK!
                 });
                 await updateDoc(doc(db, "metrics", metricId), {
                     sales: Number(document.getElementById(`sales-${metricId}`).value),
                     views: Number(document.getElementById(`views-${metricId}`).value),
                     statusVisual: document.getElementById(`status-${metricId}`).value
                 });
-                alert("✅ Dados Atualizados!");
+                alert("✅ SALVO! Link de checkout atualizado.");
             } catch(e) { alert("Erro: " + e.message); }
         }
 
-        // --- RENDERIZADOR ---
         window.carregarPainel = async () => {
             const container = document.getElementById('lista-ofertas');
             const snaps = await getDocs(collection(db, "metrics"));
@@ -116,144 +92,98 @@
             for (const mDoc of snaps.docs) {
                 const m = mDoc.data();
                 const offerId = m.offerId;
-                let o = { headline:"Carregando...", layout:"index.html" };
+                let o = { headline:"...", layout:"index.html", checkoutUrl: "" };
                 try { const os = await getDoc(doc(db, "offers", offerId)); if(os.exists()) o = os.data(); } catch(e){}
 
-                // Lógica de Cores
-                let borderClass = m.statusVisual === 'verde' ? 'border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : (m.statusVisual === 'vermelho' ? 'border-red-500' : 'border-gray-600');
+                let statusColor = m.statusVisual === 'verde' ? 'border-emerald-500' : (m.statusVisual === 'vermelho' ? 'border-red-500' : 'border-slate-600');
                 const linkFinal = `${o.layout}?id=${offerId}`;
 
                 const html = `
-                <div class="glass-panel p-6 border-l-4 ${borderClass}">
-                    <div class="flex justify-between items-start mb-6 border-b border-white/5 pb-4">
-                        <div>
-                            <div class="flex items-center gap-3">
-                                <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-1 rounded font-mono">ID: ${offerId}</span>
-                                <a href="./${linkFinal}" target="_blank" class="text-[10px] text-indigo-400 hover:text-white border border-indigo-500/30 px-2 py-1 rounded transition flex items-center gap-1">
-                                    🔗 ABRIR PÁGINA ↗
-                                </a>
-                            </div>
-                            <h3 class="text-lg font-bold text-white mt-2">${o.headline}</h3>
-                        </div>
-                        <button onclick="excluirOferta('${mDoc.id}')" class="text-xs text-red-900 hover:text-red-500 bg-red-900/10 px-3 py-2 rounded">🗑️</button>
+                <div class="glass p-6 rounded-xl border-l-4 ${statusColor} relative">
+                    
+                    <div class="absolute top-4 right-4 flex gap-2">
+                        <select id="layout-${offerId}" class="bg-amber-400 text-black font-bold text-xs px-2 py-1 rounded cursor-pointer border-none focus:ring-2 focus:ring-amber-500">
+                            <option value="index.html" ${o.layout==='index.html'?'selected':''}>📄 MODELO TEXTO (DARK)</option>
+                            <option value="clean.html" ${o.layout==='clean.html'?'selected':''}>⬜ MODELO CLEAN (BRANCO)</option>
+                            <option value="vsl.html" ${o.layout==='vsl.html'?'selected':''}>🎥 MODELO VÍDEO (VSL)</option>
+                            <option value="artigo.html" ${o.layout==='artigo.html'?'selected':''}>📰 MODELO NOTÍCIA</option>
+                        </select>
+                        <button onclick="excluirOferta('${mDoc.id}')" class="bg-red-900/20 text-red-500 px-3 rounded font-bold hover:bg-red-500 hover:text-white transition">X</button>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        
+                    <div class="mb-6 pr-40">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono">ID: ${offerId}</span>
+                            <a href="./${linkFinal}" target="_blank" class="text-[10px] text-emerald-400 hover:underline">ABRIR LINK FINAL ↗</a>
+                        </div>
+                        <input type="text" id="headline-${offerId}" value="${o.headline}" class="bg-transparent text-xl font-bold text-white w-full border-b border-dashed border-slate-600 focus:border-indigo-500 outline-none pb-1" placeholder="Escreva a Headline aqui...">
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div class="space-y-4">
-                            <div class="bg-indigo-900/10 p-3 rounded border border-indigo-500/20">
-                                <label class="text-indigo-300">🎨 MODELO VISUAL (LAYOUT)</label>
-                                <select id="layout-${offerId}" class="input-dark bg-slate-900 border-indigo-500/50">
-                                    <option value="index.html" ${o.layout==='index.html'?'selected':''}>🌑 Dark Mode (Texto)</option>
-                                    <option value="clean.html" ${o.layout==='clean.html'?'selected':''}>⬜ Clean (Branco)</option>
-                                    <option value="vsl.html" ${o.layout==='vsl.html'?'selected':''}>🎥 Vídeo (VSL)</option>
-                                    <option value="artigo.html" ${o.layout==='artigo.html'?'selected':''}>📰 Advertorial</option>
-                                </select>
-                                
-                                <label>Link YouTube (Só para VSL)</label>
-                                <input type="text" id="video-${offerId}" value="${o.videoUrl||''}" class="input-dark" placeholder="https://...">
-                            </div>
-
                             <div>
-                                <label>Headline</label>
-                                <input type="text" id="headline-${offerId}" value="${o.headline}" class="input-dark">
-                                <label>Texto Corpo</label>
-                                <textarea id="body-${offerId}" class="input-dark h-20">${o.bodyText||''}</textarea>
-                                <div class="flex gap-2">
-                                    <div class="w-1/2"><label>Botão</label><input type="text" id="cta-${offerId}" value="${o.ctaText||'COMPRAR'}" class="input-dark"></div>
-                                    <div class="w-1/2"><label>Preço</label><input type="text" id="price-${offerId}" value="${o.price}" class="input-dark"></div>
-                                </div>
+                                <label class="text-emerald-400">🔗 LINK DE CHECKOUT (Onde o dinheiro entra)</label>
+                                <input type="text" id="checkout-${offerId}" value="${o.checkoutUrl||''}" class="input-dark border-emerald-500/30 text-emerald-300" placeholder="https://pay.kiwify.com.br/...">
+                            </div>
+                            <div>
+                                <label>Corpo do Texto</label>
+                                <textarea id="body-${offerId}" class="input-dark h-24">${o.bodyText||''}</textarea>
+                            </div>
+                            <div>
+                                <label>Link Vídeo (Opcional)</label>
+                                <input type="text" id="video-${offerId}" value="${o.videoUrl||''}" class="input-dark">
                             </div>
                         </div>
 
-                        <div class="bg-slate-900/50 p-4 rounded-lg border border-white/5 flex flex-col justify-between h-full">
-                            <div>
-                                <label class="text-emerald-400 mb-2">📊 RESULTADOS MANUAIS</label>
-                                <div class="grid grid-cols-2 gap-4 mb-4">
-                                    <div class="text-center bg-black/20 p-2 rounded">
-                                        <span class="text-[10px] text-slate-400">VISITAS</span>
-                                        <input type="number" id="views-${mDoc.id}" value="${m.views||0}" class="bg-transparent text-center text-xl font-bold text-white w-full outline-none">
-                                    </div>
-                                    <div class="text-center bg-black/20 p-2 rounded border border-emerald-900/30">
-                                        <span class="text-[10px] text-emerald-400">VENDAS</span>
-                                        <input type="number" id="sales-${mDoc.id}" value="${m.sales||0}" class="bg-transparent text-center text-xl font-bold text-emerald-400 w-full outline-none">
-                                    </div>
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div><label>Texto Botão</label><input type="text" id="cta-${offerId}" value="${o.ctaText||'COMPRAR'}" class="input-dark"></div>
+                                <div><label>Preço</label><input type="text" id="price-${offerId}" value="${o.price}" class="input-dark"></div>
+                            </div>
+                            
+                            <div class="bg-slate-900/50 p-3 rounded border border-white/5 mt-4">
+                                <label class="mb-2">RESULTADOS</label>
+                                <div class="flex justify-between text-center gap-2 mb-2">
+                                    <div class="w-1/2 bg-black/20 rounded p-1"><span class="block text-[10px] text-slate-400">VIEWS</span><input type="number" id="views-${mDoc.id}" value="${m.views||0}" class="bg-transparent text-center font-bold w-full text-white"></div>
+                                    <div class="w-1/2 bg-black/20 rounded p-1 border border-emerald-500/20"><span class="block text-[10px] text-emerald-400">VENDAS</span><input type="number" id="sales-${mDoc.id}" value="${m.sales||0}" class="bg-transparent text-center font-bold w-full text-emerald-400"></div>
                                 </div>
-                                <label>STATUS DA OFERTA</label>
-                                <select id="status-${mDoc.id}" class="input-dark font-bold">
-                                    <option value="cinza" ${m.statusVisual==='cinza'?'selected':''}>🟡 EM TESTE</option>
-                                    <option value="verde" ${m.statusVisual==='verde'?'selected':''}>🟢 VALIDADA</option>
-                                    <option value="vermelho" ${m.statusVisual==='vermelho'?'selected':''}>🔴 MORTA</option>
+                                <select id="status-${mDoc.id}" class="input-dark text-center font-bold">
+                                    <option value="cinza" ${m.statusVisual==='cinza'?'selected':''}>EM VALIDAÇÃO</option>
+                                    <option value="verde" ${m.statusVisual==='verde'?'selected':''}>VALIDADA ($)</option>
+                                    <option value="vermelho" ${m.statusVisual==='vermelho'?'selected':''}>REPROVADA</option>
                                 </select>
                             </div>
-                            <button onclick="salvarTudo('${offerId}', '${mDoc.id}')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded text-xs transition mt-4">
-                                💾 SALVAR TUDO
-                            </button>
+                            
+                            <button onclick="salvarTudo('${offerId}', '${mDoc.id}')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded text-xs transition">💾 SALVAR ALTERAÇÕES</button>
                         </div>
 
-                        <div class="bg-black/30 p-0 rounded-lg border border-white/5 overflow-hidden flex flex-col h-[400px]">
-                            <div class="p-3 bg-slate-900 border-b border-white/5 flex justify-between items-center">
-                                <label class="text-white m-0">📡 FEED AO VIVO</label>
-                                <span class="text-[9px] text-slate-500">Últimos eventos</span>
-                            </div>
-                            <div id="feed-${offerId}" class="overflow-y-auto p-2 space-y-1 custom-scroll flex-1">
-                                <div class="text-center text-[10px] text-slate-600 mt-10">Monitorando...</div>
+                        <div class="bg-black/20 rounded border border-white/5 overflow-hidden flex flex-col h-64 lg:h-auto">
+                            <div class="p-2 bg-slate-900/80 border-b border-white/5 text-[10px] font-bold text-slate-400">ATIVIDADE RECENTE</div>
+                            <div id="feed-${offerId}" class="p-2 overflow-y-auto flex-1 space-y-1 text-[10px] font-mono text-slate-500">
+                                Monitorando...
                             </div>
                         </div>
-
                     </div>
                 </div>`;
                 container.innerHTML += html;
-                
-                // INICIA O MONITORAMENTO DESTA OFERTA ESPECÍFICA
                 monitorarOferta(offerId);
             }
         }
 
-        // --- FUNÇÃO ESPIÃ (FEED) ---
         function monitorarOferta(offerId) {
             const feedContainer = document.getElementById(`feed-${offerId}`);
-            // Filtra eventos APENAS desta oferta
-            const q = query(collection(db, "events"), where("offerId", "==", offerId), orderBy("createdAt", "desc"), limit(15));
-            
+            const q = query(collection(db, "events"), where("offerId", "==", offerId), orderBy("createdAt", "desc"), limit(10));
             onSnapshot(q, (snapshot) => {
                 if(snapshot.empty) return;
                 feedContainer.innerHTML = "";
-                
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    const date = data.createdAt ? new Date(data.createdAt.seconds * 1000) : new Date();
-                    const time = date.toLocaleTimeString();
-                    const fullDate = date.toLocaleString();
-                    
-                    let text = "Ação desconhecida";
-                    let icon = "❓";
+                    const time = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleTimeString() : "";
                     let color = "text-slate-400";
-                    let bg = "";
-
-                    if(data.type === 'cta_click') { text = "CLICOU NO BOTÃO"; icon = "💰"; color = "text-emerald-400 font-bold"; bg="bg-emerald-900/10"; }
-                    if(data.type === 'offer_view') { text = "Visualizou Página"; icon = "👀"; color = "text-indigo-300"; }
-                    if(data.type === 'vsl_view') { text = "Viu o Vídeo"; icon = "🎥"; color = "text-red-300"; }
-                    
-                    // ID único para o toggle
-                    const eventId = doc.id;
-
-                    feedContainer.innerHTML += `
-                        <div class="feed-item p-2 rounded cursor-pointer border-b border-white/5 ${bg}" onclick="document.getElementById('det-${eventId}').classList.toggle('hidden')">
-                            <div class="flex justify-between items-center">
-                                <div class="flex items-center gap-2">
-                                    <span>${icon}</span>
-                                    <span class="text-[10px] ${color}">${text}</span>
-                                </div>
-                                <span class="text-[9px] text-slate-600 font-mono">${time}</span>
-                            </div>
-                            <div id="det-${eventId}" class="hidden mt-2 p-2 bg-black/50 rounded border border-white/10 text-[9px] font-mono text-slate-400 break-all">
-                                <p><strong>ID:</strong> ${eventId}</p>
-                                <p><strong>Data:</strong> ${fullDate}</p>
-                                <p><strong>UserAgent:</strong> ${data.userAgent || 'N/A'}</p>
-                            </div>
-                        </div>
-                    `;
+                    let text = "View";
+                    if(data.type === 'cta_click') { color = "text-emerald-400 font-bold"; text = "💰 CLICOU NO CHECKOUT"; }
+                    if(data.type === 'offer_view') { color = "text-indigo-300"; text = "👁️ Viu a página"; }
+                    feedContainer.innerHTML += `<div class="flex justify-between border-b border-white/5 py-1"><span>${time}</span><span class="${color}">${text}</span></div>`;
                 });
             });
         }
