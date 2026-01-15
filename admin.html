@@ -3,24 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PACO V18 | Estável</title>
+    <title>SNIPER PACO | FUSÃO</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    
     <style>
         body { background-color: #0b0c15; color: #a5b4fc; font-family: 'Inter', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
         .glass-panel { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; }
-        .glass-input { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(51, 65, 85, 0.5); color: white; padding: 10px; border-radius: 8px; width: 100%; font-size: 13px; margin-top: 4px; margin-bottom: 8px;}
+        .glass-input { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(51, 65, 85, 0.5); color: white; padding: 10px; border-radius: 8px; width: 100%; font-size: 13px; margin-top:4px;}
         .glass-input:focus { border-color: #6366f1; outline: none; }
         
-        /* ABAS */
-        .tab-btn { padding: 8px 16px; font-size: 11px; font-weight: 700; cursor: pointer; opacity: 0.6; border-bottom: 2px solid transparent; }
-        .tab-btn:hover { opacity: 1; background: rgba(255,255,255,0.05); }
-        .tab-btn.active { opacity: 1; border-bottom-color: #6366f1; color: #818cf8; background: rgba(99, 102, 241, 0.1); }
-        
-        /* FEED SNIPER */
-        .feed-item { border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px; }
-        .feed-item:hover { background: rgba(255,255,255,0.02); }
+        .tab-btn { padding: 8px 16px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; opacity: 0.6; }
+        .tab-btn.active { background: rgba(99, 102, 241, 0.2); border-color: rgba(99, 102, 241, 0.5); color: #818cf8; opacity: 1; }
         
         .hidden { display: none !important; }
         ::-webkit-scrollbar { width: 5px; }
@@ -32,31 +29,31 @@
 
     <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#0b0c15]">
         <div class="glass-panel p-8 w-full max-w-md text-center">
-            <h1 class="text-3xl font-black text-white tracking-tight mb-2">PACO <span class="text-emerald-500">V18</span></h1>
-            <button onclick="fazerLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 mt-4 rounded-lg transition">ENTRAR NO SISTEMA</button>
+            <h1 class="text-3xl font-black text-white tracking-tight">SNIPER <span class="text-indigo-500">PACO</span></h1>
+            <button onclick="fazerLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 mt-6 rounded-lg transition">ACESSAR PAINEL</button>
         </div>
     </div>
 
     <div id="dashboard" class="max-w-7xl mx-auto hidden">
         
-        <header class="flex justify-between items-end mb-8 border-b border-indigo-900/30 pb-4">
+        <header class="flex flex-col md:flex-row justify-between items-end mb-8 border-b border-indigo-900/30 pb-4 gap-4">
             <div>
-                <h1 class="text-2xl font-black text-white">PACO <span class="text-indigo-500">CONTROL</span></h1>
-                <p class="text-xs text-emerald-400 font-mono mt-1">SISTEMA ONLINE</p>
+                <h1 class="text-2xl font-black text-white">PACO <span class="text-indigo-500">SNIPER</span></h1>
+                <p class="text-xs text-emerald-400 font-mono mt-1">SISTEMA FUNDIDO</p>
             </div>
-            <div class="flex gap-2">
-                <button onclick="carregarPainel()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition">
-                    🔄 ATUALIZAR TUDO
-                </button>
-                <button onclick="criarNovaOferta()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition">
-                    + NOVA OFERTA
-                </button>
+            
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 bg-slate-800/50 p-2 rounded-lg border border-slate-700">
+                    <span class="text-[10px] text-slate-400 uppercase font-bold">Modo Teste</span>
+                    <input type="checkbox" id="toggle-test" class="accent-amber-500 w-4 h-4" onchange="carregarPainel()">
+                </div>
+                <button onclick="carregarPainel()" class="bg-slate-700 text-white px-3 py-2 rounded font-bold text-xs">🔄</button>
+                <button onclick="criarNovaOferta()" class="bg-indigo-600 text-white px-3 py-2 rounded font-bold text-xs">+ NOVA CAMPANHA</button>
+                <button onclick="logout()" class="bg-slate-800 text-slate-300 px-3 py-2 rounded font-bold text-xs">SAIR</button>
             </div>
         </header>
 
-        <div id="lista-ofertas" class="space-y-8">
-            <div class="text-center py-20 text-slate-500 text-xs font-mono">Carregando ofertas...</div>
-        </div>
+        <div id="lista-ofertas" class="space-y-8"></div>
     </div>
 
     <script type="module">
@@ -67,12 +64,256 @@
         const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
 
-        // --- AUTH ---
+        // LOGIN SIMPLIFICADO (Para teste rápido, depois você coloca email/senha se quiser)
         window.fazerLogin = async () => { 
+            // Mock login or use real if configured. For now just show dashboard.
             document.getElementById('login-screen').classList.add('hidden'); 
             document.getElementById('dashboard').classList.remove('hidden'); 
             carregarPainel();
         }
+        window.logout = () => window.location.reload();
 
-        // --- NAVEGAÇÃO DE ABAS ---
         window.trocarAba = (id, aba) => {
+            document.querySelectorAll(`.content-${id}`).forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll(`.tab-${id}`).forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-content-${id}-${aba}`).classList.remove('hidden');
+            document.getElementById(`btn-tab-${id}-${aba}`).classList.add('active');
+        }
+
+        window.criarNovaOferta = async () => {
+            if(!confirm("Criar nova campanha?")) return;
+            const ref = await addDoc(collection(db, "offers"), { headline: "Nova Campanha", bodyText: "...", ctaText: "COMPRAR", price: "9,90", layout: "dark", videoUrl: "", checkoutUrl: "", createdAt: serverTimestamp() });
+            await addDoc(collection(db, "metrics"), { offerId: ref.id, statusVisual: "cinza" });
+            carregarPainel();
+        }
+
+        window.excluirOferta = async (id) => { if(confirm("Apagar oferta?")) { await deleteDoc(doc(db, "metrics", id)); carregarPainel(); } }
+
+        window.salvarTudo = async (offerId, metricId) => {
+            try {
+                await updateDoc(doc(db, "offers", offerId), {
+                    headline: document.getElementById(`headline-${offerId}`).value,
+                    bodyText: document.getElementById(`body-${offerId}`).value,
+                    ctaText: document.getElementById(`cta-${offerId}`).value,
+                    price: document.getElementById(`price-${offerId}`).value,
+                    layout: document.getElementById(`layout-${offerId}`).value,
+                    videoUrl: document.getElementById(`video-${offerId}`).value,
+                    checkoutUrl: document.getElementById(`checkout-${offerId}`).value
+                });
+                await updateDoc(doc(db, "metrics", metricId), {
+                    statusVisual: document.getElementById(`status-${metricId}`).value
+                });
+                alert("✅ Salvo!");
+            } catch(e) { alert("Erro: " + e.message); }
+        }
+
+        // LIMPEZA DE DADOS (Obedece modo teste)
+        window.limparDados = async (offerId) => {
+            const isTest = document.getElementById('toggle-test').checked;
+            const mode = isTest ? "TESTE" : "REAL";
+            if(!confirm(`⚠️ APAGAR DADOS DE ${mode}?\nA oferta continua, só os cliques somem.`)) return;
+            
+            const q = query(collection(db, "events"), where("offerId", "==", offerId));
+            const snaps = await getDocs(q);
+            snaps.forEach(d => { if(!!d.data().isTest === isTest) deleteDoc(d.ref); });
+            alert("Dados limpos.");
+        }
+
+        // RENDERIZADOR MASTER
+        window.carregarPainel = async () => {
+            const container = document.getElementById('lista-ofertas');
+            const snaps = await getDocs(collection(db, "metrics"));
+            container.innerHTML = "";
+            const isTest = document.getElementById('toggle-test').checked;
+
+            if(snaps.empty) { container.innerHTML = "<p class='text-center text-slate-500'>Sem campanhas.</p>"; return; }
+
+            for (const mDoc of snaps.docs) {
+                const m = mDoc.data();
+                const offerId = m.offerId;
+                let o = { headline:"...", layout:"dark" };
+                try { const os = await getDoc(doc(db, "offers", offerId)); if(os.exists()) o = os.data(); } catch(e){}
+
+                const linkReal = `index.html?id=${offerId}`;
+                const linkTeste = `index.html?id=${offerId}&mode=test`;
+                let statusColor = m.statusVisual === 'verde' ? 'bg-emerald-500' : 'bg-slate-600';
+
+                const html = `
+                <div class="glass-panel p-1 relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-1 h-full ${statusColor}"></div>
+                    <div class="p-4 border-b border-white/5 flex justify-between items-center bg-slate-900/30">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-[10px] font-mono text-slate-500">ID: ${offerId}</span>
+                                <span class="text-[9px] px-2 py-0.5 rounded bg-white/5 text-white/70 font-bold uppercase">${m.statusVisual}</span>
+                            </div>
+                            <h3 class="text-white font-bold truncate max-w-md">${o.headline}</h3>
+                        </div>
+                        <div class="flex gap-2">
+                             <a href="./${linkTeste}" target="_blank" class="bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-black px-3 py-1.5 rounded text-xs font-bold border border-amber-500/20 transition">🧪 TESTAR</a>
+                             <a href="./${linkReal}" target="_blank" class="bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500 hover:text-white px-3 py-1.5 rounded text-xs font-bold border border-indigo-500/20 transition">🔗 LINK REAL</a>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-1 p-2 bg-black/20 border-b border-white/5 overflow-x-auto">
+                        <button id="btn-tab-${offerId}-dados" onclick="trocarAba('${offerId}', 'dados')" class="tab-btn tab-${offerId} active">📊 DADOS & FEED</button>
+                        <button id="btn-tab-${offerId}-editor" onclick="trocarAba('${offerId}', 'editor')" class="tab-btn tab-${offerId}">✏️ EDITOR</button>
+                        <button id="btn-tab-${offerId}-links" onclick="trocarAba('${offerId}', 'links')" class="tab-btn tab-${offerId}">🔗 LINKS</button>
+                        <button id="btn-tab-${offerId}-perigo" onclick="trocarAba('${offerId}', 'perigo')" class="tab-btn tab-${offerId} text-red-400">⚠️ PERIGO</button>
+                    </div>
+
+                    <div class="p-6 min-h-[400px]">
+                        
+                        <div id="tab-content-${offerId}-dados" class="content-${offerId}">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-4">Performance (${isTest?'TESTE':'REAL'})</h4>
+                                    <canvas id="chart-${offerId}" height="150"></canvas>
+                                    <div class="mt-4 flex gap-4 text-center">
+                                        <div class="w-1/2 bg-black/20 p-2 rounded"><span class="text-xs text-slate-500 block">Views</span><strong class="text-white text-xl" id="val-views-${offerId}">0</strong></div>
+                                        <div class="w-1/2 bg-black/20 p-2 rounded border border-emerald-500/20"><span class="text-xs text-emerald-500 block">Cliques</span><strong class="text-emerald-400 text-xl" id="val-clicks-${offerId}">0</strong></div>
+                                    </div>
+                                    <div class="mt-4"><label class="text-slate-500 text-[10px] font-bold">STATUS</label><select id="status-${mDoc.id}" class="glass-input text-center font-bold"><option value="cinza" ${m.statusVisual==='cinza'?'selected':''}>🟡 TESTANDO</option><option value="verde" ${m.statusVisual==='verde'?'selected':''}>🟢 APROVADA</option><option value="vermelho" ${m.statusVisual==='vermelho'?'selected':''}>🔴 REPROVADA</option></select></div>
+                                </div>
+                                <div class="bg-black/30 rounded border border-white/5 flex flex-col h-[350px]">
+                                    <div class="p-3 border-b border-white/5 flex justify-between bg-slate-900/50"><span class="text-[10px] font-bold text-white">📡 FEED DE SESSÕES</span></div>
+                                    <div id="feed-${offerId}" class="p-2 overflow-y-auto flex-1 space-y-1">Carregando...</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="tab-content-${offerId}-editor" class="content-${offerId} hidden">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="space-y-2">
+                                    <label class="text-[10px] text-slate-500 font-bold">CONFIGURAÇÃO VISUAL</label>
+                                    <select id="layout-${offerId}" class="glass-input">
+                                        <option value="dark" ${o.layout==='dark'?'selected':''}>🌑 Dark Mode</option>
+                                        <option value="clean" ${o.layout==='clean'?'selected':''}>⬜ Clean Mode</option>
+                                        <option value="artigo" ${o.layout==='artigo'?'selected':''}>📰 Advertorial</option>
+                                    </select>
+                                    <input type="text" id="video-${offerId}" value="${o.videoUrl||''}" class="glass-input" placeholder="Link YouTube">
+                                    <input type="text" id="headline-${offerId}" value="${o.headline}" class="glass-input font-bold" placeholder="Headline">
+                                    <textarea id="body-${offerId}" class="glass-input h-20" placeholder="Texto">${o.bodyText||''}</textarea>
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-[10px] text-emerald-500 font-bold">CHECKOUT</label>
+                                    <input type="text" id="checkout-${offerId}" value="${o.checkoutUrl||''}" class="glass-input border-emerald-500/30" placeholder="Link Kiwify...">
+                                    <div class="flex gap-2">
+                                        <input type="text" id="cta-${offerId}" value="${o.ctaText||'COMPRAR'}" class="glass-input" placeholder="Botão">
+                                        <input type="text" id="price-${offerId}" value="${o.price}" class="glass-input text-center" placeholder="R$">
+                                    </div>
+                                    <button onclick="salvarTudo('${offerId}', '${mDoc.id}')" class="w-full bg-slate-100 hover:bg-white text-slate-900 font-bold py-3 rounded-lg mt-4">💾 SALVAR</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="tab-content-${offerId}-links" class="content-${offerId} hidden">
+                            <div class="glass-panel p-6 border-emerald-500/20">
+                                <label class="text-emerald-400 mb-2 text-xs font-bold">ENCURTADOR SNIPER</label>
+                                <div class="flex gap-2">
+                                    <span class="py-2 text-slate-500 text-xs bg-black/20 px-3 rounded border border-white/5">/r.html?id=</span>
+                                    <input type="text" id="short-alias-${offerId}" placeholder="ex: zap" class="glass-input">
+                                    <div class="w-32"><input type="text" id="utm-${offerId}" class="glass-input" placeholder="origem (ex: insta)"></div>
+                                    <button onclick="gerarLinkCurto('${offerId}')" class="bg-emerald-600 text-white px-4 rounded text-xs font-bold h-[42px] mt-1">CRIAR</button>
+                                </div>
+                                <div id="short-result-${offerId}" class="mt-4 text-xs"></div>
+                            </div>
+                        </div>
+
+                        <div id="tab-content-${offerId}-perigo" class="content-${offerId} hidden">
+                            <div class="border border-red-900/30 bg-red-900/5 p-6 rounded text-center">
+                                <button onclick="limparDados('${offerId}')" class="bg-red-900/20 text-red-500 border border-red-900/50 px-4 py-2 rounded text-xs font-bold mb-4">🗑️ LIMPAR DADOS DO MODO ATUAL</button>
+                                <br>
+                                <button onclick="excluirOferta('${mDoc.id}')" class="text-slate-500 hover:text-red-500 text-xs underline">Excluir Oferta Completamente</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>`;
+                container.innerHTML += html;
+                monitorarOferta(offerId, isTest);
+            }
+        }
+
+        // LÓGICA SNIPER: FEED AGRUPADO + GRÁFICO
+        function monitorarOferta(offerId, isTest) {
+            const feed = document.getElementById(`feed-${offerId}`);
+            const q = query(collection(db, "events"), where("offerId", "==", offerId));
+            
+            onSnapshot(q, (snapshot) => {
+                const sessions = {};
+                let totalViews = 0, totalClicks = 0;
+
+                snapshot.forEach(doc => {
+                    const d = doc.data();
+                    if(!!d.isTest !== isTest) return; // Filtro de Modo
+
+                    if(d.type === 'offer_view') totalViews++;
+                    if(d.type === 'cta_click') totalClicks++;
+
+                    const sid = d.sessionId || 'anon';
+                    if(!sessions[sid]) sessions[sid] = { id: sid, events: [], source: d.campaign?.source || 'direto', time: d.createdAt?.seconds || 0 };
+                    sessions[sid].events.push(d);
+                    if(d.createdAt?.seconds > sessions[sid].time) sessions[sid].time = d.createdAt.seconds;
+                });
+
+                // Atualiza Gráfico
+                renderChart(offerId, totalViews, totalClicks);
+                document.getElementById(`val-views-${offerId}`).innerText = totalViews;
+                document.getElementById(`val-clicks-${offerId}`).innerText = totalClicks;
+
+                // Renderiza Feed
+                feed.innerHTML = "";
+                const sorted = Object.values(sessions).sort((a,b) => b.time - a.time);
+                
+                if(sorted.length === 0) feed.innerHTML = "<p class='text-center text-slate-500 text-[10px] mt-10'>Sem dados.</p>";
+
+                sorted.slice(0, 30).forEach(s => {
+                    const timeStr = new Date(s.time*1000).toLocaleTimeString();
+                    let details = "";
+                    s.events.sort((a,b) => b.createdAt - a.createdAt).forEach(e => {
+                        let icon="🔹", txt=e.type, color="text-slate-400";
+                        if(e.type==='cta_click') { icon="💰"; color="text-emerald-400"; txt="CLIQUE NO BOTÃO"; }
+                        if(e.type==='offer_view') { icon="👀"; txt="Visualizou"; }
+                        if(e.type==='click') { icon="👆"; txt=`Click (${e.data?.label})`; }
+                        details += `<div class="flex justify-between py-1 border-b border-white/5"><span class="${color} text-[10px]">${icon} ${txt}</span><span class="text-[9px] text-slate-600">${new Date(e.createdAt.seconds*1000).toLocaleTimeString()}</span></div>`;
+                    });
+
+                    feed.innerHTML += `
+                        <div class="bg-black/20 mb-2 rounded border border-white/5">
+                            <div class="p-2 flex justify-between cursor-pointer hover:bg-white/5" onclick="this.nextElementSibling.classList.toggle('hidden')">
+                                <div class="flex items-center gap-2"><span class="text-[10px] text-slate-300 font-bold">${s.events.length} ações</span> <span class="bg-slate-700 text-[9px] px-1 rounded text-slate-400">${s.source}</span></div>
+                                <span class="text-[10px] font-mono text-slate-500">${timeStr} ▼</span>
+                            </div>
+                            <div class="hidden bg-black/40 p-2 border-t border-white/5">${details}</div>
+                        </div>`;
+                });
+            });
+        }
+
+        function renderChart(id, v, c) {
+            const ctx = document.getElementById(`chart-${id}`).getContext('2d');
+            // Simples destruição e recriação do gráfico (poderia ser otimizado, mas funciona)
+            if(window[`myChart${id}`]) window[`myChart${id}`].destroy();
+            window[`myChart${id}`] = new Chart(ctx, {
+                type: 'doughnut',
+                data: { labels: ['Sem Ação', 'Cliques'], datasets: [{ data: [v-c, c], backgroundColor: ['#1e293b', '#10b981'], borderWidth:0 }] },
+                options: { cutout: '70%', plugins: { legend: { display: false } } }
+            });
+        }
+
+        window.gerarLinkCurto = async (offerId) => {
+            const alias = document.getElementById(`short-alias-${offerId}`).value.replace(/[^a-zA-Z0-9]/g, '');
+            const source = document.getElementById(`utm-${offerId}`).value || 'direto';
+            if(!alias) return alert("Nome inválido");
+            
+            const target = `https://nucleoinsight.github.io/paco-core/index.html?id=${offerId}&utm_source=${source}`;
+            try {
+                await setDoc(doc(db, "short_links", alias), { target: target, clicks: 0, offerId: offerId, created_at: serverTimestamp() });
+                const finalLink = `https://nucleoinsight.github.io/paco-core/r.html?id=${alias}`;
+                document.getElementById(`short-result-${offerId}`).innerHTML = `<a href="${finalLink}" target="_blank" class="text-emerald-400 font-mono underline text-xs">${finalLink}</a>`;
+            } catch(e) { alert("Erro: " + e.message); }
+        }
+    </script>
+</body>
+</html>
