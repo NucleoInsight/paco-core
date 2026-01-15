@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PACO - Painel V7</title>
+    <title>PACO - Painel V8 (Multi-Layout)</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; padding: 20px; }
         .container { max-width: 1000px; margin: 0 auto; }
@@ -19,7 +19,6 @@
         .btn-red { background: #ef4444; color: white; }
         .btn-blue { background: #3b82f6; color: white; }
         .btn-trash { background: #334155; color: #ef4444; font-size: 14px; padding: 5px 10px; border: 1px solid #ef4444; }
-        .btn-trash:hover { background: #ef4444; color: white; }
 
         /* CARTÃO DA OFERTA */
         .card { background: #1e293b; padding: 25px; margin-bottom: 25px; border-radius: 12px; border-left: 6px solid gray; position: relative; }
@@ -36,8 +35,6 @@
         
         .row { display: flex; gap: 15px; } 
         .col { flex: 1; }
-        
-        /* HEADER DO CARD */
         .card-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #334155; padding-bottom: 10px; margin-bottom: 15px; }
     </style>
 </head>
@@ -45,7 +42,7 @@
 
     <div class="container">
         <div id="login-screen">
-            <h2 style="color:#10b981;">PACO V7 (Corrigido)</h2>
+            <h2 style="color:#10b981;">PACO V8 (4 Modelos)</h2>
             <input type="email" id="email" class="login-input" placeholder="Email"><br>
             <input type="password" id="password" class="login-input" placeholder="Senha"><br>
             <button onclick="fazerLogin()" class="btn-green">ENTRAR</button>
@@ -69,52 +66,29 @@
         import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, addDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg",
-            authDomain: "paco-core.firebaseapp.com",
-            projectId: "paco-core",
-            storageBucket: "paco-core.firebasestorage.app",
-            messagingSenderId: "88467987691",
-            appId: "1:88467987691:web:85892f360253aa957c72ae"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
+        const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
+        const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
 
         // --- AUTH ---
-        window.fazerLogin = async () => { 
-            try { await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); } 
-            catch(e) { document.getElementById('error-msg').innerText = e.message; } 
-        }
+        window.fazerLogin = async () => { try { await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); } catch(e) { document.getElementById('error-msg').innerText = e.message; } }
         window.logout = () => signOut(auth);
-        onAuthStateChanged(auth, (user) => { 
-            if(user) { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('dashboard').classList.remove('hidden'); carregarPainel(); } 
-        });
+        onAuthStateChanged(auth, (user) => { if(user) { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('dashboard').classList.remove('hidden'); carregarPainel(); } });
 
-        // --- FUNÇÕES PRINCIPAIS ---
+        // --- FUNÇÕES ---
 
         window.criarNovaOferta = async () => {
-            if(!confirm("Criar nova oferta em branco?")) return;
-            // Cria a oferta padrão (Texto)
+            if(!confirm("Criar nova oferta?")) return;
             const ref = await addDoc(collection(db, "offers"), {
                 headline: "Nova Oferta", bodyText: "Texto da oferta...", ctaText: "QUERO COMPRAR", price: "4,99", 
-                layout: "index.html", // Padrão é Texto
-                videoUrl: "", 
-                createdAt: serverTimestamp()
+                layout: "index.html", videoUrl: "", createdAt: serverTimestamp()
             });
             await addDoc(collection(db, "metrics"), { offerId: ref.id, sales: 0, revenue: 0, views: 0, statusVisual: "cinza" });
             carregarPainel();
         }
 
         window.excluirOferta = async (metricId) => {
-            if(!confirm("⚠️ TEM CERTEZA? Isso apaga a oferta do painel.")) return;
-            try {
-                await deleteDoc(doc(db, "metrics", metricId));
-                // Nota: Não apagamos a "offer" do banco pra segurança, só tiramos do painel (metrics).
-                alert("Oferta removida.");
-                carregarPainel();
-            } catch(e) { alert(e.message); }
+            if(!confirm("⚠️ EXCLUIR?")) return;
+            try { await deleteDoc(doc(db, "metrics", metricId)); carregarPainel(); } catch(e) { alert(e.message); }
         }
 
         window.salvarTudo = async (offerId, metricId) => {
@@ -133,75 +107,62 @@
                     views: Number(document.getElementById(`views-${metricId}`).value),
                     statusVisual: document.getElementById(`status-${metricId}`).value
                 });
-                alert("✅ Salvo com sucesso!");
-                carregarPainel(); // Recarrega para atualizar o link do botão "Ver Página"
-            } catch(e) { alert("Erro ao salvar: " + e.message); }
+                alert("✅ Salvo!");
+                carregarPainel();
+            } catch(e) { alert("Erro: " + e.message); }
         }
 
         async function carregarPainel() {
             const container = document.getElementById('lista-ofertas'); container.innerHTML = "Carregando..."; 
             const snaps = await getDocs(collection(db, "metrics"));
-            
-            if(snaps.empty) { container.innerHTML = "Nenhuma oferta criada."; return; }
+            if(snaps.empty) { container.innerHTML = "Nenhuma oferta."; return; }
             container.innerHTML = "";
 
             snaps.forEach(async (mDoc) => {
                 const m = mDoc.data();
                 const offerId = m.offerId;
                 let o = { headline:"", layout:"index.html", videoUrl:"" };
-                
                 try { const os = await getDoc(doc(db, "offers", offerId)); if(os.exists()) o = os.data(); } catch(e){}
 
-                // Define qual link abrir baseado na escolha do usuário
-                const layoutFile = o.layout === 'vsl.html' ? 'vsl.html' : 'index.html'; // Garante que se não tiver nada, vai pro index
-                const linkFinal = `${layoutFile}?id=${offerId}`;
-                const isVideo = o.layout === 'vsl.html';
+                // LINK INTELIGENTE
+                const linkFinal = `${o.layout}?id=${offerId}`;
 
                 const html = `
                     <div class="card ${m.statusVisual}">
                         <div class="card-header">
-                            <div>
-                                <h3 style="margin:0; color:#fff;">${offerId}</h3>
-                                <div style="margin-top:5px;">
-                                    <span style="background:#000; padding:3px 8px; border-radius:4px; font-size:12px;">${m.statusVisual.toUpperCase()}</span>
-                                </div>
-                            </div>
-                            <button onclick="excluirOferta('${mDoc.id}')" class="btn-trash">🗑️ EXCLUIR</button>
+                            <div><h3 style="margin:0; color:#fff;">${offerId}</h3></div>
+                            <button onclick="excluirOferta('${mDoc.id}')" class="btn-trash">🗑️</button>
                         </div>
 
                         <div style="background:#111; padding:15px; border-radius:8px; margin-bottom:15px; border:1px dashed #444;">
-                            <strong style="color:#00ff88; display:block; margin-bottom:10px;">CONFIGURAÇÃO DA PÁGINA</strong>
                             <div class="row">
                                 <div class="col">
-                                    <label>TIPO DE PÁGINA</label>
+                                    <label style="color:#00ff88;">MODELO VISUAL</label>
                                     <select id="layout-${offerId}" class="edit-field">
-                                        <option value="index.html" ${!isVideo ? 'selected' : ''}>📄 Texto (Padrão)</option>
-                                        <option value="vsl.html" ${isVideo ? 'selected' : ''}>🎥 Vídeo (VSL)</option>
+                                        <option value="index.html" ${o.layout === 'index.html' ? 'selected' : ''}>⬛ Dark Mode (Texto)</option>
+                                        <option value="clean.html" ${o.layout === 'clean.html' ? 'selected' : ''}>⬜ Clean Mode (Branco)</option>
+                                        <option value="vsl.html" ${o.layout === 'vsl.html' ? 'selected' : ''}>🎥 Vídeo (VSL)</option>
+                                        <option value="artigo.html" ${o.layout === 'artigo.html' ? 'selected' : ''}>📰 Advertorial (Notícia)</option>
                                     </select>
                                 </div>
                                 <div class="col">
-                                    <label>Link do YouTube (Embed) - Só se usar Vídeo</label>
-                                    <input type="text" class="edit-field" id="video-${offerId}" value="${o.videoUrl || ''}" placeholder="Ex: https://www.youtube.com/embed/...">
+                                    <label>Link Vídeo (Opcional)</label>
+                                    <input type="text" class="edit-field" id="video-${offerId}" value="${o.videoUrl || ''}">
                                 </div>
                             </div>
                         </div>
 
-                        <label>Headline (Título)</label>
-                        <input type="text" class="edit-field" id="headline-${offerId}" value="${o.headline}">
-                        
-                        <label>Texto do Corpo</label>
-                        <textarea class="edit-field" id="body-${offerId}">${o.bodyText || ''}</textarea>
-
+                        <label>Headline</label><input type="text" class="edit-field" id="headline-${offerId}" value="${o.headline}">
+                        <label>Texto</label><textarea class="edit-field" id="body-${offerId}">${o.bodyText || ''}</textarea>
                         <div class="row">
-                            <div class="col"><label>Texto Botão</label><input type="text" class="edit-field" id="cta-${offerId}" value="${o.ctaText || 'QUERO COMPRAR'}"></div>
+                            <div class="col"><label>Botão</label><input type="text" class="edit-field" id="cta-${offerId}" value="${o.ctaText}"></div>
                             <div class="col"><label>Preço</label><input type="text" class="edit-field" id="price-${offerId}" value="${o.price}"></div>
                         </div>
-
-                        <div style="background:#2d3748; padding:15px; border-radius:8px; margin-top:15px;">
+                        
+                        <div style="background:#2d3748; padding:10px; border-radius:5px; margin-top:10px;">
                             <div class="row">
                                 <div class="col"><label>Views</label><input type="number" class="edit-field" id="views-${mDoc.id}" value="${m.views||0}"></div>
                                 <div class="col"><label>Vendas</label><input type="number" class="edit-field" id="sales-${mDoc.id}" value="${m.sales||0}"></div>
-                                <div class="col"><label>Receita</label><input type="number" class="edit-field" id="rev-${mDoc.id}" value="${m.revenue||0}"></div>
                                 <div class="col"><label>Status</label>
                                     <select id="status-${mDoc.id}" class="edit-field">
                                         <option value="cinza" ${m.statusVisual==='cinza'?'selected':''}>🟡 Teste</option>
@@ -213,8 +174,8 @@
                         </div>
 
                         <div style="margin-top:20px; text-align:right;">
-                            <a href="./${linkFinal}" target="_blank" style="color:#00ff88; text-decoration:none; margin-right:15px; font-weight:bold;">VER PÁGINA REAL ↗</a>
-                            <button class="btn-blue" onclick="salvarTudo('${offerId}', '${mDoc.id}')">💾 SALVAR ALTERAÇÕES</button>
+                            <a href="./${linkFinal}" target="_blank" style="color:#00ff88; text-decoration:none; margin-right:15px; font-weight:bold;">VER SITE ↗</a>
+                            <button class="btn-blue" onclick="salvarTudo('${offerId}', '${mDoc.id}')">💾 SALVAR</button>
                         </div>
                     </div>`;
                 container.innerHTML += html;
