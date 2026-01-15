@@ -1,298 +1,480 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Oferta Especial</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
+    <title>Sniper PACO | V30 (VSL Tracking)</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     
     <style>
-        /* ESTILOS BASE */
-        body { margin: 0; padding: 0; transition: 0.3s; font-family: 'Inter', sans-serif; }
+        body { background-color: #0b0c15; color: #a5b4fc; font-family: 'Inter', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .glass-panel { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; }
+        
+        .funnel-step { position: relative; padding-left: 20px; border-left: 2px solid #334155; margin-bottom: 20px; }
+        .funnel-step.active { border-left-color: #10b981; }
+        .funnel-step::before { content: ''; position: absolute; left: -6px; top: 0; width: 10px; height: 10px; background: #334155; border-radius: 50%; }
+        .funnel-step.active::before { background: #10b981; box-shadow: 0 0 10px #10b981; }
+        
+        .progress-bar-bg { background: #1e293b; height: 6px; border-radius: 3px; overflow: hidden; margin-top: 5px; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #a855f7); width: 0%; transition: width 1s; }
+        
+        .loading-pulse { animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+        .toggle-checkbox:checked { right: 0; border-color: #10b981; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
+
+        .input-sniper { background: #0f172a; border: 1px solid #334155; color: white; padding: 8px; border-radius: 6px; width: 100%; font-size: 12px; margin-bottom: 8px; font-family: sans-serif; }
+        .input-sniper:focus { border-color: #6366f1; outline: none; }
+        label { font-size: 10px; text-transform: uppercase; font-weight: bold; color: #64748b; display: block; margin-bottom: 2px; }
+
         .hidden { display: none !important; }
-        #loading { position: fixed; inset: 0; background: #000; color: #0f0; display: flex; justify-content: center; align-items: center; z-index: 9999; font-weight: bold; }
+        .metric-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; font-weight: 700; }
+        .metric-value { font-size: 1.25rem; font-weight: 800; color: white; line-height: 1; margin-top: 4px; }
 
-        /* --- TEMA 1: DARK (Padrão) --- */
-        body.layout-dark { background-color: #0b0c15; color: white; }
-        .layout-dark .container { max-width: 500px; margin: 0 auto; padding: 20px; }
-        .layout-dark h1 { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 20px; }
-        .layout-dark p { color: #94a3b8; line-height: 1.6; }
-        .layout-dark .btn { background: #10b981; color: #064e3b; width: 100%; padding: 18px; border-radius: 8px; font-weight: 800; text-transform: uppercase; border: none; cursor: pointer; }
-        
-        /* --- TEMA 2: CLEAN (Branco) --- */
-        body.layout-clean { background-color: #f8fafc; color: #1e293b; }
-        .layout-clean .container { max-width: 600px; margin: 40px auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        .layout-clean h1 { color: #0f172a; font-size: 28px; }
-        .layout-clean .btn { background: #2563eb; color: white; width: 100%; padding: 18px; border-radius: 8px; font-weight: 800; text-transform: uppercase; border: none; cursor: pointer; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #0b0c15; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
 
-        /* --- TEMA 3: ARTIGO (Blog) --- */
-        body.layout-artigo { background-color: #fff; color: #333; font-family: 'Merriweather', serif; }
-        .layout-artigo .top-bar { background: #cc0000; color: white; text-align: center; padding: 5px; font-family: sans-serif; font-size: 10px; font-weight: bold; }
-        .layout-artigo .container { max-width: 700px; margin: 0 auto; padding: 20px; }
-        .layout-artigo h1 { font-family: sans-serif; font-size: 32px; font-weight: 900; color: #000; }
-        .layout-artigo .meta { color: #666; font-size: 12px; font-family: sans-serif; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
-        .layout-artigo .btn { background: #cc0000; color: white; padding: 15px 30px; font-weight: bold; border: none; cursor: pointer; font-family: sans-serif; display: block; margin: 20px auto; }
+        /* CSS DO FEED DETALHADO */
+        .feed-session { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 5px; border-radius: 6px; }
+        .feed-session:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
+        .feed-header { padding: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .feed-body { display: none; background: rgba(0,0,0,0.3); border-top: 1px solid rgba(255,255,255,0.05); padding: 5px; }
+        .feed-body.open { display: block; }
+        .tag-source { background: #334155; color: #cbd5e1; padding: 1px 4px; border-radius: 3px; font-size: 9px; font-weight: bold; border: 1px solid #475569; }
 
-        /* --- TEMA 4: QUIZ (Preto e Verde) --- */
-        body.layout-quiz { background-color: #0b0c15; color: white; }
-        .layout-quiz .container { max-width: 500px; margin: 40px auto; padding: 20px; text-align: center; }
-        .quiz-option { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; cursor: pointer; text-align: left; transition: all 0.2s; font-weight: 600; }
-        .quiz-option:hover { border-color: #10b981; background: #334155; }
-        #progress-bar-bg { width: 100%; height: 6px; background: #334155; border-radius: 3px; margin-bottom: 30px; }
-        #progress-bar { height: 100%; background: #10b981; width: 0%; border-radius: 3px; transition: width 0.3s; }
-
-        /* VÍDEO (ULTRA ZOOM HACK) */
-        .video-box { 
-            position: relative; 
-            padding-bottom: 56.25%; 
-            height: 0; 
-            overflow: hidden; 
-            background: #000; 
-            margin: 20px 0; 
-            display: none; 
-            border-radius: 8px; 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-            border: 1px solid rgba(255,255,255,0.1);
+        @media print {
+            body { background-color: white !important; color: black !important; }
+            .no-print, button, #login-screen { display: none !important; }
+            .glass-panel { border: 1px solid #ccc !important; background: none !important; box-shadow: none !important; color: black !important; }
+            .text-white { color: black !important; }
+            .text-slate-400 { color: #666 !important; }
+            canvas { max-height: 250px; }
+            input, select, textarea { border: 1px solid #ccc !important; color: black !important; background: white !important; }
         }
-        
-        /* O Player gerado pela API vai herdar isso */
-        .video-box iframe { 
-            position: absolute; 
-            top: -17.5%; 
-            left: -17.5%; 
-            width: 135%; 
-            height: 135%; 
-            pointer-events: auto; 
-        }
-
-        #test-banner { background: #f59e0b; color: black; text-align: center; font-size: 10px; font-weight: bold; padding: 5px; position: fixed; top: 0; width: 100%; z-index: 9999; display: none; }
     </style>
 </head>
-<body class="layout-dark">
+<body class="p-4 md:p-8 min-h-screen">
 
-    <div id="test-banner">🧪 MODO TESTE ATIVADO</div>
-    <div id="loading">CARREGANDO...</div>
-
-    <div id="top-bar" class="top-bar hidden">NOTÍCIA URGENTE • ECONOMIA</div>
-    
-    <div id="quiz-area" class="container hidden">
-        <div id="progress-bar-bg"><div id="progress-bar"></div></div>
-        <h2 id="quiz-question" style="font-size: 22px; font-weight: 800; margin-bottom: 20px;">...</h2>
-        <div id="quiz-options"></div>
+    <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#0b0c15]">
+        <div class="glass-panel p-8 w-full max-w-md text-center">
+            <h1 class="text-3xl font-black text-white tracking-tight mb-2">SNIPER <span class="text-indigo-500">PACO</span></h1>
+            <p class="text-xs text-slate-500 mb-6 font-mono">Central de Fusão</p>
+            <input type="email" id="email" class="input-sniper mb-3" placeholder="Email">
+            <input type="password" id="password" class="input-sniper mb-6" placeholder="Senha">
+            <button onclick="fazerLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-indigo-500/20">ACESSAR SISTEMA</button>
+            <p id="error-msg" class="text-red-400 text-xs mt-4"></p>
+        </div>
     </div>
 
-    <div id="app" class="container hidden">
-        <h1 id="headline">...</h1>
-        <div id="meta-info" class="meta hidden">Por <strong>Redação</strong> • Atualizado hoje</div>
-
-        <div id="videoArea" class="video-box">
-            <div id="player"></div>
-        </div>
-
-        <div id="bodyText">...</div>
+    <div id="dashboard" class="max-w-7xl mx-auto hidden">
         
-        <div style="margin: 30px 0; text-align: center;">
-            <p id="priceDisplay" style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">...</p>
-            <button id="buyBtn" class="btn">...</button>
+        <header class="flex flex-col md:flex-row justify-between items-end mb-10 border-b border-indigo-900/30 pb-4 gap-4">
+            <div>
+                <h1 class="text-3xl font-black text-white tracking-tight">SNIPER <span class="text-indigo-500">ANALYTICS</span></h1>
+                <p class="text-xs text-indigo-400 mt-1">Gestão de Ofertas & Link Automático</p>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-4">
+                <div class="glass-panel px-3 py-2 border-indigo-500/50">
+                    <label class="text-[9px] text-indigo-400 uppercase font-bold block">Oferta Ativa</label>
+                    <select id="offer-selector" onchange="carregarDadosDaOferta()" class="bg-transparent text-white font-bold text-sm outline-none w-48 cursor-pointer">
+                        <option value="">Carregando...</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-2 bg-slate-800/50 p-2 rounded-lg border border-slate-700 no-print">
+                    <span class="text-[10px] text-slate-400 uppercase font-bold">Modo Teste</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="toggle-test" class="sr-only peer" onchange="carregarDadosDaOferta()">
+                        <div class="w-9 h-5 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:bg-amber-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
+                    </label>
+                </div>
+
+                <div class="flex gap-2 no-print">
+                    <button onclick="copiarRelatorio()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">📋 COPIAR</button>
+                    <button onclick="window.print()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">🖨️ PDF</button>
+                    <button onclick="criarNovaOferta()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1"><span>+</span> NOVA</button>
+                    <button onclick="carregarDadosDaOferta()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">🔄</button>
+                    <button onclick="logout()" class="bg-slate-800 text-slate-300 px-3 py-2 rounded-lg text-xs font-bold border border-slate-700">SAIR</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+            
+            <div class="glass-panel p-6">
+                <h2 class="text-sm font-bold text-white mb-6 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+                    FUNIL DE RETENÇÃO
+                </h2>
+                <div id="funnel-container" class="space-y-6">
+                    <div class="text-center text-slate-600 text-xs py-10 loading-pulse">Carregando dados...</div>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="glass-panel p-4 border-l-2 border-indigo-500">
+                        <p class="metric-label">Visitantes</p>
+                        <p id="kpi-unique" class="metric-value">0</p>
+                    </div>
+                    <div class="glass-panel p-4 border-l-2 border-emerald-500">
+                        <p class="metric-label">Checkout</p>
+                        <p id="kpi-sales" class="metric-value">0</p>
+                    </div>
+                    <div class="glass-panel p-4 border-l-2 border-pink-500">
+                        <p class="metric-label">Retenção Quiz</p>
+                        <p id="kpi-retention" class="metric-value">0%</p>
+                    </div>
+                    <div class="glass-panel p-4 border-l-2 border-amber-500">
+                        <p class="metric-label">Melhor Canal</p>
+                        <p id="kpi-source" class="metric-value truncate text-base pt-1">...</p>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-4">
+                    <h3 class="text-xs font-bold text-slate-500 mb-2 uppercase flex justify-between">Origem do Tráfego</h3>
+                    <div style="height: 150px; position: relative;">
+                        <canvas id="sourceChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-4 border border-indigo-500/30">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-xs font-bold text-indigo-400 uppercase">CONFIGURAR OFERTA</h3>
+                        <a href="#" id="btn-open-test" target="_blank" class="text-[10px] text-amber-400 border border-amber-500/30 px-2 py-1 rounded hover:bg-amber-500/10">🧪 ABRIR TESTE</a>
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <label>HEADLINE</label><input type="text" id="edit-headline" class="input-sniper">
+                        <div class="flex gap-2">
+                            <div class="w-1/2">
+                                <label>LAYOUT</label>
+                                <select id="edit-layout" class="input-sniper bg-slate-900">
+                                    <option value="dark">🌑 Dark Mode</option>
+                                    <option value="clean">⬜ Clean Mode</option>
+                                    <option value="artigo">📰 Artigo</option>
+                                    <option value="vsl">🎥 VSL</option>
+                                    <option value="quiz">🧩 QUIZ MODE</option>
+                                </select>
+                            </div>
+                            <div class="w-1/2">
+                                <label>PREÇO</label>
+                                <input type="text" id="edit-price" class="input-sniper text-center font-bold text-emerald-400">
+                            </div>
+                        </div>
+
+                        <label>CHECKOUT (Link Kiwify/Stripe)</label>
+                        <input type="text" id="edit-checkout" class="input-sniper border-emerald-500/30" placeholder="https://pay...">
+
+                        <label>VÍDEO (Opcional - Youtube)</label>
+                        <input type="text" id="edit-video" class="input-sniper" placeholder="Cole o link aqui...">
+
+                        <div class="pt-2">
+                            <button onclick="salvarOfertaAtual()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg text-xs transition">💾 SALVAR ALTERAÇÕES</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel p-0 overflow-hidden flex flex-col h-[600px]">
+                <div class="p-4 border-b border-white/5 bg-slate-900/50 flex justify-between items-center">
+                    <h3 class="text-xs font-bold text-white">📡 FEED AO VIVO</h3>
+                    <span id="feed-badge" class="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded">REAL</span>
+                </div>
+                <div class="overflow-y-auto p-4 space-y-3 flex-1 custom-scroll" id="live-feed">
+                    <p class="text-center text-slate-600 mt-10 text-xs">Aguardando visitantes...</p>
+                </div>
+            </div>
         </div>
-        <div style="text-align: center; font-size: 10px; opacity: 0.5; margin-top: 20px;">Compra Segura • SSL</div>
+
+        <div class="glass-panel p-6 mb-10 no-print border border-emerald-500/30">
+            <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
+                🔗 Encurtador Automático <span class="text-[10px] bg-emerald-900 text-emerald-400 px-2 py-1 rounded border border-emerald-500/50">V2.0</span>
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <div class="md:col-span-2">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase">Nome Curto (Alias)</label>
+                    <div class="flex">
+                        <span class="bg-slate-700 text-slate-300 p-2 text-xs rounded-l border border-slate-600">/r.html?id=</span>
+                        <input type="text" id="short-alias" placeholder="ex: zap" class="w-full bg-slate-900 border border-slate-600 text-white text-xs p-2 focus:border-emerald-500 outline-none">
+                    </div>
+                </div>
+                <div><label class="text-[10px] font-bold text-emerald-500 uppercase">Origem (Source)</label><input type="text" id="utm-source" value="instagram" class="input-sniper m-0"></div>
+                <div><label class="text-[10px] font-bold text-emerald-500 uppercase">Campanha</label><input type="text" id="utm-campaign" placeholder="stories" class="input-sniper m-0"></div>
+            </div>
+            <button onclick="gerarLinkCurto()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg text-xs transition mb-4">💾 GERAR LINK RASTREÁVEL</button>
+            <div id="short-result" class="hidden bg-black/50 p-4 rounded border border-slate-700 flex justify-between items-center">
+                <code id="final-link-display" class="text-white text-xs font-mono">...</code>
+                <button onclick="copiarLinkCurto()" class="text-[10px] bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded">COPIAR</button>
+            </div>
+        </div>
+
+        <div class="border border-red-900/30 bg-red-950/10 rounded-xl p-6 no-print flex justify-between items-center">
+            <div>
+                <h3 class="text-red-500 font-bold text-sm mb-1 uppercase">⚠️ Zona de Perigo</h3>
+                <p class="text-xs text-slate-400">Apagar dados de tráfego do modo atual (Teste ou Real). A oferta continua existindo.</p>
+            </div>
+            <div class="flex gap-4 items-center">
+                <button onclick="limparDados()" class="bg-red-900/50 hover:bg-red-800 text-red-200 border border-red-800 px-4 py-2 rounded-lg text-xs font-bold transition">🗑️ LIMPAR DADOS</button>
+                <button onclick="excluirOferta()" class="text-slate-500 hover:text-red-500 text-xs underline">Excluir Oferta</button>
+            </div>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { trackEvent } from "./tracker.js"; 
+        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, addDoc, deleteDoc, serverTimestamp, query, where, orderBy, limit, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+        // CONFIG
         const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
-        const app = initializeApp(firebaseConfig); const db = getFirestore(app);
+        const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
 
-        const questions = [
-            { t: "Qual seu principal objetivo?", a: ["Independência Financeira", "Liberdade de Tempo", "Conhecimento", "Outro"] },
-            { t: "O que te impede hoje?", a: ["Falta de Dinheiro", "Falta de Método", "Procrastinação", "Medo"] },
-            { t: "Quanto pode investir?", a: ["Até R$ 100", "Até R$ 500", "O necessário", "Nada"] },
-            { t: "Posso te ajudar?", a: ["Sim, mostre como", "Talvez", "Não sei", "Não"] }
-        ];
+        let currentOfferId = "";
+        let unsubscribeFeed = null;
+        let myChart = null; 
 
-        let player;
-        let videoDuration = 0;
-        let tracked50 = false;
-        let tracked90 = false;
+        // AUTH
+        window.fazerLogin = async () => { try { await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); } catch(e) { document.getElementById('error-msg').innerText = e.message; } }
+        window.logout = () => signOut(auth);
+        onAuthStateChanged(auth, (u) => { if(u) { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('dashboard').classList.remove('hidden'); iniciarSistema(); } });
 
-        async function init() {
-            const params = new URLSearchParams(window.location.search);
-            const offerId = params.get('id');
-            const isTest = params.get('mode') === 'test';
-
-            if (!offerId) { document.body.innerHTML = "<div style='color:white;text-align:center;padding:50px;'>Erro: Link inválido.</div>"; return; }
-            if (isTest) document.getElementById('test-banner').style.display = 'block';
-
-            try {
-                const docSnap = await getDoc(doc(db, "offers", offerId));
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-
-                    let layout = data.layout || 'dark';
-                    if(layout === 'vsl') layout = 'dark'; 
-                    document.body.className = `layout-${layout}`;
-
-                    if(layout === 'quiz') {
-                        document.getElementById('loading').classList.add('hidden');
-                        startQuiz(data);
-                        return;
-                    }
-
-                    if(layout === 'artigo') {
-                        document.getElementById('top-bar').classList.remove('hidden');
-                        document.getElementById('meta-info').classList.remove('hidden');
-                    }
-
-                    renderOffer(data);
-
-                } else { document.body.innerHTML = "Oferta não encontrada"; }
-            } catch (e) { console.error(e); }
+        async function iniciarSistema() {
+            const snaps = await getDocs(collection(db, "offers"));
+            const select = document.getElementById('offer-selector');
+            select.innerHTML = "";
+            if(snaps.empty) { select.add(new Option("Sem Ofertas", "")); return; }
+            snaps.forEach(doc => select.add(new Option(doc.data().headline, doc.id)));
+            currentOfferId = select.value;
+            carregarDadosDaOferta();
         }
 
-        function renderOffer(data) {
-            document.getElementById('headline').innerText = data.headline;
-            document.getElementById('bodyText').innerHTML = data.bodyText ? data.bodyText.replace(/\n/g, '<br>') : '';
-            document.getElementById('priceDisplay').innerText = "R$ " + data.price;
-            document.getElementById('buyBtn').innerText = data.ctaText || "COMPRAR";
+        window.criarNovaOferta = async () => {
+            const headline = prompt("Headline da Nova Oferta:");
+            if(!headline) return;
+            const ref = await addDoc(collection(db, "offers"), { headline: headline, bodyText: "...", ctaText: "COMPRAR", price: "9,90", layout: "dark", videoUrl: "", checkoutUrl: "", createdAt: serverTimestamp() });
+            iniciarSistema();
+        }
 
-            // --- CARREGA API DO YOUTUBE SE TIVER VÍDEO ---
-            if(data.videoUrl && data.videoUrl.length > 5) {
-                let videoId = "";
-                if(data.videoUrl.includes("youtu.be/")) videoId = data.videoUrl.split("youtu.be/")[1];
-                else if(data.videoUrl.includes("v=")) videoId = data.videoUrl.split("v=")[1].split("&")[0];
+        // --- RELATÓRIO ---
+        window.copiarRelatorio = () => {
+            const views = document.getElementById('kpi-unique').innerText;
+            const clicks = document.getElementById('kpi-sales').innerText;
+            const text = `📊 RELATÓRIO PACO\n\n- Visitas: ${views}\n- Checkout: ${clicks}\n\nGerado em: ${new Date().toLocaleString()}`;
+            navigator.clipboard.writeText(text).then(() => alert("Copiado!"));
+        }
 
-                if(videoId) {
-                    document.getElementById('videoArea').style.display = "block";
-                    // Carrega Script da API
-                    var tag = document.createElement('script');
-                    tag.src = "https://www.youtube.com/iframe_api";
-                    var firstScriptTag = document.getElementsByTagName('script')[0];
-                    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-                    // Função global que o YouTube chama quando a API está pronta
-                    window.onYouTubeIframeAPIReady = function() {
-                        player = new YT.Player('player', {
-                            height: '100%',
-                            width: '100%',
-                            videoId: videoId,
-                            playerVars: {
-                                'playsinline': 1,
-                                'controls': 0,
-                                'rel': 0,
-                                'showinfo': 0,
-                                'modestbranding': 1,
-                                'iv_load_policy': 3
-                            },
-                            events: {
-                                'onStateChange': onPlayerStateChange,
-                                'onReady': onPlayerReady
-                            }
-                        });
-                    };
-                }
-            }
-
-            document.getElementById('loading').classList.add('hidden');
-            document.getElementById('app').classList.remove('hidden');
+        // CARREGAMENTO INTELIGENTE (CORE)
+        window.carregarDadosDaOferta = async () => {
+            const select = document.getElementById('offer-selector');
+            currentOfferId = select.value;
+            const isTest = document.getElementById('toggle-test').checked;
             
-            trackEvent('offer_view');
+            document.getElementById('btn-open-test').href = `index.html?id=${currentOfferId}&mode=test`;
+            const badge = document.getElementById('feed-badge');
+            if(isTest) { badge.innerText = "MODO TESTE"; badge.className = "text-[9px] bg-amber-500/20 text-amber-400 px-2 py-1 rounded"; } 
+            else { badge.innerText = "DADOS REAIS"; badge.className = "text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded"; }
 
-            document.getElementById('buyBtn').onclick = () => {
-                trackEvent('cta_click');
-                const btn = document.getElementById('buyBtn');
-                btn.innerText = "AGUARDE...";
-                if(data.checkoutUrl) {
-                    let url = data.checkoutUrl.startsWith('http') ? data.checkoutUrl : 'https://' + data.checkoutUrl;
-                    setTimeout(() => window.location.href = url, 500);
-                } else { alert("Link não configurado."); btn.innerText = data.ctaText; }
-            };
-        }
-
-        function onPlayerReady(event) {
-            videoDuration = player.getDuration();
-            // Inicia monitoramento de tempo a cada 5 segundos
-            setInterval(checkVideoProgress, 5000);
-        }
-
-        function onPlayerStateChange(event) {
-            if (event.data == YT.PlayerState.PLAYING) {
-                // Evita disparar start várias vezes (se pausar e der play)
-                // Uma solução simples é não filtrar, ou usar sessionStorage
-                if(!sessionStorage.getItem('vsl_started')) {
-                    trackEvent('video_start');
-                    sessionStorage.setItem('vsl_started', 'true');
-                }
+            // Carrega Editor
+            const docSnap = await getDoc(doc(db, "offers", currentOfferId));
+            if(docSnap.exists()) {
+                const d = docSnap.data();
+                document.getElementById('edit-headline').value = d.headline;
+                document.getElementById('edit-price').value = d.price;
+                document.getElementById('edit-layout').value = d.layout || 'dark';
+                document.getElementById('edit-video').value = d.videoUrl || '';
+                document.getElementById('edit-checkout').value = d.checkoutUrl || '';
             }
-            if (event.data == YT.PlayerState.ENDED) {
-                trackEvent('video_complete');
-            }
-        }
 
-        function checkVideoProgress() {
-            if(!player || !videoDuration) return;
-            const currentTime = player.getCurrentTime();
-            const percent = (currentTime / videoDuration) * 100;
-
-            if (percent > 50 && !tracked50) {
-                trackEvent('video_progress', { percent: 50 });
-                tracked50 = true;
-            }
+            // FEED E ANALYTICS
+            const q = query(collection(db, "events"), where("offerId", "==", currentOfferId));
+            if(unsubscribeFeed) unsubscribeFeed();
             
-            if (percent > 90 && !tracked90) {
-                trackEvent('video_progress', { percent: 90 });
-                tracked90 = true;
-            }
-        }
+            unsubscribeFeed = onSnapshot(q, (snapshot) => {
+                let views = 0, clicks = 0;
+                let sources = {}; 
+                const feedContainer = document.getElementById('live-feed');
+                feedContainer.innerHTML = "";
+                
+                let events = [];
+                snapshot.forEach(doc => events.push({ id: doc.id, ...doc.data() }));
+                
+                // FILTRO DE MODO (TESTE vs REAL)
+                events = events.filter(e => !!e.isTest === isTest);
+                events.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
-        function startQuiz(offerData) {
-            const quizArea = document.getElementById('quiz-area');
-            quizArea.classList.remove('hidden');
-            trackEvent('offer_view');
+                if(events.length === 0) feedContainer.innerHTML = "<p class='text-center text-slate-600 text-xs mt-10'>Sem dados neste modo.</p>";
 
-            let currentQ = 0;
+                const sessions = {};
+                events.forEach(e => {
+                    const sid = e.sessionId || 'anon';
+                    let source = e.campaign?.source || 'direto';
+                    // --- CORREÇÃO: CAPTURA A CAMPANHA TAMBÉM ---
+                    let campaign = e.campaign?.campaign || ''; 
 
-            function renderQuestion() {
-                const q = questions[currentQ];
-                document.getElementById('quiz-question').innerText = q.t;
-                const opts = document.getElementById('quiz-options');
-                opts.innerHTML = '';
-                document.getElementById('progress-bar').style.width = ((currentQ / questions.length) * 100) + "%";
-
-                q.a.forEach(ans => {
-                    const btn = document.createElement('div');
-                    btn.className = 'quiz-option';
-                    btn.innerText = ans;
-                    btn.onclick = () => {
-                        trackEvent('quiz_answer', { step: currentQ+1, answer: ans });
-                        currentQ++;
-                        if(currentQ < questions.length) {
-                            renderQuestion();
-                        } else {
-                            finishQuiz(offerData);
+                    if(!sessions[sid]) {
+                        sessions[sid] = { 
+                            id: sid, 
+                            events: [], 
+                            source: source,
+                            campaign: campaign, // Guarda a campanha
+                            time: e.createdAt?.seconds || 0, 
+                            isTest: e.isTest 
+                        };
+                    } else {
+                        // Atualiza se encontrar uma origem melhor
+                        if((sessions[sid].source === 'direto' || sessions[sid].source === 'encurtador') && (source !== 'direto' && source !== 'encurtador')) {
+                            sessions[sid].source = source;
+                            sessions[sid].campaign = campaign;
                         }
-                    };
-                    opts.appendChild(btn);
+                    }
+
+                    sessions[sid].events.push(e);
+                    if(e.createdAt?.seconds > sessions[sid].time) sessions[sid].time = e.createdAt.seconds;
+                    
+                    if(e.type === 'offer_view') views++;
+                    if(e.type === 'cta_click') clicks++;
                 });
-            }
-            renderQuestion();
+
+                // Métricas
+                let totalSessions = Object.keys(sessions).length;
+                let sourceCounts = {};
+                Object.values(sessions).forEach(s => { sourceCounts[s.source] = (sourceCounts[s.source] || 0) + 1; });
+                let bestChannel = Object.keys(sourceCounts).length > 0 ? Object.keys(sourceCounts).reduce((a, b) => sourceCounts[a] > sourceCounts[b] ? a : b) : "-";
+
+                // Feed Visual
+                const sortedSessions = Object.values(sessions).sort((a,b) => b.time - a.time);
+
+                sortedSessions.slice(0, 30).forEach(s => {
+                    const timeStr = new Date(s.time * 1000).toLocaleTimeString();
+                    const badge = s.isTest ? '<span class="text-[8px] bg-amber-500/20 text-amber-500 px-1 rounded ml-1">TESTE</span>' : '';
+                    
+                    // --- CORREÇÃO: EXIBE ORIGEM + CAMPANHA ---
+                    let originText = s.source;
+                    if(s.campaign && s.campaign !== 'none') originText += ` • ${s.campaign}`;
+
+                    s.events.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+                    let details = "";
+                    s.events.forEach(e => {
+                        let icon="🔹"; let color="text-slate-400"; let txt=e.type;
+                        let label = e.data?.label || ''; 
+                        
+                        // --- LÓGICA V30: EVENTOS DE VÍDEO ---
+                        if(e.type === 'cta_click' || label.toLowerCase().includes('comprar')) { 
+                            icon="💰"; color="text-emerald-400 font-bold"; txt = `click ( ${label || 'CHECKOUT'} )`; 
+                        } else if(e.type === 'click') { 
+                            icon="👆"; color="text-slate-300"; txt = `click ( ${label} )`; 
+                        } else if(e.type === 'quiz_answer') { 
+                            icon="💬"; color="text-pink-400 font-bold"; txt = `Quiz: "${e.data?.answer}"`;
+                        } else if(e.type === 'offer_view') { 
+                            icon="👀"; color="text-indigo-400"; txt="Visualizou Página"; 
+                        } else if(e.type === 'video_start') { 
+                            icon="🎥"; color="text-amber-400"; txt="Deu Play no Vídeo";
+                        } else if(e.type === 'video_progress') {
+                            icon="⏳"; color="text-amber-200"; txt=`Viu ${e.data?.percent}% do Vídeo`;
+                        } else if(e.type === 'video_complete') {
+                            icon="✅"; color="text-green-400"; txt="Viu o Vídeo Todo";
+                        } else if(e.type === 'short_link_click') { 
+                            icon="🔗"; color="text-amber-400"; txt=`Encurtador (${e.alias})`; 
+                        }
+
+                        details += `<div class="flex justify-between py-1 border-b border-white/5 last:border-0 hover:bg-white/5 px-2"><div class="flex items-center gap-2"><span>${icon}</span><span class="${color} text-[10px] font-mono">${txt}</span></div><span class="text-[9px] text-slate-600 font-mono">${new Date(e.createdAt.seconds*1000).toLocaleTimeString()}</span></div>`;
+                    });
+                    
+                    feedContainer.innerHTML += `<div class="feed-session"><div class="feed-header" onclick="this.nextElementSibling.classList.toggle('open')"><div class="flex items-center gap-2"><span class="text-[10px] font-mono text-slate-400">${timeStr}</span><span class="tag-source">${originText}</span>${badge}</div><div class="flex items-center gap-2"><span class="text-[10px] font-bold text-slate-300">${s.events.length} ações</span><span class="text-[8px] text-indigo-400 border border-indigo-500/30 px-1 rounded">▼</span></div></div><div class="feed-body">${details}</div></div>`;
+                });
+
+                document.getElementById('kpi-unique').innerText = totalSessions;
+                document.getElementById('kpi-sales').innerText = clicks;
+                document.getElementById('kpi-retention').innerText = "0%";
+                document.getElementById('kpi-source').innerText = bestChannel.toUpperCase();
+                renderFunnel(totalSessions, clicks);
+            });
         }
 
-        function finishQuiz(offerData) {
-            document.getElementById('quiz-area').classList.add('hidden');
-            const load = document.getElementById('loading');
-            load.classList.remove('hidden');
-            load.innerText = "ANALISANDO...";
-            
-            setTimeout(() => {
-                document.body.className = 'layout-dark'; 
-                renderOffer(offerData);
-            }, 1500);
+        function updateSourceChart(dataObj) {
+            const ctx = document.getElementById('sourceChart');
+            if(!ctx) return;
+            if(Object.keys(dataObj).length === 0) dataObj = { "Sem dados": 1 };
+            if(myChart) myChart.destroy();
+            myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(dataObj),
+                    datasets: [{
+                        data: Object.values(dataObj),
+                        backgroundColor: ['#6366f1', '#10b981', '#f43f5e', '#f59e0b', '#ec4899'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#94a3b8', font: { size: 9, family: 'monospace' }, boxWidth: 8 } } } }
+            });
         }
 
-        init();
+        function renderFunnel(views, clicks) {
+            const container = document.getElementById('funnel-container');
+            const conv = views > 0 ? ((clicks/views)*100).toFixed(1) : 0;
+            container.innerHTML = `<div class="funnel-step active"><div class="flex justify-between items-end"><div><p class="text-[10px] uppercase text-slate-500 font-bold">VISITAS</p><p class="text-xl font-black text-white">${views}</p></div><div class="text-right"><p class="text-xs font-bold text-slate-400">100%</p></div></div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 100%"></div></div></div><div class="funnel-step ${clicks > 0 ? 'active' : ''}" style="border-left-color: #10b981;"><div class="flex justify-between items-end"><div><p class="text-[10px] uppercase text-emerald-500 font-bold">CHECKOUT (INTENÇÃO)</p><p class="text-xl font-black text-emerald-400">${clicks}</p></div><div class="text-right"><p class="text-xs font-bold text-emerald-400">${conv}%</p></div></div><div class="progress-bar-bg"><div class="progress-bar-fill" style="background:#10b981; width: ${conv}%"></div></div></div>`;
+        }
+
+        window.salvarOfertaAtual = async () => {
+            try {
+                await updateDoc(doc(db, "offers", currentOfferId), {
+                    headline: document.getElementById('edit-headline').value,
+                    price: document.getElementById('edit-price').value,
+                    layout: document.getElementById('edit-layout').value,
+                    videoUrl: document.getElementById('edit-video').value,
+                    checkoutUrl: document.getElementById('edit-checkout').value
+                });
+                alert("✅ Oferta Atualizada!");
+                carregarDadosDaOferta();
+            } catch(e) { alert("Erro: " + e.message); }
+        }
+
+        window.abrirLinkTeste = () => { window.open(`index.html?id=${currentOfferId}&mode=test`, '_blank'); }
+
+        window.limparDados = async () => {
+            const isTest = document.getElementById('toggle-test').checked;
+            const modeName = isTest ? "MODO TESTE" : "MODO REAL";
+            if(!confirm(`⚠️ APAGAR TODOS os dados desta oferta no ${modeName}?`)) return;
+            const q = query(collection(db, "events"), where("offerId", "==", currentOfferId));
+            const snapshot = await getDocs(q);
+            const promises = [];
+            snapshot.forEach(doc => { if(!!doc.data().isTest === isTest) promises.push(deleteDoc(doc.ref)); });
+            await Promise.all(promises);
+            alert("Limpeza concluída.");
+            carregarDadosDaOferta();
+        }
+        
+        window.excluirOferta = async () => {
+            if(!confirm("⚠️ EXCLUIR ESTA OFERTA PERMANENTEMENTE?")) return;
+            await deleteDoc(doc(db, "offers", currentOfferId));
+            alert("Oferta Excluída.");
+            iniciarSistema();
+        }
+
+        window.gerarLinkCurto = async () => {
+            const alias = document.getElementById('short-alias').value.replace(/[^a-zA-Z0-9]/g, '');
+            if(!alias) return alert("Nome inválido");
+            const source = document.getElementById('utm-source').value;
+            const campaign = document.getElementById('utm-campaign').value;
+            const target = `https://nucleoinsight.github.io/paco-core/index.html?id=${currentOfferId}&utm_source=${source}&utm_campaign=${campaign}`;
+            try {
+                await setDoc(doc(db, "short_links", alias), { target: target, clicks: 0, offerId: currentOfferId, created_at: serverTimestamp() });
+                const finalLink = `https://nucleoinsight.github.io/paco-core/r.html?id=${alias}`;
+                document.getElementById('final-link-display').innerText = finalLink;
+                document.getElementById('short-result').classList.remove('hidden');
+            } catch(e) { alert("Erro: " + e.message); }
+        }
+        
+        window.copiarLinkCurto = () => { navigator.clipboard.writeText(document.getElementById('final-link-display').innerText).then(() => alert("Copiado!")); }
     </script>
 </body>
 </html>
