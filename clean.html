@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Nota Oficial</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* ESTILO CLEAN (BRANCO E AZUL) */
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #f4f6f8; color: #333; margin: 0; padding: 0; }
+        .header { background: #fff; padding: 20px; text-align: center; border-bottom: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .logo-text { font-weight: bold; color: #2c3e50; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .container { max-width: 600px; margin: 40px auto; padding: 40px; background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        
+        h1 { font-size: 28px; line-height: 1.3; margin-bottom: 25px; color: #2c3e50; font-weight: 800; }
+        p { font-size: 18px; line-height: 1.7; color: #555; margin-bottom: 25px; white-space: pre-wrap; }
+        
+        .price-box { background: #eef2f7; padding: 15px; border-radius: 5px; text-align: center; margin: 30px 0; border: 1px solid #d1d9e6; }
+        .price-tag { font-size: 36px; color: #2980b9; font-weight: bold; }
+        
+        .cta-button { display: block; width: 100%; background: #2980b9; color: #fff; text-align: center; padding: 20px; font-size: 20px; text-decoration: none; border-radius: 6px; font-weight: bold; cursor: pointer; border: none; transition: background 0.2s; box-shadow: 0 4px 0 #1a5276; }
+        .cta-button:hover { background: #3498db; }
+        
+        .footer { margin-top: 40px; font-size: 12px; color: #999; text-align: center; border-top: 1px solid #eee; padding-top: 20px; }
+        .hidden { display: none; }
+        #loading { text-align: center; margin-top: 50px; color: #666; }
+    </style>
+</head>
+<body>
+
+    <div class="header"><div class="logo-text">COMUNICADO</div></div>
+    <div id="loading">Carregando...</div>
+
+    <div id="app" class="container hidden">
+        <h1 id="headline">...</h1>
+        <p id="bodyText">...</p>
+        
+        <div class="price-box">
+            <span style="font-size:14px; color:#777; display:block;">Valor simbólico de validação:</span>
+            <div class="price-tag">R$ <span id="price">...</span></div>
+        </div>
+
+        <button id="buyBtn" class="cta-button">...</button>
+        
+        <div class="footer">Este site não faz parte do Facebook ou do Google. <br> Copyright © 2024.</div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
+        const app = initializeApp(firebaseConfig); const db = getFirestore(app);
+
+        async function init() {
+            const params = new URLSearchParams(window.location.search); const offerId = params.get('id');
+            if (!offerId) return;
+            try {
+                const docSnap = await getDoc(doc(db, "offers", offerId));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('headline').innerText = data.headline;
+                    document.getElementById('bodyText').innerText = data.bodyText;
+                    document.getElementById('price').innerText = data.price;
+                    document.getElementById('buyBtn').innerText = data.ctaText;
+                    
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('app').classList.remove('hidden');
+                    
+                    addDoc(collection(db, "metrics"), { offerId: offerId, type: "view_clean", timestamp: serverTimestamp() });
+
+                    document.getElementById('buyBtn').onclick = async () => {
+                        await addDoc(collection(db, "events"), { offerId: offerId, type: "cta_click", createdAt: serverTimestamp() });
+                        alert("Redirecionando...");
+                    };
+                }
+            } catch (e) { console.error(e); }
+        }
+        init();
+    </script>
+</body>
+</html>
