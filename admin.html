@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper PACO | Admin V45 (Quiz Editor)</title>
+    <title>Sniper PACO | Admin V46 (Visual Quiz)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -15,10 +15,12 @@
         .glass-panel { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; }
         .glass-input { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(51, 65, 85, 0.5); color: white; padding: 10px; border-radius: 8px; width: 100%; font-size: 13px; margin-bottom: 5px; }
         .glass-input:focus { border-color: #6366f1; outline: none; }
+        
         .funnel-step { position: relative; padding-left: 20px; border-left: 2px solid #334155; margin-bottom: 20px; }
         .funnel-step.active { border-left-color: #10b981; }
         .progress-bar-bg { background: #1e293b; height: 6px; border-radius: 3px; overflow: hidden; margin-top: 5px; }
         .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #a855f7); width: 0%; transition: width 1s; }
+
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #0b0c15; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
@@ -27,6 +29,7 @@
         .feed-body { display: none; background: rgba(0,0,0,0.3); border-top: 1px solid rgba(255,255,255,0.05); padding: 5px; }
         .feed-body.open { display: block; }
         .hidden { display: none !important; }
+
         .status-testing { border: 1px solid #f59e0b; color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
         .status-validated { border: 1px solid #10b981; color: #10b981; background: rgba(16, 185, 129, 0.1); }
         .status-rejected { border: 1px solid #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.1); }
@@ -142,13 +145,16 @@
                             </div>
                         </div>
                         
-                        <div id="quiz-config-field" class="hidden">
-                            <div class="flex justify-between items-center">
-                                <label class="text-[9px] font-bold text-pink-400">CONFIGURAÇÃO DO QUIZ (JSON)</label>
-                                <button onclick="preencherModeloQuiz()" class="text-[9px] text-indigo-400 underline">Copiar Modelo</button>
+                        <div id="quiz-config-field" class="hidden bg-slate-900/50 p-3 rounded border border-pink-500/30">
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="text-[9px] font-bold text-pink-400">CONSTRUTOR DE QUIZ</label>
+                                <button onclick="adicionarPergunta()" class="text-[9px] bg-pink-600 text-white px-2 py-1 rounded hover:bg-pink-500">+ Pergunta</button>
                             </div>
-                            <textarea id="edit-quizConfig" class="glass-input h-24 font-mono text-[10px] text-pink-300 border-pink-500/30" placeholder="Cole o JSON do Quiz aqui..."></textarea>
-                        </div>
+                            
+                            <div id="quiz-builder-container" class="space-y-3">
+                                </div>
+                            
+                            <textarea id="edit-quizConfig" class="hidden"></textarea> </div>
 
                         <div>
                             <label class="text-[9px] font-bold text-emerald-400">TEXTO DO BOTÃO</label>
@@ -237,9 +243,10 @@
                 
                 // NOVO: Carrega o Quiz
                 document.getElementById('edit-quizConfig').value = d.quizConfig || "";
+                renderizarQuizVisual(d.quizConfig); // Carrega visualmente
                 
                 atualizarBadgeStatus(d.status || 'testing');
-                toggleQuizField(); // Atualiza visibilidade do campo quiz
+                toggleQuizField(); 
             }
 
             const q = query(collection(db, "events"), where("offerId", "==", currentOfferId), limit(2000));
@@ -363,20 +370,56 @@
             else { badge.innerText = "🟡 EM TESTE"; badge.className = "text-[10px] font-bold px-2 py-0.5 rounded uppercase status-testing"; }
         }
 
-        // --- Lógica do Quiz Dinâmico ---
         window.toggleQuizField = () => {
             const layout = document.getElementById('edit-layout').value;
             const field = document.getElementById('quiz-config-field');
-            if(layout === 'quiz') field.classList.remove('hidden');
-            else field.classList.add('hidden');
+            if(layout === 'quiz') field.classList.remove('hidden'); else field.classList.add('hidden');
         }
 
-        window.preencherModeloQuiz = () => {
-            const modelo = [
-                { t: "Qual seu maior sonho?", a: ["Viajar", "Ficar Rico", "Ter Paz"] },
-                { t: "O que te impede?", a: ["Medo", "Dinheiro", "Tempo"] }
-            ];
-            document.getElementById('edit-quizConfig').value = JSON.stringify(modelo, null, 2);
+        // --- LÓGICA DO CONSTRUTOR VISUAL DE QUIZ ---
+        let quizData = [];
+
+        window.renderizarQuizVisual = (jsonString) => {
+            try { quizData = jsonString ? JSON.parse(jsonString) : []; } catch(e) { quizData = []; }
+            renderizarHTMLQuiz();
+        }
+
+        function renderizarHTMLQuiz() {
+            const container = document.getElementById('quiz-builder-container');
+            container.innerHTML = "";
+            quizData.forEach((q, idx) => {
+                let answersHTML = q.a.map((ans, aIdx) => `
+                    <div class="flex gap-1 mb-1">
+                        <input type="text" value="${ans}" onchange="atualizarResposta(${idx}, ${aIdx}, this.value)" class="glass-input p-1 text-[10px] bg-slate-800" placeholder="Resposta">
+                        <button onclick="removerResposta(${idx}, ${aIdx})" class="text-red-500 font-bold px-2">x</button>
+                    </div>
+                `).join('');
+
+                container.innerHTML += `
+                    <div class="bg-slate-800 p-2 rounded border border-slate-600">
+                        <div class="flex justify-between mb-2">
+                            <input type="text" value="${q.t}" onchange="atualizarPergunta(${idx}, this.value)" class="glass-input p-1 text-xs font-bold text-white w-full" placeholder="Escreva a Pergunta">
+                            <button onclick="removerPergunta(${idx})" class="text-red-500 text-[10px] ml-2 font-bold">X</button>
+                        </div>
+                        <div class="pl-2 border-l border-slate-600">
+                            ${answersHTML}
+                            <button onclick="adicionarResposta(${idx})" class="text-[9px] text-emerald-400 mt-1 hover:underline">+ Adicionar Resposta</button>
+                        </div>
+                    </div>
+                `;
+            });
+            atualizarJSONOculto();
+        }
+
+        window.adicionarPergunta = () => { quizData.push({ t: "Nova Pergunta?", a: ["Sim", "Não"] }); renderizarHTMLQuiz(); }
+        window.removerPergunta = (idx) => { quizData.splice(idx, 1); renderizarHTMLQuiz(); }
+        window.atualizarPergunta = (idx, val) => { quizData[idx].t = val; atualizarJSONOculto(); }
+        window.adicionarResposta = (idx) => { quizData[idx].a.push("Nova Opção"); renderizarHTMLQuiz(); }
+        window.removerResposta = (idx, aIdx) => { quizData[idx].a.splice(aIdx, 1); renderizarHTMLQuiz(); }
+        window.atualizarResposta = (idx, aIdx, val) => { quizData[idx].a[aIdx] = val; atualizarJSONOculto(); }
+        
+        function atualizarJSONOculto() {
+            document.getElementById('edit-quizConfig').value = JSON.stringify(quizData);
         }
 
         window.salvarOfertaAtual = async () => { 
@@ -388,7 +431,7 @@
                 videoUrl:document.getElementById('edit-video').value, 
                 checkoutUrl:document.getElementById('edit-checkout').value,
                 ctaText: document.getElementById('edit-ctaText').value,
-                quizConfig: document.getElementById('edit-quizConfig').value // <--- SALVA O QUIZ
+                quizConfig: document.getElementById('edit-quizConfig').value // Salva o JSON gerado
             }); 
             alert("Salvo!"); 
         }
