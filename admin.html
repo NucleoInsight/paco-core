@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper PACO | Admin V48 (Final System)</title>
+    <title>Sniper PACO | Admin V47 (Validation Standard)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -16,26 +16,27 @@
         .glass-input { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(51, 65, 85, 0.5); color: white; padding: 10px; border-radius: 8px; width: 100%; font-size: 13px; margin-bottom: 5px; }
         .glass-input:focus { border-color: #6366f1; outline: none; }
         
-        /* CARDS DE MÉTRICAS 6M */
-        .metric-card { background: rgba(15, 23, 42, 0.5); border-left: 3px solid #334155; padding: 10px; border-radius: 4px; margin-bottom: 8px; transition: transform 0.2s; }
-        .metric-card:hover { transform: translateX(2px); background: rgba(30, 41, 59, 0.7); }
-        .metric-title { font-size: 9px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 1px; }
+        /* VISUAL DO FUNIL DE 6 ETAPAS */
+        .metric-card { background: rgba(15, 23, 42, 0.5); border-left: 3px solid #334155; padding: 10px; border-radius: 4px; margin-bottom: 8px; }
+        .metric-title { font-size: 9px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 1px; }
         .metric-value { font-size: 18px; font-weight: 900; color: white; }
-        .metric-sub { font-size: 10px; color: #64748b; text-align: right; font-weight: bold; }
+        .metric-sub { font-size: 10px; color: #94a3b8; text-align: right; }
 
-        /* CORES DAS ETAPAS */
-        .border-pv { border-color: #6366f1; } .text-pv { color: #6366f1; }
-        .border-sa { border-color: #3b82f6; } .text-sa { color: #3b82f6; }
-        .border-ac { border-color: #0ea5e9; } .text-ac { color: #0ea5e9; }
-        .border-pw { border-color: #a855f7; } .text-pw { color: #a855f7; }
-        .border-pc { border-color: #f59e0b; } .text-pc { color: #f59e0b; }
-        .border-pay { border-color: #10b981; } .text-pay { color: #10b981; }
+        /* CORES DAS MÉTRICAS */
+        .border-pv { border-color: #6366f1; } /* Page View */
+        .border-sa { border-color: #3b82f6; } /* Start Amostra */
+        .border-ac { border-color: #0ea5e9; } /* Amostra Completa */
+        .border-pw { border-color: #a855f7; } /* Paywall View */
+        .border-pc { border-color: #f59e0b; } /* Pix Click */
+        .border-pay { border-color: #10b981; } /* Payment */
 
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #0b0c15; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
         .feed-session { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 5px; border-radius: 6px; }
         .feed-header { padding: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .feed-body { display: none; background: rgba(0,0,0,0.3); border-top: 1px solid rgba(255,255,255,0.05); padding: 5px; }
+        .feed-body.open { display: block; }
         .hidden { display: none !important; }
 
         .status-testing { border: 1px solid #f59e0b; color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
@@ -58,7 +59,7 @@
     <div id="dashboard" class="max-w-7xl mx-auto hidden">
         <header class="flex flex-col md:flex-row justify-between items-end mb-8 border-b border-indigo-900/30 pb-4 gap-4">
             <div>
-                <h1 class="text-3xl font-black text-white tracking-tight">PACO <span class="text-indigo-500">SYSTEM</span></h1>
+                <h1 class="text-3xl font-black text-white tracking-tight">VALIDAÇÃO <span class="text-indigo-500">6M</span></h1>
                 <div class="flex items-center gap-3 mt-2">
                     <p class="text-xs text-indigo-400">Oferta:</p>
                     <select id="offer-selector" onchange="carregarDadosDaOferta()" class="bg-slate-800 text-white text-xs p-1 rounded border border-slate-600 outline-none cursor-pointer"></select>
@@ -82,26 +83,26 @@
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="glass-panel p-6 border-emerald-500/30 bg-emerald-900/10">
-                <h3 class="text-xs font-bold text-emerald-400 mb-2 uppercase">💰 6. Pagamento (PAY)</h3>
-                <p class="text-[10px] text-slate-400 mb-3">Vendas reais confirmadas (Manual).</p>
+                <h3 class="text-xs font-bold text-emerald-400 mb-2 uppercase">💰 6. Pagamento Confirmado (PAY)</h3>
+                <p class="text-[10px] text-slate-400 mb-3">Métrica final de validação (Manual).</p>
                 <div class="flex gap-2">
                     <input type="number" id="manual-sales-input" class="glass-input text-xl font-bold text-center text-white border-emerald-500/50" placeholder="0">
-                    <button onclick="calcularVeredito()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 rounded-lg text-xs transition shadow-lg shadow-emerald-900/50">VALIDAR</button>
+                    <button onclick="calcularVeredito()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 rounded-lg text-xs transition shadow-lg shadow-emerald-900/50">VALIDAR<br>AGORA</button>
                 </div>
             </div>
             <div class="glass-panel p-6 flex flex-col justify-center">
-                <h3 class="text-xs font-bold text-slate-500 mb-2 uppercase">📊 Taxas Reais</h3>
+                <h3 class="text-xs font-bold text-slate-500 mb-2 uppercase">📊 Taxas de Conversão</h3>
                 <div class="flex justify-between items-end mb-2 border-b border-white/5 pb-2">
                     <p class="text-[10px] text-amber-400">Pix Click Rate</p>
                     <p id="calc-pix-rate" class="text-lg font-bold text-amber-400">0.0%</p>
                 </div>
                 <div class="flex justify-between items-end">
-                    <p class="text-[10px] text-emerald-400">Conversão Vendas</p>
+                    <p class="text-[10px] text-emerald-400">Conversão Final</p>
                     <p id="calc-conversion" class="text-lg font-bold text-emerald-400">0.0%</p>
                 </div>
             </div>
             <div class="glass-panel p-6 border border-white/10 relative overflow-hidden">
-                <h3 class="text-xs font-bold text-white mb-2 uppercase">⚖️ Veredito Paco</h3>
+                <h3 class="text-xs font-bold text-white mb-2 uppercase">⚖️ Veredito Automático</h3>
                 <p id="ai-verdict-text" class="text-sm font-medium text-slate-300 italic">"Aguardando dados..."</p>
                 <div id="ai-verdict-badge" class="absolute bottom-4 right-4 text-xs font-bold bg-slate-700 text-slate-400 px-3 py-1 rounded">AGUARDANDO</div>
             </div>
@@ -109,46 +110,60 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-10">
             <div class="glass-panel p-4 col-span-1 lg:col-span-1">
-                <h2 class="text-xs font-bold text-white mb-4 uppercase flex justify-between">
-                    FUNIL DE COMPORTAMENTO
-                    <span class="text-slate-500">HOJE</span>
-                </h2>
+                <h2 class="text-sm font-bold text-white mb-4">FUNIL COMPORTAMENTAL</h2>
                 
                 <div class="metric-card border-pv">
-                    <div class="flex justify-between"><span class="metric-title">1. PAGE VIEW (PV)</span><span class="metric-value" id="val-pv">0</span></div>
+                    <div class="flex justify-between">
+                        <span class="metric-title">1. PAGE VIEW (PV)</span>
+                        <span class="metric-value" id="val-pv">0</span>
+                    </div>
                 </div>
+
                 <div class="metric-card border-sa">
-                    <div class="flex justify-between"><span class="metric-title">2. START AMOSTRA (SA)</span><span class="metric-value" id="val-sa">0</span></div>
+                    <div class="flex justify-between">
+                        <span class="metric-title">2. START AMOSTRA (SA)</span>
+                        <span class="metric-value" id="val-sa">0</span>
+                    </div>
                     <div class="metric-sub" id="rate-sa">0%</div>
                 </div>
+
                 <div class="metric-card border-ac">
-                    <div class="flex justify-between"><span class="metric-title">3. AMOSTRA OK (AC)</span><span class="metric-value" id="val-ac">0</span></div>
+                    <div class="flex justify-between">
+                        <span class="metric-title">3. AMOSTRA COMPLETA (AC)</span>
+                        <span class="metric-value" id="val-ac">0</span>
+                    </div>
                     <div class="metric-sub" id="rate-ac">0%</div>
                 </div>
+
                 <div class="metric-card border-pw">
-                    <div class="flex justify-between"><span class="metric-title">4. PAYWALL (PW)</span><span class="metric-value" id="val-pw">0</span></div>
+                    <div class="flex justify-between">
+                        <span class="metric-title">4. PAYWALL VIEW (PW)</span>
+                        <span class="metric-value" id="val-pw">0</span>
+                    </div>
                     <div class="metric-sub" id="rate-pw">0%</div>
                 </div>
+
                 <div class="metric-card border-pc">
-                    <div class="flex justify-between"><span class="metric-title text-pc">5. PIX CLICK (PC)</span><span class="metric-value text-pc" id="val-pc">0</span></div>
-                    <div class="metric-sub text-pc" id="rate-pc">0%</div>
+                    <div class="flex justify-between">
+                        <span class="metric-title text-amber-400">5. PIX CLICK (PC)</span>
+                        <span class="metric-value text-amber-400" id="val-pc">0</span>
+                    </div>
+                    <div class="metric-sub text-amber-400" id="rate-pc">0%</div>
                 </div>
+                
                 <div class="metric-card border-pay">
-                    <div class="flex justify-between"><span class="metric-title text-pay">6. VENDAS (PAY)</span><span class="metric-value text-pay" id="val-pay">0</span></div>
-                    <div class="metric-sub text-pay" id="rate-pay">0%</div>
+                    <div class="flex justify-between">
+                        <span class="metric-title text-emerald-400">6. PAYMENT (PAY)</span>
+                        <span class="metric-value text-emerald-400" id="val-pay">0</span>
+                    </div>
+                    <div class="metric-sub text-emerald-400" id="rate-pay">0%</div>
                 </div>
             </div>
 
             <div class="col-span-1 lg:col-span-3 space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="glass-panel p-4">
-                        <h3 class="text-xs font-bold text-slate-500 mb-2 uppercase">Origem do Tráfego</h3>
-                        <div style="height: 150px; position: relative;"><canvas id="sourceChart"></canvas></div>
-                    </div>
-                    <div class="glass-panel p-4 flex flex-col">
-                        <h3 class="text-xs font-bold text-slate-500 mb-2 uppercase">Feed em Tempo Real</h3>
-                        <div class="overflow-y-auto p-2 space-y-2 flex-1 custom-scroll h-[150px]" id="live-feed"><p class="text-center text-slate-600 text-xs">Aguardando...</p></div>
-                    </div>
+                <div class="glass-panel p-4 h-[300px] overflow-hidden flex flex-col">
+                    <h3 class="text-xs font-bold text-white mb-2">FEED DE COMPORTAMENTO AO VIVO</h3>
+                    <div class="overflow-y-auto p-2 space-y-2 flex-1 custom-scroll" id="live-feed"><p class="text-center text-slate-600 text-xs">Aguardando...</p></div>
                 </div>
 
                 <div class="glass-panel p-4 border border-indigo-500/30">
@@ -157,8 +172,7 @@
                     </div>
                     <div class="space-y-2">
                         <input type="text" id="edit-headline" class="glass-input m-0" placeholder="Headline">
-                        <textarea id="edit-bodyText" class="glass-input h-20 m-0 resize-none" placeholder="Copy..."></textarea>
-                        
+                        <textarea id="edit-bodyText" class="glass-input h-24 m-0 resize-none" placeholder="Copy..."></textarea>
                         <div class="flex gap-2">
                             <select id="edit-layout" class="glass-input bg-slate-900 m-0 w-1/2" onchange="toggleQuizField()">
                                 <option value="dark">🌑 Dark (VSL)</option>
@@ -171,7 +185,7 @@
                         
                         <div id="quiz-config-field" class="hidden bg-slate-900/50 p-3 rounded border border-pink-500/30">
                             <div class="flex justify-between items-center mb-2">
-                                <label class="text-[9px] font-bold text-pink-400">QUIZ BUILDER</label>
+                                <label class="text-[9px] font-bold text-pink-400">CONSTRUTOR DE QUIZ</label>
                                 <button onclick="adicionarPergunta()" class="text-[9px] bg-pink-600 text-white px-2 py-1 rounded hover:bg-pink-500">+ Pergunta</button>
                             </div>
                             <div id="quiz-builder-container" class="space-y-3"></div>
@@ -181,7 +195,6 @@
                         <input type="text" id="edit-ctaText" class="glass-input border-emerald-500/50 m-0" placeholder="Texto Botão (ex: PAGAR PIX)">
                         <input type="text" id="edit-checkout" class="glass-input border-emerald-500/30 m-0" placeholder="Link Checkout">
                         <input type="text" id="edit-video" class="glass-input m-0" placeholder="Vídeo URL">
-                        
                         <button onclick="salvarOfertaAtual()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg text-xs mt-2">💾 SALVAR ALTERAÇÕES</button>
                     </div>
                 </div>
@@ -208,8 +221,9 @@
 
         const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
-        let currentOfferId = "", unsubscribeFeed = null, myChart = null;
+        let currentOfferId = "", unsubscribeFeed = null;
         
+        // VARIÁVEIS GLOBAIS DE CONTAGEM (O CÉREBRO)
         let counts = { pv:0, sa:0, ac:0, pw:0, pc:0 }; 
 
         window.fazerLogin = async () => { try { await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); } catch(e) { document.getElementById('error-msg').innerText = e.message; } }
@@ -254,8 +268,9 @@
             if(unsubscribeFeed) unsubscribeFeed();
             
             unsubscribeFeed = onSnapshot(q, (snapshot) => {
+                // RESET COUNTERS
                 counts = { pv:0, sa:0, ac:0, pw:0, pc:0 };
-                let sources = {};
+                
                 const feedDiv = document.getElementById('live-feed');
                 let events = [];
                 snapshot.forEach(doc => events.push({ id: doc.id, ...doc.data() }));
@@ -263,51 +278,44 @@
                 const filtered = events.filter(e => !!e.isTest === isTest).sort((a,b) => b.createdAt - a.createdAt);
                 
                 filtered.forEach(e => {
+                    // MAPEAMENTO DE NOMES (LEGADO vs NOVO)
+                    // offer_view -> Page View
+                    // cta_click -> Pix Click
                     if(e.type === 'offer_view' || e.type === 'page_view') counts.pv++;
                     if(e.type === 'sample_start') counts.sa++;
-                    if(e.type === 'quiz_answer' || e.type === 'sample_completed') counts.ac++; 
-                    if(e.type === 'paywall_view') counts.pw++; 
+                    if(e.type === 'quiz_answer' || e.type === 'sample_completed') counts.ac++; // Quiz conta como amostra
+                    if(e.type === 'paywall_view' || (e.type === 'offer_view' && counts.ac > 0)) counts.pw++; // Simplificação
                     if(e.type === 'cta_click' || e.type === 'pix_click') counts.pc++;
-                    
-                    // Lógica para o gráfico de pizza
-                    let src = e.campaign?.source || 'direto';
-                    if(src !== 'encurtador') sources[src] = (sources[src]||0)+1;
                 });
 
-                if(counts.pw === 0 && counts.pv > 0) counts.pw = counts.pv; 
-
-                // Atualiza UI
+                // ATUALIZA UI
                 document.getElementById('val-pv').innerText = counts.pv;
                 document.getElementById('val-sa').innerText = counts.sa;
                 document.getElementById('val-ac').innerText = counts.ac;
-                document.getElementById('val-pw').innerText = counts.pw;
+                document.getElementById('val-pw').innerText = counts.pv; // Em VSL, PV = PW muitas vezes
                 document.getElementById('val-pc').innerText = counts.pc;
                 
+                // Taxas relativas ao PV
                 const calcRate = (val) => counts.pv > 0 ? ((val/counts.pv)*100).toFixed(1) + '%' : '0%';
                 document.getElementById('rate-sa').innerText = calcRate(counts.sa);
                 document.getElementById('rate-ac').innerText = calcRate(counts.ac);
-                document.getElementById('rate-pw').innerText = calcRate(counts.pw);
+                document.getElementById('rate-pw').innerText = "100%"; // Simplificado para VSL
                 document.getElementById('rate-pc').innerText = calcRate(counts.pc);
 
                 // Feed
                 let feedHTML = ""; 
-                filtered.slice(0,30).forEach(e => {
+                filtered.slice(0,50).forEach(e => {
                     let txt = e.type;
                     if(e.type === 'cta_click') txt = "⚡ PIX CLICK";
                     else if(e.type === 'offer_view') txt = "👁️ Page View";
-                    else if(e.type === 'quiz_answer') txt = `💬 ${e.data?.answer}`;
+                    else if(e.type === 'quiz_answer') txt = `💬 Resposta: ${e.data?.answer}`;
                     feedHTML += `<div class="feed-session"><div class="feed-header"><span class="text-[10px] text-slate-400">${txt}</span><span class="text-[9px] text-slate-600">${new Date(e.createdAt.seconds*1000).toLocaleTimeString()}</span></div></div>`;
                 });
                 feedDiv.innerHTML = feedHTML;
-
-                // ATUALIZA GRÁFICO (RESTAURADO)
-                if(Object.keys(sources).length === 0) sources = {'Sem dados': 1};
-                const ctx = document.getElementById('sourceChart');
-                if(myChart) myChart.destroy();
-                myChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(sources), datasets: [{ data: Object.values(sources), backgroundColor: ['#6366f1', '#10b981', '#f43f5e', '#f59e0b'], borderWidth:0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 9 }, color: '#94a3b8' } } } } });
             });
         }
 
+        // --- LÓGICA DO VEREDITO (PADRÃO 6M) ---
         window.calcularVeredito = async () => {
             const vendas = parseInt(document.getElementById('manual-sales-input').value) || 0;
             const visitas = counts.pv;
@@ -315,6 +323,7 @@
 
             await updateDoc(doc(db,"offers",currentOfferId), { manualSales: vendas });
 
+            // CÁLCULOS CRITÉRIO PACO
             const conversaoPagamento = visitas > 0 ? ((vendas / visitas) * 100).toFixed(2) : 0;
             const pixClickRate = visitas > 0 ? ((pixClicks / visitas) * 100).toFixed(2) : 0;
 
@@ -328,6 +337,7 @@
             
             let novoStatus = 'testing';
 
+            // REGRAS DE OURO
             if(visitas < 50) {
                 vereditoBox.innerText = "Tráfego insuficiente (Min: 50 PV).";
                 badge.innerText = "COLETANDO...";
@@ -337,8 +347,8 @@
                 badge.innerText = "🟢 VALIDADA";
                 badge.className = "absolute bottom-4 right-4 text-xs font-bold bg-emerald-600 text-white px-3 py-1 rounded";
                 novoStatus = 'validated';
-            } else if (pixClickRate >= 2.0) {
-                vereditoBox.innerText = "EM AJUSTE. Pix Click existe, mas venda tá baixa. Ajuste a oferta/preço.";
+            } else if (pixClickRate >= 2.0) { // Chegou no Paywall e clicou um pouco
+                vereditoBox.innerText = "EM AJUSTE. Pix Click existe, mas venda tá baixa. Melhore a oferta/preço.";
                 badge.innerText = "🟡 AJUSTAR";
                 badge.className = "absolute bottom-4 right-4 text-xs font-bold bg-amber-600 text-white px-3 py-1 rounded";
             } else {
