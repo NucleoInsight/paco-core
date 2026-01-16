@@ -91,11 +91,17 @@
                     document.getElementById('buyBtn').innerText = data.ctaText || "QUERO TER ACESSO AGORA";
                     document.getElementById('price').innerText = data.price;
                     
-                    // CORREÇÃO DE VÍDEO (Mesma lógica do Index)
+                    // --- HACK DO YOUTUBE (Anti-Recomendação) ---
                     if(data.videoUrl && data.videoUrl.length > 5) {
-                        let vUrl = data.videoUrl.replace("watch?v=", "embed/").replace("youtu.be/", "www.youtube.com/embed/");
-                        vUrl += (vUrl.includes('?') ? '&' : '?') + "rel=0&playsinline=1&modestbranding=1";
-                        document.getElementById('videoFrame').src = vUrl;
+                        let videoId = "";
+                        const match = data.videoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/)([^#&?]*))/);
+                        if (match && match[1]) videoId = match[1];
+
+                        if(videoId) {
+                            // Adiciona loop=1 e playlist=ID para criar loop infinito
+                            let vUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&rel=0&playsinline=1&modestbranding=1&iv_load_policy=3&showinfo=0&fs=0&loop=1&playlist=${videoId}`;
+                            document.getElementById('videoFrame').src = vUrl;
+                        }
                     }
 
                     document.getElementById('loading').classList.add('hidden');
