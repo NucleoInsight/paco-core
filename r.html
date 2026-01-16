@@ -1,4 +1,3 @@
-
 <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, getDoc, updateDoc, increment, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -8,7 +7,7 @@
 
         async function go() {
             const id = new URLSearchParams(window.location.search).get('id');
-            if(!id) return document.getElementById('msg').innerText = "Erro: ID ausente.";
+            if(!id) return document.getElementById('msg').innerText = "Link inválido.";
             
             try {
                 const ref = doc(db, "short_links", id);
@@ -16,33 +15,27 @@
                 
                 if(snap.exists()) {
                     const d = snap.data();
-                    
-                    // 1. Array de promessas para salvar tudo em paralelo (mais rápido)
-                    const updates = [
+                    // Salva o clique e o evento AO MESMO TEMPO e ESPERA (await)
+                    await Promise.all([
                         updateDoc(ref, { clicks: increment(1) }),
                         addDoc(collection(db, "events"), { 
                             offerId: d.offerId || 'unknown', 
                             type: 'short_link_click', 
                             alias: id, 
-                            campaign: { source: 'encurtador' }, 
-                            isTest: false, 
+                            campaign: {source:'encurtador'}, 
+                            isTest:false, 
                             createdAt: serverTimestamp() 
                         })
-                    ];
-
-                    // 2. AWAIT: Espera o Firebase confirmar que salvou
-                    await Promise.all(updates);
-
-                    // 3. Só agora redireciona
+                    ]);
+                    
+                    // Só redireciona depois de salvar
                     window.location.href = d.target;
-                } else { 
-                    document.getElementById('msg').innerText = "Link não encontrado."; 
-                }
+                } else { document.getElementById('msg').innerText = "Link não encontrado."; }
             } catch(e) { 
                 console.error(e);
+                // Se der erro, tenta redirecionar mesmo assim se tivermos o link (backup)
+                // window.location.href = ... 
                 document.getElementById('msg').innerText = "Erro no sistema."; 
-                // Opcional: Redirecionar para o Google em caso de erro fatal
-                // window.location.href = "https://google.com";
             }
         }
         go();
