@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper PACO | Admin V44 (Full Suite)</title>
+    <title>Sniper PACO | Admin V45 (Quiz Editor)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -15,14 +15,10 @@
         .glass-panel { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; }
         .glass-input { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(51, 65, 85, 0.5); color: white; padding: 10px; border-radius: 8px; width: 100%; font-size: 13px; margin-bottom: 5px; }
         .glass-input:focus { border-color: #6366f1; outline: none; }
-        
-        /* FUNIL */
         .funnel-step { position: relative; padding-left: 20px; border-left: 2px solid #334155; margin-bottom: 20px; }
         .funnel-step.active { border-left-color: #10b981; }
         .progress-bar-bg { background: #1e293b; height: 6px; border-radius: 3px; overflow: hidden; margin-top: 5px; }
         .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #a855f7); width: 0%; transition: width 1s; }
-
-        /* SCROLL E FEED */
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #0b0c15; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
@@ -31,8 +27,6 @@
         .feed-body { display: none; background: rgba(0,0,0,0.3); border-top: 1px solid rgba(255,255,255,0.05); padding: 5px; }
         .feed-body.open { display: block; }
         .hidden { display: none !important; }
-
-        /* STATUS BADGES */
         .status-testing { border: 1px solid #f59e0b; color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
         .status-validated { border: 1px solid #10b981; color: #10b981; background: rgba(16, 185, 129, 0.1); }
         .status-rejected { border: 1px solid #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.1); }
@@ -84,21 +78,13 @@
                     <button onclick="calcularVeredito()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 rounded-lg text-xs transition shadow-lg shadow-emerald-900/50">🤖 CALCULAR<br>VEREDITO</button>
                 </div>
             </div>
-
             <div class="glass-panel p-6 flex flex-col justify-center">
                 <h3 class="text-xs font-bold text-slate-500 mb-2 uppercase">📊 2. Conversão Real</h3>
                 <div class="flex justify-between items-end">
-                    <div>
-                        <p class="text-[10px] text-slate-400">Conversão (Vendas/Visitas)</p>
-                        <p id="calc-conversion" class="text-2xl font-black text-white">0.0%</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-[10px] text-slate-400">Faturamento Est.</p>
-                        <p id="calc-revenue" class="text-xl font-bold text-emerald-400">R$ 0,00</p>
-                    </div>
+                    <div><p class="text-[10px] text-slate-400">Conversão (Vendas/Visitas)</p><p id="calc-conversion" class="text-2xl font-black text-white">0.0%</p></div>
+                    <div class="text-right"><p class="text-[10px] text-slate-400">Faturamento Est.</p><p id="calc-revenue" class="text-xl font-bold text-emerald-400">R$ 0,00</p></div>
                 </div>
             </div>
-
             <div class="glass-panel p-6 border border-white/10 relative overflow-hidden">
                 <h3 class="text-xs font-bold text-white mb-2 uppercase">⚖️ 3. O Veredito do Sistema</h3>
                 <p id="ai-verdict-text" class="text-sm font-medium text-slate-300 italic">"Aguardando dados para análise..."</p>
@@ -135,16 +121,14 @@
                             <label class="text-[9px] font-bold text-slate-400">HEADLINE (TÍTULO)</label>
                             <input type="text" id="edit-headline" class="glass-input m-0">
                         </div>
-                        
                         <div>
                             <label class="text-[9px] font-bold text-slate-400">TEXTO DA PÁGINA (COPY)</label>
                             <textarea id="edit-bodyText" class="glass-input h-24 m-0 resize-none" placeholder="Escreva a carta de vendas aqui..."></textarea>
                         </div>
-
                         <div class="flex gap-2">
                             <div class="w-1/2">
                                 <label class="text-[9px] font-bold text-slate-400">LAYOUT</label>
-                                <select id="edit-layout" class="glass-input bg-slate-900 m-0">
+                                <select id="edit-layout" class="glass-input bg-slate-900 m-0" onchange="toggleQuizField()">
                                     <option value="dark">🌑 Dark</option>
                                     <option value="clean">⬜ Clean</option>
                                     <option value="artigo">📰 Artigo</option>
@@ -158,21 +142,26 @@
                             </div>
                         </div>
                         
+                        <div id="quiz-config-field" class="hidden">
+                            <div class="flex justify-between items-center">
+                                <label class="text-[9px] font-bold text-pink-400">CONFIGURAÇÃO DO QUIZ (JSON)</label>
+                                <button onclick="preencherModeloQuiz()" class="text-[9px] text-indigo-400 underline">Copiar Modelo</button>
+                            </div>
+                            <textarea id="edit-quizConfig" class="glass-input h-24 font-mono text-[10px] text-pink-300 border-pink-500/30" placeholder="Cole o JSON do Quiz aqui..."></textarea>
+                        </div>
+
                         <div>
                             <label class="text-[9px] font-bold text-emerald-400">TEXTO DO BOTÃO</label>
                             <input type="text" id="edit-ctaText" class="glass-input border-emerald-500/50 m-0" placeholder="ex: COMPRAR AGORA">
                         </div>
-
                         <div>
                             <label class="text-[9px] font-bold text-slate-400">CHECKOUT URL</label>
                             <input type="text" id="edit-checkout" class="glass-input border-emerald-500/30 m-0">
                         </div>
-                        
                         <div>
                             <label class="text-[9px] font-bold text-slate-400">VÍDEO URL</label>
                             <input type="text" id="edit-video" class="glass-input m-0">
                         </div>
-
                         <div class="pt-2"><button onclick="salvarOfertaAtual()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg text-xs">💾 SALVAR ALTERAÇÕES</button></div>
                     </div>
                 </div>
@@ -238,17 +227,19 @@
             if(docSnap.exists()) {
                 const d = docSnap.data();
                 document.getElementById('edit-headline').value = d.headline;
-                
-                // --- RESTAURADO: CAMPO BODY TEXT ---
                 document.getElementById('edit-bodyText').value = d.bodyText || "";
-                
                 document.getElementById('edit-price').value = d.price;
                 document.getElementById('edit-layout').value = d.layout;
                 document.getElementById('edit-video').value = d.videoUrl;
                 document.getElementById('edit-checkout').value = d.checkoutUrl;
                 document.getElementById('edit-ctaText').value = d.ctaText || "COMPRAR AGORA";
                 document.getElementById('manual-sales-input').value = d.manualSales || 0;
+                
+                // NOVO: Carrega o Quiz
+                document.getElementById('edit-quizConfig').value = d.quizConfig || "";
+                
                 atualizarBadgeStatus(d.status || 'testing');
+                toggleQuizField(); // Atualiza visibilidade do campo quiz
             }
 
             const q = query(collection(db, "events"), where("offerId", "==", currentOfferId), limit(2000));
@@ -372,15 +363,32 @@
             else { badge.innerText = "🟡 EM TESTE"; badge.className = "text-[10px] font-bold px-2 py-0.5 rounded uppercase status-testing"; }
         }
 
+        // --- Lógica do Quiz Dinâmico ---
+        window.toggleQuizField = () => {
+            const layout = document.getElementById('edit-layout').value;
+            const field = document.getElementById('quiz-config-field');
+            if(layout === 'quiz') field.classList.remove('hidden');
+            else field.classList.add('hidden');
+        }
+
+        window.preencherModeloQuiz = () => {
+            const modelo = [
+                { t: "Qual seu maior sonho?", a: ["Viajar", "Ficar Rico", "Ter Paz"] },
+                { t: "O que te impede?", a: ["Medo", "Dinheiro", "Tempo"] }
+            ];
+            document.getElementById('edit-quizConfig').value = JSON.stringify(modelo, null, 2);
+        }
+
         window.salvarOfertaAtual = async () => { 
             await updateDoc(doc(db,"offers",currentOfferId), { 
                 headline:document.getElementById('edit-headline').value, 
-                bodyText: document.getElementById('edit-bodyText').value, // <--- SALVA O COPY
+                bodyText: document.getElementById('edit-bodyText').value, 
                 price:document.getElementById('edit-price').value, 
                 layout:document.getElementById('edit-layout').value, 
                 videoUrl:document.getElementById('edit-video').value, 
                 checkoutUrl:document.getElementById('edit-checkout').value,
-                ctaText: document.getElementById('edit-ctaText').value
+                ctaText: document.getElementById('edit-ctaText').value,
+                quizConfig: document.getElementById('edit-quizConfig').value // <--- SALVA O QUIZ
             }); 
             alert("Salvo!"); 
         }
