@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper PACO | Admin V43 (Botão Editável)</title>
+    <title>Sniper PACO | Admin V44 (Full Suite)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -130,22 +130,49 @@
                         <h3 class="text-xs font-bold text-indigo-400 uppercase">CONFIGURAR PÁGINA</h3>
                         <a href="#" id="btn-open-test" target="_blank" class="text-[10px] text-amber-400 border border-amber-500/30 px-2 py-1 rounded">🧪 VER PÁGINA</a>
                     </div>
-                    <div class="space-y-1">
-                        <label>HEADLINE</label><input type="text" id="edit-headline" class="glass-input">
-                        <div class="flex gap-2">
-                            <div class="w-1/2"><label>LAYOUT</label><select id="edit-layout" class="glass-input bg-slate-900"><option value="dark">🌑 Dark</option><option value="clean">⬜ Clean</option><option value="artigo">📰 Artigo</option><option value="vsl">🎥 VSL</option><option value="quiz">🧩 Quiz</option></select></div>
-                            <div class="w-1/2"><label>PREÇO</label><input type="text" id="edit-price" class="glass-input text-center font-bold text-emerald-400"></div>
+                    <div class="space-y-2">
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400">HEADLINE (TÍTULO)</label>
+                            <input type="text" id="edit-headline" class="glass-input m-0">
                         </div>
                         
-                        <div class="flex gap-2">
-                            <div class="w-full">
-                                <label class="text-emerald-400 font-bold">TEXTO DO BOTÃO</label>
-                                <input type="text" id="edit-ctaText" class="glass-input border-emerald-500/50" placeholder="ex: COMPRAR AGORA">
-                            </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400">TEXTO DA PÁGINA (COPY)</label>
+                            <textarea id="edit-bodyText" class="glass-input h-24 m-0 resize-none" placeholder="Escreva a carta de vendas aqui..."></textarea>
                         </div>
 
-                        <label>CHECKOUT URL</label><input type="text" id="edit-checkout" class="glass-input border-emerald-500/30">
-                        <label>VÍDEO URL</label><input type="text" id="edit-video" class="glass-input">
+                        <div class="flex gap-2">
+                            <div class="w-1/2">
+                                <label class="text-[9px] font-bold text-slate-400">LAYOUT</label>
+                                <select id="edit-layout" class="glass-input bg-slate-900 m-0">
+                                    <option value="dark">🌑 Dark</option>
+                                    <option value="clean">⬜ Clean</option>
+                                    <option value="artigo">📰 Artigo</option>
+                                    <option value="vsl">🎥 VSL</option>
+                                    <option value="quiz">🧩 Quiz</option>
+                                </select>
+                            </div>
+                            <div class="w-1/2">
+                                <label class="text-[9px] font-bold text-slate-400">PREÇO</label>
+                                <input type="text" id="edit-price" class="glass-input text-center font-bold text-emerald-400 m-0">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="text-[9px] font-bold text-emerald-400">TEXTO DO BOTÃO</label>
+                            <input type="text" id="edit-ctaText" class="glass-input border-emerald-500/50 m-0" placeholder="ex: COMPRAR AGORA">
+                        </div>
+
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400">CHECKOUT URL</label>
+                            <input type="text" id="edit-checkout" class="glass-input border-emerald-500/30 m-0">
+                        </div>
+                        
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400">VÍDEO URL</label>
+                            <input type="text" id="edit-video" class="glass-input m-0">
+                        </div>
+
                         <div class="pt-2"><button onclick="salvarOfertaAtual()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg text-xs">💾 SALVAR ALTERAÇÕES</button></div>
                     </div>
                 </div>
@@ -182,7 +209,7 @@
         const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
         let currentOfferId = "", unsubscribeFeed = null, myChart = null;
-        let globalViews = 0; // Armazena visualizações para o cálculo
+        let globalViews = 0; 
 
         window.fazerLogin = async () => { try { await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); } catch(e) { document.getElementById('error-msg').innerText = e.message; } }
         window.logout = () => signOut(auth);
@@ -211,15 +238,15 @@
             if(docSnap.exists()) {
                 const d = docSnap.data();
                 document.getElementById('edit-headline').value = d.headline;
+                
+                // --- RESTAURADO: CAMPO BODY TEXT ---
+                document.getElementById('edit-bodyText').value = d.bodyText || "";
+                
                 document.getElementById('edit-price').value = d.price;
                 document.getElementById('edit-layout').value = d.layout;
                 document.getElementById('edit-video').value = d.videoUrl;
                 document.getElementById('edit-checkout').value = d.checkoutUrl;
-                
-                // --- NOVO: Carrega o Texto do Botão ---
                 document.getElementById('edit-ctaText').value = d.ctaText || "COMPRAR AGORA";
-                
-                // Carrega Vendas Manuais
                 document.getElementById('manual-sales-input').value = d.manualSales || 0;
                 atualizarBadgeStatus(d.status || 'testing');
             }
@@ -249,7 +276,7 @@
                     if(e.type==='cta_click') clicks++;
                 });
 
-                globalViews = Object.keys(sessions).length; // Guarda para o cálculo
+                globalViews = Object.keys(sessions).length;
 
                 Object.values(sessions).forEach(s => { 
                     if(s.source !== 'encurtador') sources[s.source] = (sources[s.source]||0)+1; 
@@ -345,15 +372,15 @@
             else { badge.innerText = "🟡 EM TESTE"; badge.className = "text-[10px] font-bold px-2 py-0.5 rounded uppercase status-testing"; }
         }
 
-        // --- ATUALIZADO: SALVA O ctaText AGORA ---
         window.salvarOfertaAtual = async () => { 
             await updateDoc(doc(db,"offers",currentOfferId), { 
                 headline:document.getElementById('edit-headline').value, 
+                bodyText: document.getElementById('edit-bodyText').value, // <--- SALVA O COPY
                 price:document.getElementById('edit-price').value, 
                 layout:document.getElementById('edit-layout').value, 
                 videoUrl:document.getElementById('edit-video').value, 
                 checkoutUrl:document.getElementById('edit-checkout').value,
-                ctaText: document.getElementById('edit-ctaText').value // <--- CAMPO NOVO SALVO AQUI
+                ctaText: document.getElementById('edit-ctaText').value
             }); 
             alert("Salvo!"); 
         }
