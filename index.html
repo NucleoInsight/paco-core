@@ -7,13 +7,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
     
     <style>
-        /* RESET E BASE */
         * { box-sizing: border-box; }
         body { margin: 0; padding: 0; transition: 0.3s; line-height: 1.6; }
         .hidden { display: none !important; }
         #loading { position: fixed; inset: 0; background: #000; color: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; font-family: 'Inter', sans-serif; font-weight: bold; letter-spacing: 2px; }
         
-        /* --- TEMA 1: VSL (Conversão Agressiva) --- */
+        /* TEMAS */
         body.layout-dark { background-color: #0b0c15; color: #e2e8f0; font-family: 'Inter', sans-serif; }
         .layout-dark .container { max-width: 800px; margin: 0 auto; padding: 20px; text-align: center; }
         .layout-dark #headline { color: #ef4444; font-size: 26px; font-weight: 900; text-transform: uppercase; margin-bottom: 20px; line-height: 1.2; text-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
@@ -21,7 +20,6 @@
         .layout-dark .btn { background: linear-gradient(to bottom, #10b981, #059669); color: white; border-bottom: 4px solid #065f46; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
         .layout-dark .btn:active { transform: translateY(2px); border-bottom: 2px solid #065f46; }
 
-        /* --- TEMA 2: ARTIGO (Autoridade/Notícia) --- */
         body.layout-artigo { background-color: #ffffff; color: #111; font-family: 'Merriweather', serif; }
         .layout-artigo .container { max-width: 700px; margin: 0 auto; padding: 20px; }
         .layout-artigo #news-bar { display: block !important; background: #b91c1c; color: white; text-align: center; padding: 8px; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
@@ -31,22 +29,18 @@
         .layout-artigo .video-box { margin: 30px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
         .layout-artigo .btn { background: #b91c1c; color: white; font-family: 'Inter', sans-serif; text-transform: uppercase; font-weight: bold; padding: 20px; width: 100%; border-radius: 4px; font-size: 20px; margin-top: 30px; }
 
-        /* --- TEMA 3: CLEAN (Nota Oficial) --- */
         body.layout-clean { background-color: #f1f5f9; color: #334155; font-family: 'Inter', sans-serif; }
         .layout-clean .container { max-width: 600px; margin: 50px auto; background: white; padding: 50px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; border-top: 5px solid #3b82f6; }
         .layout-clean #headline { color: #1e293b; font-size: 24px; font-weight: 800; margin-bottom: 20px; }
         .layout-clean .btn { background: #3b82f6; color: white; border-radius: 8px; }
 
-        /* --- VIDEO PLAYER & ESCUDO --- */
         .video-box { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #000; border-radius: 8px; }
         .video-box iframe { position: absolute; top: -17%; left: -17%; width: 134%; height: 134%; z-index: 1; }
         .video-shield { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; background: transparent; cursor: pointer; }
 
-        /* --- ELEMENTOS GERAIS --- */
         .btn { display: block; width: 100%; padding: 18px; border: none; cursor: pointer; transition: 0.2s; font-size: 18px; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
         
-        /* QUIZ */
         .layout-quiz { background: #0f172a; color: white; font-family: 'Inter', sans-serif; }
         .layout-quiz .container { max-width: 500px; margin: 40px auto; padding: 20px; text-align: center; }
         .quiz-option { background: #1e293b; border: 2px solid #334155; padding: 20px; margin-bottom: 15px; border-radius: 12px; cursor: pointer; text-align: left; font-weight: 600; transition: 0.2s; }
@@ -55,8 +49,9 @@
         #test-banner { background:#f59e0b; color:#000; text-align:center; font-size:12px; font-weight:bold; padding:8px; font-family:sans-serif; }
     </style>
 </head>
-<body class="layout-dark"> <div id="news-bar" class="hidden">NOTÍCIA • ECONOMIA • BRASIL</div>
-    
+<body class="layout-dark">
+
+    <div id="news-bar" class="hidden">NOTÍCIA • ECONOMIA • BRASIL</div>
     <div id="test-banner" class="hidden">⚠️ MODO TESTE ATIVO</div>
     
     <div id="loading">
@@ -118,7 +113,8 @@
             try { await addDoc(collection(db, "events"), { offerId, sessionId, type: name, isTest, campaign: {source, campaign: urlParams.get('utm_campaign')||''}, createdAt: serverTimestamp(), data }); } catch(e){}
         }
 
-        const questions = [ { t: "Qual seu principal objetivo hoje?", a: ["Ganhar Dinheiro Extra", "Mudar de Carreira", "Apenas Curiosidade"] }, { t: "Quanto tempo você tem disponível?", a: ["30 min por dia", "1 a 2 horas", "Tempo Integral"] }, { t: "O que te impede de começar?", a: ["Falta de Dinheiro", "Falta de Conhecimento", "Medo de falhar"] } ];
+        // Quiz Padrão (Fallback)
+        let questions = [ { t: "Qual seu objetivo?", a: ["Renda Extra", "Nova Carreira"] }, { t: "Quanto tempo tem?", a: ["Pouco", "Muito"] } ];
 
         async function init() {
             if (!offerId) { document.getElementById('loading').innerHTML = "ERRO: Link inválido."; return; }
@@ -129,12 +125,19 @@
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     let layout = data.layout || 'dark';
-                    if(layout === 'vsl') layout = 'dark'; // Garante fallback
+                    if(layout === 'vsl') layout = 'dark';
                     
-                    // APLICA O TEMA NO BODY
                     document.body.className = `layout-${layout}`;
 
-                    if(layout === 'quiz') { document.getElementById('loading').classList.add('hidden'); startQuiz(data); return; }
+                    // Se for layout Quiz, carrega as perguntas personalizadas
+                    if(layout === 'quiz') { 
+                        if(data.quizConfig) {
+                            try { questions = JSON.parse(data.quizConfig); } catch(e){ console.error("Erro JSON Quiz"); }
+                        }
+                        document.getElementById('loading').classList.add('hidden'); 
+                        startQuiz(data); 
+                        return; 
+                    }
                     
                     renderOffer(data, layout);
                 } else { document.getElementById('loading').innerHTML = "Oferta não encontrada."; }
@@ -143,8 +146,6 @@
 
         function renderOffer(data, layout) {
             document.getElementById('headline').innerText = data.headline;
-            
-            // Tratamento de quebra de linha para o Texto do Corpo
             document.getElementById('bodyText').innerHTML = data.bodyText.replace(/\n/g, '<br>');
             
             document.getElementById('priceDisplay').innerText = "R$ " + data.price;
@@ -152,13 +153,11 @@
             
             document.getElementById('buyBtn').innerText = data.ctaText || "QUERO APROVEITAR AGORA";
 
-            // Se for Artigo, mostra os elementos específicos
             if(layout === 'artigo') {
                 document.getElementById('news-bar').classList.remove('hidden');
                 document.getElementById('meta-info').classList.remove('hidden');
             }
 
-            // --- VÍDEO COM HACK ANTI-RECOMENDAÇÃO ---
             if(data.videoUrl && data.videoUrl.length > 5) {
                 let videoId = "";
                 const match = data.videoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/)([^#&?]*))/);
@@ -214,7 +213,6 @@
                 <style>@keyframes load { from {width:0%} to {width:100%} }</style>
             `;
             setTimeout(() => { 
-                // Ao terminar o quiz, vai para o layout Dark (VSL)
                 document.body.className = 'layout-dark'; 
                 renderOffer(offerData, 'dark'); 
             }, 1500);
