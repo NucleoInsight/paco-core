@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper PACO | Admin V40 (Final)</title>
+    <title>Sniper PACO | Admin V42 (Calculadora ROI)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -13,41 +13,32 @@
         body { background-color: #0b0c15; color: #a5b4fc; font-family: 'Inter', sans-serif; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
         .glass-panel { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; }
+        .glass-input { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(51, 65, 85, 0.5); color: white; padding: 10px; border-radius: 8px; width: 100%; font-size: 13px; margin-bottom: 5px; }
+        .glass-input:focus { border-color: #6366f1; outline: none; }
         
-        /* FUNIL VISUAL */
+        /* FUNIL */
         .funnel-step { position: relative; padding-left: 20px; border-left: 2px solid #334155; margin-bottom: 20px; }
         .funnel-step.active { border-left-color: #10b981; }
-        .funnel-step::before { content: ''; position: absolute; left: -6px; top: 0; width: 10px; height: 10px; background: #334155; border-radius: 50%; }
-        .funnel-step.active::before { background: #10b981; box-shadow: 0 0 10px #10b981; }
         .progress-bar-bg { background: #1e293b; height: 6px; border-radius: 3px; overflow: hidden; margin-top: 5px; }
         .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #a855f7); width: 0%; transition: width 1s; }
 
-        .glass-input { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(51, 65, 85, 0.5); color: white; padding: 10px; border-radius: 8px; width: 100%; font-size: 13px; margin-bottom: 5px; }
-        .glass-input:focus { border-color: #6366f1; outline: none; }
-        .toggle-checkbox:checked { right: 0; border-color: #10b981; }
-        .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
-        .hidden { display: none !important; }
-        .metric-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; font-weight: 700; }
-        .metric-value { font-size: 1.25rem; font-weight: 800; color: white; line-height: 1; margin-top: 4px; }
+        /* SCROLL E FEED */
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #0b0c15; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-        
         .feed-session { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 5px; border-radius: 6px; }
-        .feed-session:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
         .feed-header { padding: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .feed-body { display: none; background: rgba(0,0,0,0.3); border-top: 1px solid rgba(255,255,255,0.05); padding: 5px; }
         .feed-body.open { display: block; }
-        .tag-source { background: #334155; color: #cbd5e1; padding: 1px 4px; border-radius: 3px; font-size: 9px; font-weight: bold; border: 1px solid #475569; }
+        .hidden { display: none !important; }
 
-        @media print {
-            body { background-color: white !important; color: black !important; }
-            .no-print, button, #login-screen { display: none !important; }
-            .glass-panel { border: 1px solid #ccc !important; background: none !important; color: black !important; box-shadow: none !important; }
-            .text-white { color: black !important; }
-            .text-slate-400 { color: #666 !important; }
-            canvas { max-height: 250px; }
-        }
+        /* STATUS BADGES */
+        .status-testing { border: 1px solid #f59e0b; color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
+        .status-validated { border: 1px solid #10b981; color: #10b981; background: rgba(16, 185, 129, 0.1); }
+        .status-rejected { border: 1px solid #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+        
+        /* CALC BOX */
+        .calc-box { background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 78, 59, 0.2)); border: 1px solid rgba(16, 185, 129, 0.3); }
     </style>
 </head>
 <body class="p-4 md:p-8 min-h-screen">
@@ -63,76 +54,94 @@
     </div>
 
     <div id="dashboard" class="max-w-7xl mx-auto hidden">
-        <header class="flex flex-col md:flex-row justify-between items-end mb-10 border-b border-indigo-900/30 pb-4 gap-4">
+        <header class="flex flex-col md:flex-row justify-between items-end mb-8 border-b border-indigo-900/30 pb-4 gap-4">
             <div>
                 <h1 class="text-3xl font-black text-white tracking-tight">SNIPER <span class="text-indigo-500">ANALYTICS</span></h1>
-                <p class="text-xs text-indigo-400 mt-1">Gestão de Ofertas & Link Automático</p>
-            </div>
-            <div class="flex flex-wrap items-center gap-4">
-                <div class="glass-panel px-3 py-2 border-indigo-500/50">
-                    <label class="text-[9px] text-indigo-400 uppercase font-bold block">Oferta Ativa</label>
-                    <select id="offer-selector" onchange="carregarDadosDaOferta()" class="bg-transparent text-white font-bold text-sm outline-none w-48 cursor-pointer"></select>
+                <div class="flex items-center gap-3 mt-2">
+                    <p class="text-xs text-indigo-400">Oferta Selecionada:</p>
+                    <select id="offer-selector" onchange="carregarDadosDaOferta()" class="bg-slate-800 text-white text-xs p-1 rounded border border-slate-600 outline-none cursor-pointer"></select>
+                    <span id="status-badge" class="text-[10px] font-bold px-2 py-0.5 rounded uppercase status-testing">🟡 EM TESTE</span>
                 </div>
-                <div class="flex items-center gap-2 bg-slate-800/50 p-2 rounded-lg border border-slate-700 no-print">
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-2">
+                <div class="flex items-center gap-2 bg-slate-800/50 p-2 rounded-lg border border-slate-700">
                     <span class="text-[10px] text-slate-400 uppercase font-bold">Modo Teste</span>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="toggle-test" class="sr-only peer" onchange="carregarDadosDaOferta()">
-                        <div class="w-9 h-5 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:bg-amber-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
+                        <div class="w-9 h-5 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:bg-amber-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
                     </label>
                 </div>
-                <div class="flex gap-2 no-print">
-                    <button onclick="copiarRelatorio()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">📋 COPIAR</button>
-                    <button onclick="window.print()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">🖨️ PDF</button>
-                    <button onclick="criarNovaOferta()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1"><span>+</span> NOVA</button>
-                    <button onclick="carregarDadosDaOferta()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">🔄</button>
-                    <button onclick="logout()" class="bg-slate-800 text-slate-300 px-3 py-2 rounded-lg text-xs font-bold border border-slate-700">SAIR</button>
-                </div>
+                <button onclick="criarNovaOferta()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1"><span>+</span> NOVA</button>
+                <button onclick="carregarDadosDaOferta()" class="bg-slate-700 text-white px-3 py-2 rounded-lg text-xs font-bold">🔄</button>
+                <button onclick="logout()" class="bg-slate-800 text-slate-300 px-3 py-2 rounded-lg text-xs border border-slate-700">SAIR</button>
             </div>
         </header>
 
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="glass-panel p-6 border-emerald-500/30 bg-emerald-900/10">
+                <h3 class="text-xs font-bold text-emerald-400 mb-2 uppercase">💰 1. Registro de Vendas</h3>
+                <p class="text-[10px] text-slate-400 mb-3">Insira o total de vendas confirmadas na plataforma (Hotmart, Kiwify, etc).</p>
+                <div class="flex gap-2">
+                    <input type="number" id="manual-sales-input" class="glass-input text-xl font-bold text-center text-white border-emerald-500/50" placeholder="0">
+                    <button onclick="calcularVeredito()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 rounded-lg text-xs transition shadow-lg shadow-emerald-900/50">🤖 CALCULAR<br>VEREDITO</button>
+                </div>
+            </div>
+
+            <div class="glass-panel p-6 flex flex-col justify-center">
+                <h3 class="text-xs font-bold text-slate-500 mb-2 uppercase">📊 2. Conversão Real</h3>
+                <div class="flex justify-between items-end">
+                    <div>
+                        <p class="text-[10px] text-slate-400">Conversão (Vendas/Visitas)</p>
+                        <p id="calc-conversion" class="text-2xl font-black text-white">0.0%</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] text-slate-400">Faturamento Est.</p>
+                        <p id="calc-revenue" class="text-xl font-bold text-emerald-400">R$ 0,00</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel p-6 border border-white/10 relative overflow-hidden">
+                <h3 class="text-xs font-bold text-white mb-2 uppercase">⚖️ 3. O Veredito do Sistema</h3>
+                <p id="ai-verdict-text" class="text-sm font-medium text-slate-300 italic">"Aguardando dados para análise..."</p>
+                <div id="ai-verdict-badge" class="absolute bottom-4 right-4 text-xs font-bold bg-slate-700 text-slate-400 px-3 py-1 rounded">AGUARDANDO</div>
+            </div>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
             <div class="glass-panel p-6">
-                <h2 class="text-sm font-bold text-white mb-6 flex items-center gap-2">FUNIL DE RETENÇÃO</h2>
-                <div id="funnel-container" class="space-y-6">
-                    <div class="text-center text-slate-600 text-xs py-10 loading-pulse">Carregando dados...</div>
-                </div>
+                <h2 class="text-sm font-bold text-white mb-6">FUNIL DE TRÁFEGO</h2>
+                <div id="funnel-container" class="space-y-6"><div class="text-center text-slate-600 text-xs py-10">Carregando...</div></div>
             </div>
 
             <div class="space-y-6">
                 <div class="grid grid-cols-2 gap-4">
                     <div class="glass-panel p-4 border-l-2 border-indigo-500"><p class="metric-label">Visitantes</p><p id="kpi-unique" class="metric-value">0</p></div>
-                    <div class="glass-panel p-4 border-l-2 border-emerald-500"><p class="metric-label">Checkout</p><p id="kpi-sales" class="metric-value">0</p></div>
+                    <div class="glass-panel p-4 border-l-2 border-emerald-500"><p class="metric-label">Checkout (Intenção)</p><p id="kpi-sales" class="metric-value">0</p></div>
                     <div class="glass-panel p-4 border-l-2 border-pink-500"><p class="metric-label">Retenção Quiz</p><p id="kpi-retention" class="metric-value">0%</p></div>
                     <div class="glass-panel p-4 border-l-2 border-amber-500"><p class="metric-label">Melhor Canal</p><p id="kpi-source" class="metric-value truncate text-base pt-1">...</p></div>
                 </div>
 
                 <div class="glass-panel p-4">
-                    <h3 class="text-xs font-bold text-slate-500 mb-2 uppercase flex justify-between">Origem do Tráfego</h3>
+                    <h3 class="text-xs font-bold text-slate-500 mb-2 uppercase">Origem do Tráfego</h3>
                     <div style="height: 150px; position: relative;"><canvas id="sourceChart"></canvas></div>
                 </div>
 
                 <div class="glass-panel p-4 border border-indigo-500/30">
                     <div class="flex justify-between items-center mb-3">
-                        <h3 class="text-xs font-bold text-indigo-400 uppercase">CONFIGURAR OFERTA</h3>
-                        <a href="#" id="btn-open-test" target="_blank" class="text-[10px] text-amber-400 border border-amber-500/30 px-2 py-1 rounded hover:bg-amber-500/10">🧪 ABRIR TESTE</a>
+                        <h3 class="text-xs font-bold text-indigo-400 uppercase">CONFIGURAR PÁGINA</h3>
+                        <a href="#" id="btn-open-test" target="_blank" class="text-[10px] text-amber-400 border border-amber-500/30 px-2 py-1 rounded">🧪 VER PÁGINA</a>
                     </div>
                     <div class="space-y-1">
                         <label>HEADLINE</label><input type="text" id="edit-headline" class="glass-input">
                         <div class="flex gap-2">
-                            <div class="w-1/2"><label>LAYOUT</label>
-                                <select id="edit-layout" class="glass-input bg-slate-900">
-                                    <option value="dark">🌑 Dark Mode</option>
-                                    <option value="clean">⬜ Clean Mode</option>
-                                    <option value="artigo">📰 Artigo</option>
-                                    <option value="vsl">🎥 VSL</option>
-                                    <option value="quiz">🧩 QUIZ MODE</option>
-                                </select>
-                            </div>
+                            <div class="w-1/2"><label>LAYOUT</label><select id="edit-layout" class="glass-input bg-slate-900"><option value="dark">🌑 Dark</option><option value="clean">⬜ Clean</option><option value="artigo">📰 Artigo</option><option value="vsl">🎥 VSL</option><option value="quiz">🧩 Quiz</option></select></div>
                             <div class="w-1/2"><label>PREÇO</label><input type="text" id="edit-price" class="glass-input text-center font-bold text-emerald-400"></div>
                         </div>
-                        <label>CHECKOUT</label><input type="text" id="edit-checkout" class="glass-input border-emerald-500/30">
-                        <label>VÍDEO</label><input type="text" id="edit-video" class="glass-input">
-                        <div class="pt-2"><button onclick="salvarOfertaAtual()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg text-xs transition">💾 SALVAR ALTERAÇÕES</button></div>
+                        <label>CHECKOUT URL</label><input type="text" id="edit-checkout" class="glass-input border-emerald-500/30">
+                        <label>VÍDEO URL</label><input type="text" id="edit-video" class="glass-input">
+                        <div class="pt-2"><button onclick="salvarOfertaAtual()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg text-xs">💾 SALVAR ALTERAÇÕES</button></div>
                     </div>
                 </div>
             </div>
@@ -145,22 +154,19 @@
                 <div class="overflow-y-auto p-4 space-y-3 flex-1 custom-scroll" id="live-feed"><p class="text-center text-slate-600 mt-10 text-xs">Aguardando...</p></div>
             </div>
         </div>
-        
-        <div class="glass-panel p-6 mb-10 no-print border border-emerald-500/30">
-            <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">🔗 Encurtador Automático V2.0</h2>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                <div class="md:col-span-2"><label class="text-[10px] font-bold text-slate-500 uppercase">Nome Curto (Alias)</label><div class="flex"><span class="bg-slate-700 text-slate-300 p-2 text-xs rounded-l border border-slate-600">/r.html?id=</span><input type="text" id="short-alias" placeholder="ex: zap" class="w-full bg-slate-900 border border-slate-600 text-white text-xs p-2 focus:border-emerald-500 outline-none"></div></div>
-                <div><label class="text-[10px] font-bold text-emerald-500 uppercase">Origem (Source)</label><input type="text" id="utm-source" value="instagram" class="glass-input m-0"></div>
-                <div><label class="text-[10px] font-bold text-emerald-500 uppercase">Campanha</label><input type="text" id="utm-campaign" placeholder="stories" class="glass-input m-0"></div>
-            </div>
-            <button onclick="gerarLinkCurto()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg text-xs transition mb-4">💾 GERAR LINK RASTREÁVEL</button>
-            <div id="short-result" class="hidden bg-black/50 p-4 rounded border border-slate-700 flex justify-between items-center"><code id="final-link-display" class="text-white text-xs font-mono">...</code><button onclick="copiarLinkCurto()" class="text-[10px] bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded">COPIAR</button></div>
-        </div>
 
-        <div class="border border-red-900/30 bg-red-950/10 rounded-xl p-6 no-print flex justify-between items-center">
-            <div><h3 class="text-red-500 font-bold text-sm mb-1 uppercase">⚠️ Zona de Perigo</h3><p class="text-xs text-slate-400">Apagar dados de tráfego do modo atual.</p></div>
-            <div class="flex gap-4 items-center"><button onclick="limparDados()" class="bg-red-900/50 hover:bg-red-800 text-red-200 border border-red-800 px-4 py-2 rounded-lg text-xs font-bold transition">🗑️ LIMPAR DADOS</button><button onclick="excluirOferta()" class="text-slate-500 hover:text-red-500 text-xs underline">Excluir Oferta</button></div>
+        <div class="glass-panel p-6 mb-10 no-print border border-emerald-500/30">
+            <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">🔗 Link Builder</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <div class="md:col-span-2"><input type="text" id="short-alias" placeholder="Nome do Link (ex: oferta1)" class="glass-input"></div>
+                <div><input type="text" id="utm-source" value="instagram" class="glass-input"></div>
+                <div><input type="text" id="utm-campaign" placeholder="stories" class="glass-input"></div>
+            </div>
+            <button onclick="gerarLinkCurto()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg text-xs">GERAR LINK RASTREÁVEL</button>
+            <div id="short-result" class="hidden mt-4 bg-black/50 p-4 rounded flex justify-between items-center"><code id="final-link-display" class="text-white text-xs font-mono">...</code><button onclick="copiarLinkCurto()" class="text-[10px] bg-slate-700 px-2 py-1 rounded">COPIAR</button></div>
         </div>
+        
+        <div class="text-right mb-10"><button onclick="limparDados()" class="text-red-500 text-xs underline">Limpar Dados</button> <button onclick="excluirOferta()" class="text-red-500 text-xs underline ml-4">Excluir Oferta</button></div>
     </div>
 
     <script type="module">
@@ -169,9 +175,9 @@
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
-        
         const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
         let currentOfferId = "", unsubscribeFeed = null, myChart = null;
+        let globalViews = 0; // Armazena visualizações para o cálculo
 
         window.fazerLogin = async () => { try { await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); } catch(e) { document.getElementById('error-msg').innerText = e.message; } }
         window.logout = () => signOut(auth);
@@ -187,8 +193,7 @@
             carregarDadosDaOferta();
         }
 
-        window.criarNovaOferta = async () => { const headline = prompt("Headline:"); if(!headline) return; await addDoc(collection(db, "offers"), { headline: headline, bodyText: "...", ctaText: "COMPRAR", price: "9,90", layout: "dark", videoUrl: "", checkoutUrl: "", createdAt: serverTimestamp() }); location.reload(); }
-        window.copiarRelatorio = () => { const views = document.getElementById('kpi-unique').innerText; const clicks = document.getElementById('kpi-sales').innerText; navigator.clipboard.writeText(`📊 RELATÓRIO\nVisitas: ${views}\nCheckout: ${clicks}`).then(() => alert("Copiado!")); }
+        window.criarNovaOferta = async () => { const headline = prompt("Headline:"); if(!headline) return; await addDoc(collection(db, "offers"), { headline: headline, status:'testing', manualSales:0, bodyText: "...", ctaText: "COMPRAR", price: "9,90", layout: "dark", videoUrl: "", checkoutUrl: "", createdAt: serverTimestamp() }); location.reload(); }
 
         window.carregarDadosDaOferta = async () => {
             const select = document.getElementById('offer-selector');
@@ -205,93 +210,65 @@
                 document.getElementById('edit-layout').value = d.layout;
                 document.getElementById('edit-video').value = d.videoUrl;
                 document.getElementById('edit-checkout').value = d.checkoutUrl;
+                
+                // --- CARREGA VENDAS MANUAIS SALVAS ---
+                document.getElementById('manual-sales-input').value = d.manualSales || 0;
+                atualizarBadgeStatus(d.status || 'testing');
             }
 
-            // OTIMIZAÇÃO: Limitamos a query para os últimos 2000 eventos para não travar
-            // Isso resolve o LAG. Se precisar de ordem perfeita, crie o índice no Firebase.
-            const q = query(collection(db, "events"), where("offerId", "==", currentOfferId), limit(2000)); 
-            
+            const q = query(collection(db, "events"), where("offerId", "==", currentOfferId), limit(2000));
             if(unsubscribeFeed) unsubscribeFeed();
             
             unsubscribeFeed = onSnapshot(q, (snapshot) => {
                 let views=0, clicks=0, quizCount=0, sources={};
                 const feedDiv = document.getElementById('live-feed');
-                
                 let events = [];
                 snapshot.forEach(doc => events.push({ id: doc.id, ...doc.data() }));
                 
-                // Filtra e Ordena na memória (mais rápido que esperar o banco em queries complexas)
                 const filtered = events.filter(e => !!e.isTest === isTest).sort((a,b) => b.createdAt - a.createdAt);
                 const sessions = {};
                 
-                // Processamento de Dados
                 filtered.forEach(e => {
                     const sid = e.sessionId || 'anon';
                     let source = e.campaign?.source || 'direto';
                     let campaign = e.campaign?.campaign || '';
                     if(!sessions[sid]) sessions[sid] = { id: sid, events: [], source: source, campaign: campaign, time: e.createdAt?.seconds||0 };
-                    
                     if((sessions[sid].source === 'direto' || sessions[sid].source === 'encurtador') && (source !== 'direto' && source !== 'encurtador')) {
-                        sessions[sid].source = source;
-                        sessions[sid].campaign = campaign;
+                        sessions[sid].source = source; sessions[sid].campaign = campaign;
                     }
                     sessions[sid].events.push(e);
                     if(e.type==='offer_view') views++;
                     if(e.type==='cta_click') clicks++;
                 });
 
-                // Contagem de Origens e Quiz
+                globalViews = Object.keys(sessions).length; // Guarda para o cálculo
+
                 Object.values(sessions).forEach(s => { 
                     if(s.source !== 'encurtador') sources[s.source] = (sources[s.source]||0)+1; 
                     if(s.events.some(e => e.type === 'quiz_answer')) quizCount++;
                 });
 
-                // --- LÓGICA DO MELHOR CANAL (Corrigida) ---
-                let bestSource = "...";
-                let maxCount = 0;
-                Object.entries(sources).forEach(([src, count]) => {
-                    if (src !== 'Sem dados' && count > maxCount) {
-                        maxCount = count;
-                        bestSource = src;
-                    }
-                });
+                let bestSource = "..."; let maxCount = 0;
+                Object.entries(sources).forEach(([src, count]) => { if (src !== 'Sem dados' && count > maxCount) { maxCount = count; bestSource = src; } });
                 document.getElementById('kpi-source').innerText = bestSource.toUpperCase();
-                // ------------------------------------------
-
+                
                 if(Object.keys(sources).length === 0) sources = {'Sem dados': 1};
                 
-                // Gráfico
                 const ctx = document.getElementById('sourceChart');
                 if(myChart) myChart.destroy();
                 myChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(sources), datasets: [{ data: Object.values(sources), backgroundColor: ['#6366f1', '#10b981', '#f43f5e', '#f59e0b'], borderWidth:0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 9 }, color: '#94a3b8' } } } } });
 
-                // Atualiza KPIs
-                const totalSessions = Object.keys(sessions).length;
-                document.getElementById('kpi-unique').innerText = totalSessions;
+                document.getElementById('kpi-unique').innerText = globalViews;
                 document.getElementById('kpi-sales').innerText = clicks;
-                
-                // Retenção e Funil
-                const retentionRate = totalSessions > 0 ? ((quizCount / totalSessions) * 100).toFixed(0) : 0;
+                const retentionRate = globalViews > 0 ? ((quizCount / globalViews) * 100).toFixed(0) : 0;
                 document.getElementById('kpi-retention').innerText = retentionRate + "%";
 
-                const cv = totalSessions > 0 ? ((clicks/totalSessions)*100).toFixed(1) : 0;
+                const cv = globalViews > 0 ? ((clicks/globalViews)*100).toFixed(1) : 0;
                 document.getElementById('funnel-container').innerHTML = `
-                    <div class="funnel-step active">
-                        <div class="flex justify-between items-end">
-                            <div><p class="text-[10px] font-bold text-slate-500">VISITAS</p><p class="text-xl font-black text-white">${totalSessions}</p></div>
-                        </div>
-                        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:100%"></div></div>
-                    </div>
-                    <div class="funnel-step ${clicks > 0 ? 'active' : ''}" style="border-left-color: #10b981;">
-                        <div class="flex justify-between items-end">
-                            <div><p class="text-[10px] font-bold text-emerald-500">CHECKOUT</p><p class="text-xl font-black text-emerald-400">${clicks}</p></div>
-                            <div class="text-right"><p class="text-xs font-bold text-emerald-400">${cv}%</p></div>
-                        </div>
-                        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${cv}%; background:#10b981"></div></div>
-                    </div>
+                    <div class="funnel-step active"><div class="flex justify-between items-end"><div><p class="text-[10px] font-bold text-slate-500">VISITAS</p><p class="text-xl font-black text-white">${globalViews}</p></div></div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:100%"></div></div></div>
+                    <div class="funnel-step ${clicks > 0 ? 'active' : ''}" style="border-left-color: #10b981;"><div class="flex justify-between items-end"><div><p class="text-[10px] font-bold text-emerald-500">CHECKOUT</p><p class="text-xl font-black text-emerald-400">${clicks}</p></div><div class="text-right"><p class="text-xs font-bold text-emerald-400">${cv}%</p></div></div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${cv}%; background:#10b981"></div></div></div>
                 `;
 
-                // Feed Otimizado (BUFFER PARA EVITAR TRAVAMENTO)
                 let feedHTML = ""; 
                 Object.values(sessions).sort((a,b) => b.time - a.time).slice(0,50).forEach(s => {
                     let originText = s.source + (s.campaign && s.campaign!=='none' ? ` • ${s.campaign}` : '');
@@ -300,36 +277,88 @@
                         if(e.type === 'cta_click') txt = "💰 Checkout";
                         else if(e.type === 'quiz_answer') txt = `💬 Quiz: ${e.data?.answer}`;
                         else if(e.type === 'offer_view') txt = "👀 Visualizou";
-                        else if(e.type === 'short_link_click') txt = `🔗 Link (${e.alias})`;
-                        else return "";
                         return `<div class="flex justify-between py-1 text-[10px] text-slate-400"><span>${txt}</span><span>${new Date(e.createdAt.seconds*1000).toLocaleTimeString()}</span></div>`;
                     }).join('');
-                    
-                    if(details) {
-                        feedHTML += `<div class="feed-session"><div class="feed-header" onclick="this.nextElementSibling.classList.toggle('open')"><div class="flex gap-2"><span class="text-[10px] text-slate-500">${new Date(s.time*1000).toLocaleTimeString()}</span><span class="tag-source">${originText}</span></div><span class="text-[10px] font-bold text-slate-400">▼</span></div><div class="feed-body">${details}</div></div>`;
-                    }
+                    if(details) feedHTML += `<div class="feed-session"><div class="feed-header" onclick="this.nextElementSibling.classList.toggle('open')"><div class="flex gap-2"><span class="text-[10px] text-slate-500">${new Date(s.time*1000).toLocaleTimeString()}</span><span class="tag-source">${originText}</span></div><span class="text-[10px] font-bold text-slate-400">▼</span></div><div class="feed-body">${details}</div></div>`;
                 });
                 feedDiv.innerHTML = feedHTML;
             });
         }
 
+        // --- MÁGICA DA DECISÃO (Passo 7 Automatizado) ---
+        window.calcularVeredito = async () => {
+            const vendas = parseInt(document.getElementById('manual-sales-input').value) || 0;
+            const precoTexto = document.getElementById('edit-price').value.replace(',', '.');
+            const preco = parseFloat(precoTexto) || 0;
+            const visitas = globalViews; // Pega do contador automático
+
+            // 1. Salva o dado manual no banco
+            await updateDoc(doc(db,"offers",currentOfferId), { manualSales: vendas });
+
+            // 2. Cálculos
+            const conversao = visitas > 0 ? ((vendas / visitas) * 100).toFixed(2) : 0;
+            const faturamento = (vendas * preco).toFixed(2);
+
+            // 3. Atualiza Display
+            document.getElementById('calc-conversion').innerText = conversao + "%";
+            document.getElementById('calc-revenue').innerText = "R$ " + faturamento;
+
+            // 4. LÓGICA DO ROBÔ (O Veredito)
+            const vereditoBox = document.getElementById('ai-verdict-text');
+            const badge = document.getElementById('ai-verdict-badge');
+            
+            let novoStatus = 'testing';
+
+            if(visitas < 20) {
+                // Pouco tráfego
+                vereditoBox.innerText = "Dados insuficientes. Traga pelo menos 50 pessoas antes de julgar.";
+                badge.innerText = "COLETANDO DADOS";
+                badge.className = "absolute bottom-4 right-4 text-xs font-bold bg-slate-700 text-slate-400 px-3 py-1 rounded";
+            } else if (conversao >= 1.0) {
+                // Sucesso (Acima de 1%)
+                vereditoBox.innerText = `EXCELENTE! A cada 100 pessoas, ${conversao} compram. Isso é escala pura. Aumente o tráfego.`;
+                badge.innerText = "✅ APROVADA";
+                badge.className = "absolute bottom-4 right-4 text-xs font-bold bg-emerald-600 text-white px-3 py-1 rounded";
+                novoStatus = 'validated';
+            } else if (conversao > 0.4) {
+                // Morno (Entre 0.4% e 1%)
+                vereditoBox.innerText = "Tem potencial, mas precisa otimizar. Tente mudar a Headline ou o Preço.";
+                badge.innerText = "⚠️ OTIMIZAR";
+                badge.className = "absolute bottom-4 right-4 text-xs font-bold bg-amber-600 text-white px-3 py-1 rounded";
+            } else {
+                // Fracasso (Abaixo de 0.4%)
+                vereditoBox.innerText = "A oferta não conectou. O público viu e não quis. Mude a oferta radicalmente.";
+                badge.innerText = "❌ REPROVADA";
+                badge.className = "absolute bottom-4 right-4 text-xs font-bold bg-red-600 text-white px-3 py-1 rounded";
+                novoStatus = 'rejected';
+            }
+
+            // 5. Atualiza o Status no Banco
+            if(visitas >= 20) {
+                await updateDoc(doc(db,"offers",currentOfferId), { status: novoStatus });
+                atualizarBadgeStatus(novoStatus);
+            }
+        }
+
+        function atualizarBadgeStatus(status) {
+            const badge = document.getElementById('status-badge');
+            if(status === 'validated') { badge.innerText = "✅ APROVADA"; badge.className = "text-[10px] font-bold px-2 py-0.5 rounded uppercase status-validated"; }
+            else if(status === 'rejected') { badge.innerText = "❌ REPROVADA"; badge.className = "text-[10px] font-bold px-2 py-0.5 rounded uppercase status-rejected"; }
+            else { badge.innerText = "🟡 EM TESTE"; badge.className = "text-[10px] font-bold px-2 py-0.5 rounded uppercase status-testing"; }
+        }
+
         window.salvarOfertaAtual = async () => { await updateDoc(doc(db,"offers",currentOfferId), { headline:document.getElementById('edit-headline').value, price:document.getElementById('edit-price').value, layout:document.getElementById('edit-layout').value, videoUrl:document.getElementById('edit-video').value, checkoutUrl:document.getElementById('edit-checkout').value }); alert("Salvo!"); }
         window.limparDados = async () => { if(confirm("Apagar dados?")) { const q=query(collection(db,"events"),where("offerId","==",currentOfferId)); const snap=await getDocs(q); snap.forEach(d=>{ if(!!d.data().isTest===document.getElementById('toggle-test').checked) deleteDoc(d.ref); }); alert("Limpo!"); } }
         window.excluirOferta = async () => { if(confirm("Excluir?")) { await deleteDoc(doc(db,"offers",currentOfferId)); location.reload(); } }
-        
         window.gerarLinkCurto = async () => { 
-            const alias = document.getElementById('short-alias').value;
-            if(!alias) return alert("Digite um nome curto");
-            
+            const alias = document.getElementById('short-alias').value; if(!alias) return alert("Digite um nome");
             const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
             const finalTarget = `${baseUrl}/index.html?id=${currentOfferId}&utm_source=${document.getElementById('utm-source').value}&utm_campaign=${document.getElementById('utm-campaign').value}`;
-            
             await setDoc(doc(db,"short_links",alias), { target: finalTarget, clicks:0, offerId: currentOfferId }); 
-            alert("Link Criado!");
-            document.getElementById('final-link-display').innerText = `${baseUrl}/r.html?id=${alias}`;
-            document.getElementById('short-result').classList.remove('hidden');
+            alert("Criado!"); document.getElementById('final-link-display').innerText = `${baseUrl}/r.html?id=${alias}`; document.getElementById('short-result').classList.remove('hidden');
         }
         window.copiarLinkCurto = () => { navigator.clipboard.writeText(document.getElementById('final-link-display').innerText); alert("Copiado"); }
+        window.copiarRelatorio = () => { const views = document.getElementById('kpi-unique').innerText; const clicks = document.getElementById('kpi-sales').innerText; navigator.clipboard.writeText(`📊 RELATÓRIO\nVisitas: ${views}\nCheckout: ${clicks}`).then(() => alert("Copiado!")); }
     </script>
 </body>
 </html>
