@@ -9,9 +9,14 @@
         .container { max-width: 800px; margin: 0 auto; text-align: center; }
         
         h1 { font-size: 24px; color: #ff0000; margin-bottom: 20px; text-transform: uppercase; font-weight: 900; }
-        .video-box { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; background: #222; border: 2px solid #333; margin-bottom: 30px; border-radius: 8px;}
-        .video-box iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         
+        /* VIDEO BOX COM ESCUDO */
+        .video-box { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; background: #222; border: 2px solid #333; margin-bottom: 30px; border-radius: 8px;}
+        .video-box iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        
+        /* ESCUDO INVISÍVEL */
+        .video-shield { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; background: transparent; }
+
         p { color: #ccc; font-size: 18px; line-height: 1.5; margin-bottom: 30px; }
         
         .cta-button { display: inline-block; background: #27ae60; color: #fff; padding: 20px 40px; font-size: 22px; font-weight: bold; text-decoration: none; border-radius: 5px; animation: pulse 2s infinite; border: none; cursor: pointer; width: 100%; max-width: 400px; }
@@ -32,6 +37,7 @@
 
         <div class="video-box">
             <iframe id="videoFrame" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <div class="video-shield" onclick="alert('Vídeo em reprodução.')"></div>
         </div>
 
         <p id="bodyText">...</p>
@@ -91,15 +97,15 @@
                     document.getElementById('buyBtn').innerText = data.ctaText || "QUERO TER ACESSO AGORA";
                     document.getElementById('price').innerText = data.price;
                     
-                    // --- HACK DO YOUTUBE (Anti-Recomendação) ---
+                    // --- HACK FINAL (Anti-Recomendação + Anti-Pause) ---
                     if(data.videoUrl && data.videoUrl.length > 5) {
                         let videoId = "";
                         const match = data.videoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/)([^#&?]*))/);
                         if (match && match[1]) videoId = match[1];
 
                         if(videoId) {
-                            // Adiciona loop=1 e playlist=ID para criar loop infinito
-                            let vUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&rel=0&playsinline=1&modestbranding=1&iv_load_policy=3&showinfo=0&fs=0&loop=1&playlist=${videoId}`;
+                            // disablekb=1 e loop
+                            let vUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&rel=0&playsinline=1&modestbranding=1&iv_load_policy=3&showinfo=0&fs=0&disablekb=1&loop=1&playlist=${videoId}`;
                             document.getElementById('videoFrame').src = vUrl;
                         }
                     }
