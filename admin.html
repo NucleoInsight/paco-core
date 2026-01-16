@@ -168,7 +168,6 @@
         import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, addDoc, deleteDoc, serverTimestamp, query, where, orderBy, limit, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // CHAVE PACO-CORE (A ÚNICA CORRETA)
         const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
         
         const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
@@ -208,13 +207,15 @@
                 document.getElementById('edit-checkout').value = d.checkoutUrl;
             }
 
-            const q = query(collection(db, "events"), where("offerId", "==", currentOfferId));
+            // CORREÇÃO DE PERFORMANCE: Otimização da Query
+            const q = query(collection(db, "events"), where("offerId", "==", currentOfferId)); 
+            
             if(unsubscribeFeed) unsubscribeFeed();
             
             unsubscribeFeed = onSnapshot(q, (snapshot) => {
                 let views=0, clicks=0, sources={};
                 const feedDiv = document.getElementById('live-feed');
-                feedDiv.innerHTML = "";
+                
                 let events = [];
                 snapshot.forEach(doc => events.push({ id: doc.id, ...doc.data() }));
                 
@@ -227,7 +228,6 @@
                     let campaign = e.campaign?.campaign || '';
                     if(!sessions[sid]) sessions[sid] = { id: sid, events: [], source: source, campaign: campaign, time: e.createdAt?.seconds||0 };
                     
-                    // Prioriza origem real
                     if((sessions[sid].source === 'direto' || sessions[sid].source === 'encurtador') && (source !== 'direto' && source !== 'encurtador')) {
                         sessions[sid].source = source;
                         sessions[sid].campaign = campaign;
@@ -247,8 +247,9 @@
                 document.getElementById('kpi-unique').innerText = Object.keys(sessions).length;
                 document.getElementById('kpi-sales').innerText = clicks;
                 
-                // --- CORREÇÃO DO FUNIL (V38) ---
                 const cv = Object.keys(sessions).length > 0 ? ((clicks/Object.keys(sessions).length)*100).toFixed(1) : 0;
+                
+                // Renderização Otimizada do Funil
                 document.getElementById('funnel-container').innerHTML = `
                     <div class="funnel-step active">
                         <div class="flex justify-between items-end">
@@ -265,8 +266,10 @@
                     </div>
                 `;
 
-                // Feed
-                Object.values(sessions).sort((a,b) => b.time - a.time).slice(0,30).forEach(s => {
+                // CORREÇÃO CRÍTICA DO FEED (Render Buffer)
+                // Cria o HTML todo na memória antes de jogar na tela
+                let feedHTML = ""; 
+                Object.values(sessions).sort((a,b) => b.time - a.time).slice(0,50).forEach(s => {
                     let originText = s.source + (s.campaign && s.campaign!=='none' ? ` • ${s.campaign}` : '');
                     let details = s.events.map(e => {
                         let txt = e.type;
@@ -277,20 +280,31 @@
                         else return "";
                         return `<div class="flex justify-between py-1 text-[10px] text-slate-400"><span>${txt}</span><span>${new Date(e.createdAt.seconds*1000).toLocaleTimeString()}</span></div>`;
                     }).join('');
-                    if(details) feedDiv.innerHTML += `<div class="feed-session"><div class="feed-header" onclick="this.nextElementSibling.classList.toggle('open')"><div class="flex gap-2"><span class="text-[10px] text-slate-500">${new Date(s.time*1000).toLocaleTimeString()}</span><span class="tag-source">${originText}</span></div><span class="text-[10px] font-bold text-slate-400">▼</span></div><div class="feed-body">${details}</div></div>`;
+                    
+                    if(details) {
+                        feedHTML += `<div class="feed-session"><div class="feed-header" onclick="this.nextElementSibling.classList.toggle('open')"><div class="flex gap-2"><span class="text-[10px] text-slate-500">${new Date(s.time*1000).toLocaleTimeString()}</span><span class="tag-source">${originText}</span></div><span class="text-[10px] font-bold text-slate-400">▼</span></div><div class="feed-body">${details}</div></div>`;
+                    }
                 });
+                // Inserimos no HTML apenas uma vez (muito mais rápido e sem travar)
+                feedDiv.innerHTML = feedHTML;
             });
         }
 
         window.salvarOfertaAtual = async () => { await updateDoc(doc(db,"offers",currentOfferId), { headline:document.getElementById('edit-headline').value, price:document.getElementById('edit-price').value, layout:document.getElementById('edit-layout').value, videoUrl:document.getElementById('edit-video').value, checkoutUrl:document.getElementById('edit-checkout').value }); alert("Salvo!"); }
         window.limparDados = async () => { if(confirm("Apagar dados?")) { const q=query(collection(db,"events"),where("offerId","==",currentOfferId)); const snap=await getDocs(q); snap.forEach(d=>{ if(!!d.data().isTest===document.getElementById('toggle-test').checked) deleteDoc(d.ref); }); alert("Limpo!"); } }
         window.excluirOferta = async () => { if(confirm("Excluir?")) { await deleteDoc(doc(db,"offers",currentOfferId)); location.reload(); } }
+        
+        // CORREÇÃO DO ENCURTADOR: Pega a URL base dinamicamente
         window.gerarLinkCurto = async () => { 
             const alias = document.getElementById('short-alias').value;
             if(!alias) return alert("Digite um nome curto");
-            await setDoc(doc(db,"short_links",alias), { target: `https://nucleoinsight.github.io/paco-core/index.html?id=${currentOfferId}&utm_source=${document.getElementById('utm-source').value}&utm_campaign=${document.getElementById('utm-campaign').value}`, clicks:0 }); 
+            
+            const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+            const finalTarget = `${baseUrl}/index.html?id=${currentOfferId}&utm_source=${document.getElementById('utm-source').value}&utm_campaign=${document.getElementById('utm-campaign').value}`;
+            
+            await setDoc(doc(db,"short_links",alias), { target: finalTarget, clicks:0, offerId: currentOfferId }); 
             alert("Link Criado!");
-            document.getElementById('final-link-display').innerText = `https://nucleoinsight.github.io/paco-core/r.html?id=${alias}`;
+            document.getElementById('final-link-display').innerText = `${baseUrl}/r.html?id=${alias}`;
             document.getElementById('short-result').classList.remove('hidden');
         }
         window.copiarLinkCurto = () => { navigator.clipboard.writeText(document.getElementById('final-link-display').innerText); alert("Copiado"); }
