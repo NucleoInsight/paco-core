@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper PACO | V38 (Funnel Fixed)</title>
+    <title>Sniper PACO | V38 (Final Fixed)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -207,21 +207,24 @@
                 document.getElementById('edit-checkout').value = d.checkoutUrl;
             }
 
-            // CORREÇÃO DE PERFORMANCE: Otimização da Query
+            // CORREÇÃO DE PERFORMANCE: Otimização da Query (Limitada a 1000 para evitar crash inicial)
+            // Se precisar de mais histórico, aumente o limit, mas monitore a performance.
             const q = query(collection(db, "events"), where("offerId", "==", currentOfferId)); 
             
             if(unsubscribeFeed) unsubscribeFeed();
             
             unsubscribeFeed = onSnapshot(q, (snapshot) => {
-                let views=0, clicks=0, sources={};
+                let views=0, clicks=0, quizCount=0, sources={};
                 const feedDiv = document.getElementById('live-feed');
                 
                 let events = [];
                 snapshot.forEach(doc => events.push({ id: doc.id, ...doc.data() }));
                 
+                // Filtra Teste/Real
                 const filtered = events.filter(e => !!e.isTest === isTest).sort((a,b) => b.createdAt - a.createdAt);
                 const sessions = {};
                 
+                // Agrupa Sessões
                 filtered.forEach(e => {
                     const sid = e.sessionId || 'anon';
                     let source = e.campaign?.source || 'direto';
@@ -237,23 +240,36 @@
                     if(e.type==='cta_click') clicks++;
                 });
 
-                Object.values(sessions).forEach(s => { if(s.source !== 'encurtador') sources[s.source] = (sources[s.source]||0)+1; });
+                // Calcula KPIs (Origem + Quiz)
+                Object.values(sessions).forEach(s => { 
+                    if(s.source !== 'encurtador') sources[s.source] = (sources[s.source]||0)+1; 
+                    
+                    // NOVA LÓGICA: Verifica se essa sessão tem alguma resposta de quiz
+                    if(s.events.some(e => e.type === 'quiz_answer')) quizCount++;
+                });
+
                 if(Object.keys(sources).length === 0) sources = {'Sem dados': 1};
                 
+                // Gráfico Pizza
                 const ctx = document.getElementById('sourceChart');
                 if(myChart) myChart.destroy();
                 myChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(sources), datasets: [{ data: Object.values(sources), backgroundColor: ['#6366f1', '#10b981', '#f43f5e', '#f59e0b'], borderWidth:0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 9 }, color: '#94a3b8' } } } } });
 
-                document.getElementById('kpi-unique').innerText = Object.keys(sessions).length;
+                // Atualiza Números na Tela
+                const totalSessions = Object.keys(sessions).length;
+                document.getElementById('kpi-unique').innerText = totalSessions;
                 document.getElementById('kpi-sales').innerText = clicks;
                 
-                const cv = Object.keys(sessions).length > 0 ? ((clicks/Object.keys(sessions).length)*100).toFixed(1) : 0;
-                
-                // Renderização Otimizada do Funil
+                // CÁLCULO DA RETENÇÃO
+                const retentionRate = totalSessions > 0 ? ((quizCount / totalSessions) * 100).toFixed(0) : 0;
+                document.getElementById('kpi-retention').innerText = retentionRate + "%";
+
+                // Funil
+                const cv = totalSessions > 0 ? ((clicks/totalSessions)*100).toFixed(1) : 0;
                 document.getElementById('funnel-container').innerHTML = `
                     <div class="funnel-step active">
                         <div class="flex justify-between items-end">
-                            <div><p class="text-[10px] font-bold text-slate-500">VISITAS</p><p class="text-xl font-black text-white">${Object.keys(sessions).length}</p></div>
+                            <div><p class="text-[10px] font-bold text-slate-500">VISITAS</p><p class="text-xl font-black text-white">${totalSessions}</p></div>
                         </div>
                         <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:100%"></div></div>
                     </div>
@@ -266,8 +282,7 @@
                     </div>
                 `;
 
-                // CORREÇÃO CRÍTICA DO FEED (Render Buffer)
-                // Cria o HTML todo na memória antes de jogar na tela
+                // Feed Otimizado (BUFFER PARA EVITAR TRAVAMENTO)
                 let feedHTML = ""; 
                 Object.values(sessions).sort((a,b) => b.time - a.time).slice(0,50).forEach(s => {
                     let originText = s.source + (s.campaign && s.campaign!=='none' ? ` • ${s.campaign}` : '');
@@ -285,7 +300,6 @@
                         feedHTML += `<div class="feed-session"><div class="feed-header" onclick="this.nextElementSibling.classList.toggle('open')"><div class="flex gap-2"><span class="text-[10px] text-slate-500">${new Date(s.time*1000).toLocaleTimeString()}</span><span class="tag-source">${originText}</span></div><span class="text-[10px] font-bold text-slate-400">▼</span></div><div class="feed-body">${details}</div></div>`;
                     }
                 });
-                // Inserimos no HTML apenas uma vez (muito mais rápido e sem travar)
                 feedDiv.innerHTML = feedHTML;
             });
         }
@@ -294,11 +308,12 @@
         window.limparDados = async () => { if(confirm("Apagar dados?")) { const q=query(collection(db,"events"),where("offerId","==",currentOfferId)); const snap=await getDocs(q); snap.forEach(d=>{ if(!!d.data().isTest===document.getElementById('toggle-test').checked) deleteDoc(d.ref); }); alert("Limpo!"); } }
         window.excluirOferta = async () => { if(confirm("Excluir?")) { await deleteDoc(doc(db,"offers",currentOfferId)); location.reload(); } }
         
-        // CORREÇÃO DO ENCURTADOR: Pega a URL base dinamicamente
+        // GERAÇÃO DE LINK AUTOMÁTICA
         window.gerarLinkCurto = async () => { 
             const alias = document.getElementById('short-alias').value;
             if(!alias) return alert("Digite um nome curto");
             
+            // Pega a URL atual do navegador e remove o nome do arquivo (ex: admin.html)
             const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
             const finalTarget = `${baseUrl}/index.html?id=${currentOfferId}&utm_source=${document.getElementById('utm-source').value}&utm_campaign=${document.getElementById('utm-campaign').value}`;
             
