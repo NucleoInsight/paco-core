@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper PACO | Admin V47 (Validation Standard)</title>
+    <title>Sniper PACO | Admin V46 (Visual Quiz)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -16,19 +16,10 @@
         .glass-input { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(51, 65, 85, 0.5); color: white; padding: 10px; border-radius: 8px; width: 100%; font-size: 13px; margin-bottom: 5px; }
         .glass-input:focus { border-color: #6366f1; outline: none; }
         
-        /* VISUAL DO FUNIL DE 6 ETAPAS */
-        .metric-card { background: rgba(15, 23, 42, 0.5); border-left: 3px solid #334155; padding: 10px; border-radius: 4px; margin-bottom: 8px; }
-        .metric-title { font-size: 9px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 1px; }
-        .metric-value { font-size: 18px; font-weight: 900; color: white; }
-        .metric-sub { font-size: 10px; color: #94a3b8; text-align: right; }
-
-        /* CORES DAS MÉTRICAS */
-        .border-pv { border-color: #6366f1; } /* Page View */
-        .border-sa { border-color: #3b82f6; } /* Start Amostra */
-        .border-ac { border-color: #0ea5e9; } /* Amostra Completa */
-        .border-pw { border-color: #a855f7; } /* Paywall View */
-        .border-pc { border-color: #f59e0b; } /* Pix Click */
-        .border-pay { border-color: #10b981; } /* Payment */
+        .funnel-step { position: relative; padding-left: 20px; border-left: 2px solid #334155; margin-bottom: 20px; }
+        .funnel-step.active { border-left-color: #10b981; }
+        .progress-bar-bg { background: #1e293b; height: 6px; border-radius: 3px; overflow: hidden; margin-top: 5px; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #a855f7); width: 0%; transition: width 1s; }
 
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #0b0c15; }
@@ -38,6 +29,8 @@
         .feed-body { display: none; background: rgba(0,0,0,0.3); border-top: 1px solid rgba(255,255,255,0.05); padding: 5px; }
         .feed-body.open { display: block; }
         .hidden { display: none !important; }
+        .metric-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; font-weight: 700; }
+        .metric-value { font-size: 1.25rem; font-weight: 800; color: white; line-height: 1; margin-top: 4px; }
 
         .status-testing { border: 1px solid #f59e0b; color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
         .status-validated { border: 1px solid #10b981; color: #10b981; background: rgba(16, 185, 129, 0.1); }
@@ -59,17 +52,17 @@
     <div id="dashboard" class="max-w-7xl mx-auto hidden">
         <header class="flex flex-col md:flex-row justify-between items-end mb-8 border-b border-indigo-900/30 pb-4 gap-4">
             <div>
-                <h1 class="text-3xl font-black text-white tracking-tight">VALIDAÇÃO <span class="text-indigo-500">6M</span></h1>
+                <h1 class="text-3xl font-black text-white tracking-tight">SNIPER <span class="text-indigo-500">ANALYTICS</span></h1>
                 <div class="flex items-center gap-3 mt-2">
-                    <p class="text-xs text-indigo-400">Oferta:</p>
+                    <p class="text-xs text-indigo-400">Oferta Selecionada:</p>
                     <select id="offer-selector" onchange="carregarDadosDaOferta()" class="bg-slate-800 text-white text-xs p-1 rounded border border-slate-600 outline-none cursor-pointer"></select>
-                    <span id="status-badge" class="text-[10px] font-bold px-2 py-0.5 rounded uppercase status-testing">🟡 EM AJUSTE</span>
+                    <span id="status-badge" class="text-[10px] font-bold px-2 py-0.5 rounded uppercase status-testing">🟡 EM TESTE</span>
                 </div>
             </div>
             
             <div class="flex flex-wrap items-center gap-2">
                 <div class="flex items-center gap-2 bg-slate-800/50 p-2 rounded-lg border border-slate-700">
-                    <span class="text-[10px] text-slate-400 uppercase font-bold">Teste</span>
+                    <span class="text-[10px] text-slate-400 uppercase font-bold">Modo Teste</span>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="toggle-test" class="sr-only peer" onchange="carregarDadosDaOferta()">
                         <div class="w-9 h-5 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:bg-amber-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
@@ -83,104 +76,75 @@
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="glass-panel p-6 border-emerald-500/30 bg-emerald-900/10">
-                <h3 class="text-xs font-bold text-emerald-400 mb-2 uppercase">💰 6. Pagamento Confirmado (PAY)</h3>
-                <p class="text-[10px] text-slate-400 mb-3">Métrica final de validação (Manual).</p>
+                <h3 class="text-xs font-bold text-emerald-400 mb-2 uppercase">💰 1. Registro de Vendas</h3>
+                <p class="text-[10px] text-slate-400 mb-3">Insira o total de vendas confirmadas.</p>
                 <div class="flex gap-2">
                     <input type="number" id="manual-sales-input" class="glass-input text-xl font-bold text-center text-white border-emerald-500/50" placeholder="0">
-                    <button onclick="calcularVeredito()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 rounded-lg text-xs transition shadow-lg shadow-emerald-900/50">VALIDAR<br>AGORA</button>
+                    <button onclick="calcularVeredito()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 rounded-lg text-xs transition shadow-lg shadow-emerald-900/50">🤖 CALCULAR<br>VEREDITO</button>
                 </div>
             </div>
             <div class="glass-panel p-6 flex flex-col justify-center">
-                <h3 class="text-xs font-bold text-slate-500 mb-2 uppercase">📊 Taxas de Conversão</h3>
-                <div class="flex justify-between items-end mb-2 border-b border-white/5 pb-2">
-                    <p class="text-[10px] text-amber-400">Pix Click Rate</p>
-                    <p id="calc-pix-rate" class="text-lg font-bold text-amber-400">0.0%</p>
-                </div>
+                <h3 class="text-xs font-bold text-slate-500 mb-2 uppercase">📊 2. Conversão Real</h3>
                 <div class="flex justify-between items-end">
-                    <p class="text-[10px] text-emerald-400">Conversão Final</p>
-                    <p id="calc-conversion" class="text-lg font-bold text-emerald-400">0.0%</p>
+                    <div><p class="text-[10px] text-slate-400">Conversão (Vendas/Visitas)</p><p id="calc-conversion" class="text-2xl font-black text-white">0.0%</p></div>
+                    <div class="text-right"><p class="text-[10px] text-slate-400">Faturamento Est.</p><p id="calc-revenue" class="text-xl font-bold text-emerald-400">R$ 0,00</p></div>
                 </div>
             </div>
             <div class="glass-panel p-6 border border-white/10 relative overflow-hidden">
-                <h3 class="text-xs font-bold text-white mb-2 uppercase">⚖️ Veredito Automático</h3>
-                <p id="ai-verdict-text" class="text-sm font-medium text-slate-300 italic">"Aguardando dados..."</p>
+                <h3 class="text-xs font-bold text-white mb-2 uppercase">⚖️ 3. O Veredito do Sistema</h3>
+                <p id="ai-verdict-text" class="text-sm font-medium text-slate-300 italic">"Aguardando dados para análise..."</p>
                 <div id="ai-verdict-badge" class="absolute bottom-4 right-4 text-xs font-bold bg-slate-700 text-slate-400 px-3 py-1 rounded">AGUARDANDO</div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-10">
-            <div class="glass-panel p-4 col-span-1 lg:col-span-1">
-                <h2 class="text-sm font-bold text-white mb-4">FUNIL COMPORTAMENTAL</h2>
-                
-                <div class="metric-card border-pv">
-                    <div class="flex justify-between">
-                        <span class="metric-title">1. PAGE VIEW (PV)</span>
-                        <span class="metric-value" id="val-pv">0</span>
-                    </div>
-                </div>
-
-                <div class="metric-card border-sa">
-                    <div class="flex justify-between">
-                        <span class="metric-title">2. START AMOSTRA (SA)</span>
-                        <span class="metric-value" id="val-sa">0</span>
-                    </div>
-                    <div class="metric-sub" id="rate-sa">0%</div>
-                </div>
-
-                <div class="metric-card border-ac">
-                    <div class="flex justify-between">
-                        <span class="metric-title">3. AMOSTRA COMPLETA (AC)</span>
-                        <span class="metric-value" id="val-ac">0</span>
-                    </div>
-                    <div class="metric-sub" id="rate-ac">0%</div>
-                </div>
-
-                <div class="metric-card border-pw">
-                    <div class="flex justify-between">
-                        <span class="metric-title">4. PAYWALL VIEW (PW)</span>
-                        <span class="metric-value" id="val-pw">0</span>
-                    </div>
-                    <div class="metric-sub" id="rate-pw">0%</div>
-                </div>
-
-                <div class="metric-card border-pc">
-                    <div class="flex justify-between">
-                        <span class="metric-title text-amber-400">5. PIX CLICK (PC)</span>
-                        <span class="metric-value text-amber-400" id="val-pc">0</span>
-                    </div>
-                    <div class="metric-sub text-amber-400" id="rate-pc">0%</div>
-                </div>
-                
-                <div class="metric-card border-pay">
-                    <div class="flex justify-between">
-                        <span class="metric-title text-emerald-400">6. PAYMENT (PAY)</span>
-                        <span class="metric-value text-emerald-400" id="val-pay">0</span>
-                    </div>
-                    <div class="metric-sub text-emerald-400" id="rate-pay">0%</div>
-                </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+            <div class="glass-panel p-6">
+                <h2 class="text-sm font-bold text-white mb-6">FUNIL DE TRÁFEGO</h2>
+                <div id="funnel-container" class="space-y-6"><div class="text-center text-slate-600 text-xs py-10">Carregando...</div></div>
             </div>
 
-            <div class="col-span-1 lg:col-span-3 space-y-6">
-                <div class="glass-panel p-4 h-[300px] overflow-hidden flex flex-col">
-                    <h3 class="text-xs font-bold text-white mb-2">FEED DE COMPORTAMENTO AO VIVO</h3>
-                    <div class="overflow-y-auto p-2 space-y-2 flex-1 custom-scroll" id="live-feed"><p class="text-center text-slate-600 text-xs">Aguardando...</p></div>
+            <div class="space-y-6">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="glass-panel p-4 border-l-2 border-indigo-500"><p class="metric-label">Visitantes</p><p id="kpi-unique" class="metric-value">0</p></div>
+                    <div class="glass-panel p-4 border-l-2 border-emerald-500"><p class="metric-label">Checkout (Intenção)</p><p id="kpi-sales" class="metric-value">0</p></div>
+                    <div class="glass-panel p-4 border-l-2 border-pink-500"><p class="metric-label">Retenção Quiz</p><p id="kpi-retention" class="metric-value">0%</p></div>
+                    <div class="glass-panel p-4 border-l-2 border-amber-500"><p class="metric-label">Melhor Canal</p><p id="kpi-source" class="metric-value truncate text-base pt-1">...</p></div>
+                </div>
+
+                <div class="glass-panel p-4">
+                    <h3 class="text-xs font-bold text-slate-500 mb-2 uppercase">Origem do Tráfego</h3>
+                    <div style="height: 150px; position: relative;"><canvas id="sourceChart"></canvas></div>
                 </div>
 
                 <div class="glass-panel p-4 border border-indigo-500/30">
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="text-xs font-bold text-indigo-400 uppercase">CONFIGURAR PÁGINA</h3>
+                        <a href="#" id="btn-open-test" target="_blank" class="text-[10px] text-amber-400 border border-amber-500/30 px-2 py-1 rounded">🧪 VER PÁGINA</a>
                     </div>
                     <div class="space-y-2">
-                        <input type="text" id="edit-headline" class="glass-input m-0" placeholder="Headline">
-                        <textarea id="edit-bodyText" class="glass-input h-24 m-0 resize-none" placeholder="Copy..."></textarea>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400">HEADLINE (TÍTULO)</label>
+                            <input type="text" id="edit-headline" class="glass-input m-0">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400">TEXTO DA PÁGINA (COPY)</label>
+                            <textarea id="edit-bodyText" class="glass-input h-24 m-0 resize-none" placeholder="Escreva a carta de vendas aqui..."></textarea>
+                        </div>
                         <div class="flex gap-2">
-                            <select id="edit-layout" class="glass-input bg-slate-900 m-0 w-1/2" onchange="toggleQuizField()">
-                                <option value="dark">🌑 Dark (VSL)</option>
-                                <option value="clean">⬜ Clean</option>
-                                <option value="artigo">📰 Artigo</option>
-                                <option value="quiz">🧩 Quiz</option>
-                            </select>
-                            <input type="text" id="edit-price" class="glass-input w-1/2 m-0" placeholder="Preço">
+                            <div class="w-1/2">
+                                <label class="text-[9px] font-bold text-slate-400">LAYOUT</label>
+                                <select id="edit-layout" class="glass-input bg-slate-900 m-0" onchange="toggleQuizField()">
+                                    <option value="dark">🌑 Dark</option>
+                                    <option value="clean">⬜ Clean</option>
+                                    <option value="artigo">📰 Artigo</option>
+                                    <option value="vsl">🎥 VSL</option>
+                                    <option value="quiz">🧩 Quiz</option>
+                                </select>
+                            </div>
+                            <div class="w-1/2">
+                                <label class="text-[9px] font-bold text-slate-400">PREÇO</label>
+                                <input type="text" id="edit-price" class="glass-input text-center font-bold text-emerald-400 m-0">
+                            </div>
                         </div>
                         
                         <div id="quiz-config-field" class="hidden bg-slate-900/50 p-3 rounded border border-pink-500/30">
@@ -188,29 +152,49 @@
                                 <label class="text-[9px] font-bold text-pink-400">CONSTRUTOR DE QUIZ</label>
                                 <button onclick="adicionarPergunta()" class="text-[9px] bg-pink-600 text-white px-2 py-1 rounded hover:bg-pink-500">+ Pergunta</button>
                             </div>
-                            <div id="quiz-builder-container" class="space-y-3"></div>
-                            <textarea id="edit-quizConfig" class="hidden"></textarea>
-                        </div>
+                            
+                            <div id="quiz-builder-container" class="space-y-3">
+                                </div>
+                            
+                            <textarea id="edit-quizConfig" class="hidden"></textarea> </div>
 
-                        <input type="text" id="edit-ctaText" class="glass-input border-emerald-500/50 m-0" placeholder="Texto Botão (ex: PAGAR PIX)">
-                        <input type="text" id="edit-checkout" class="glass-input border-emerald-500/30 m-0" placeholder="Link Checkout">
-                        <input type="text" id="edit-video" class="glass-input m-0" placeholder="Vídeo URL">
-                        <button onclick="salvarOfertaAtual()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg text-xs mt-2">💾 SALVAR ALTERAÇÕES</button>
+                        <div>
+                            <label class="text-[9px] font-bold text-emerald-400">TEXTO DO BOTÃO</label>
+                            <input type="text" id="edit-ctaText" class="glass-input border-emerald-500/50 m-0" placeholder="ex: COMPRAR AGORA">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400">CHECKOUT URL</label>
+                            <input type="text" id="edit-checkout" class="glass-input border-emerald-500/30 m-0">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400">VÍDEO URL</label>
+                            <input type="text" id="edit-video" class="glass-input m-0">
+                        </div>
+                        <div class="pt-2"><button onclick="salvarOfertaAtual()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg text-xs">💾 SALVAR ALTERAÇÕES</button></div>
                     </div>
                 </div>
             </div>
+
+            <div class="glass-panel p-0 overflow-hidden flex flex-col h-[600px]">
+                <div class="p-4 border-b border-white/5 bg-slate-900/50 flex justify-between items-center">
+                    <h3 class="text-xs font-bold text-white">📡 FEED AO VIVO</h3>
+                    <span id="feed-badge" class="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded">REAL</span>
+                </div>
+                <div class="overflow-y-auto p-4 space-y-3 flex-1 custom-scroll" id="live-feed"><p class="text-center text-slate-600 mt-10 text-xs">Aguardando...</p></div>
+            </div>
         </div>
-        
+
         <div class="glass-panel p-6 mb-10 no-print border border-emerald-500/30">
             <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">🔗 Link Builder</h2>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                <div class="md:col-span-2"><input type="text" id="short-alias" placeholder="Nome do Link" class="glass-input"></div>
+                <div class="md:col-span-2"><input type="text" id="short-alias" placeholder="Nome do Link (ex: oferta1)" class="glass-input"></div>
                 <div><input type="text" id="utm-source" value="instagram" class="glass-input"></div>
                 <div><input type="text" id="utm-campaign" placeholder="stories" class="glass-input"></div>
             </div>
-            <button onclick="gerarLinkCurto()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg text-xs">GERAR LINK</button>
+            <button onclick="gerarLinkCurto()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg text-xs">GERAR LINK RASTREÁVEL</button>
             <div id="short-result" class="hidden mt-4 bg-black/50 p-4 rounded flex justify-between items-center"><code id="final-link-display" class="text-white text-xs font-mono">...</code><button onclick="copiarLinkCurto()" class="text-[10px] bg-slate-700 px-2 py-1 rounded">COPIAR</button></div>
         </div>
+        
         <div class="text-right mb-10"><button onclick="limparDados()" class="text-red-500 text-xs underline">Limpar Dados</button> <button onclick="excluirOferta()" class="text-red-500 text-xs underline ml-4">Excluir Oferta</button></div>
     </div>
 
@@ -221,10 +205,8 @@
 
         const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
-        let currentOfferId = "", unsubscribeFeed = null;
-        
-        // VARIÁVEIS GLOBAIS DE CONTAGEM (O CÉREBRO)
-        let counts = { pv:0, sa:0, ac:0, pw:0, pc:0 }; 
+        let currentOfferId = "", unsubscribeFeed = null, myChart = null;
+        let globalViews = 0; 
 
         window.fazerLogin = async () => { try { await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); } catch(e) { document.getElementById('error-msg').innerText = e.message; } }
         window.logout = () => signOut(auth);
@@ -240,12 +222,14 @@
             carregarDadosDaOferta();
         }
 
-        window.criarNovaOferta = async () => { const headline = prompt("Headline:"); if(!headline) return; await addDoc(collection(db, "offers"), { headline: headline, status:'testing', manualSales:0, bodyText: "...", ctaText: "QUERO PAGAR PIX", price: "4,99", layout: "dark", videoUrl: "", checkoutUrl: "", createdAt: serverTimestamp() }); location.reload(); }
+        window.criarNovaOferta = async () => { const headline = prompt("Headline:"); if(!headline) return; await addDoc(collection(db, "offers"), { headline: headline, status:'testing', manualSales:0, bodyText: "...", ctaText: "COMPRAR AGORA", price: "9,90", layout: "dark", videoUrl: "", checkoutUrl: "", createdAt: serverTimestamp() }); location.reload(); }
 
         window.carregarDadosDaOferta = async () => {
             const select = document.getElementById('offer-selector');
             currentOfferId = select.value;
             const isTest = document.getElementById('toggle-test').checked;
+            document.getElementById('btn-open-test').href = `index.html?id=${currentOfferId}&mode=test`;
+            document.getElementById('feed-badge').innerText = isTest ? "MODO TESTE" : "DADOS REAIS";
 
             const docSnap = await getDoc(doc(db, "offers", currentOfferId));
             if(docSnap.exists()) {
@@ -256,10 +240,13 @@
                 document.getElementById('edit-layout').value = d.layout;
                 document.getElementById('edit-video').value = d.videoUrl;
                 document.getElementById('edit-checkout').value = d.checkoutUrl;
-                document.getElementById('edit-ctaText').value = d.ctaText || "QUERO PAGAR PIX";
+                document.getElementById('edit-ctaText').value = d.ctaText || "COMPRAR AGORA";
                 document.getElementById('manual-sales-input').value = d.manualSales || 0;
+                
+                // NOVO: Carrega o Quiz
                 document.getElementById('edit-quizConfig').value = d.quizConfig || "";
-                renderizarQuizVisual(d.quizConfig);
+                renderizarQuizVisual(d.quizConfig); // Carrega visualmente
+                
                 atualizarBadgeStatus(d.status || 'testing');
                 toggleQuizField(); 
             }
@@ -268,97 +255,111 @@
             if(unsubscribeFeed) unsubscribeFeed();
             
             unsubscribeFeed = onSnapshot(q, (snapshot) => {
-                // RESET COUNTERS
-                counts = { pv:0, sa:0, ac:0, pw:0, pc:0 };
-                
+                let views=0, clicks=0, quizCount=0, sources={};
                 const feedDiv = document.getElementById('live-feed');
                 let events = [];
                 snapshot.forEach(doc => events.push({ id: doc.id, ...doc.data() }));
                 
                 const filtered = events.filter(e => !!e.isTest === isTest).sort((a,b) => b.createdAt - a.createdAt);
+                const sessions = {};
                 
                 filtered.forEach(e => {
-                    // MAPEAMENTO DE NOMES (LEGADO vs NOVO)
-                    // offer_view -> Page View
-                    // cta_click -> Pix Click
-                    if(e.type === 'offer_view' || e.type === 'page_view') counts.pv++;
-                    if(e.type === 'sample_start') counts.sa++;
-                    if(e.type === 'quiz_answer' || e.type === 'sample_completed') counts.ac++; // Quiz conta como amostra
-                    if(e.type === 'paywall_view' || (e.type === 'offer_view' && counts.ac > 0)) counts.pw++; // Simplificação
-                    if(e.type === 'cta_click' || e.type === 'pix_click') counts.pc++;
+                    const sid = e.sessionId || 'anon';
+                    let source = e.campaign?.source || 'direto';
+                    let campaign = e.campaign?.campaign || '';
+                    if(!sessions[sid]) sessions[sid] = { id: sid, events: [], source: source, campaign: campaign, time: e.createdAt?.seconds||0 };
+                    if((sessions[sid].source === 'direto' || sessions[sid].source === 'encurtador') && (source !== 'direto' && source !== 'encurtador')) {
+                        sessions[sid].source = source; sessions[sid].campaign = campaign;
+                    }
+                    sessions[sid].events.push(e);
+                    if(e.type==='offer_view') views++;
+                    if(e.type==='cta_click') clicks++;
                 });
 
-                // ATUALIZA UI
-                document.getElementById('val-pv').innerText = counts.pv;
-                document.getElementById('val-sa').innerText = counts.sa;
-                document.getElementById('val-ac').innerText = counts.ac;
-                document.getElementById('val-pw').innerText = counts.pv; // Em VSL, PV = PW muitas vezes
-                document.getElementById('val-pc').innerText = counts.pc;
-                
-                // Taxas relativas ao PV
-                const calcRate = (val) => counts.pv > 0 ? ((val/counts.pv)*100).toFixed(1) + '%' : '0%';
-                document.getElementById('rate-sa').innerText = calcRate(counts.sa);
-                document.getElementById('rate-ac').innerText = calcRate(counts.ac);
-                document.getElementById('rate-pw').innerText = "100%"; // Simplificado para VSL
-                document.getElementById('rate-pc').innerText = calcRate(counts.pc);
+                globalViews = Object.keys(sessions).length;
 
-                // Feed
+                Object.values(sessions).forEach(s => { 
+                    if(s.source !== 'encurtador') sources[s.source] = (sources[s.source]||0)+1; 
+                    if(s.events.some(e => e.type === 'quiz_answer')) quizCount++;
+                });
+
+                let bestSource = "..."; let maxCount = 0;
+                Object.entries(sources).forEach(([src, count]) => { if (src !== 'Sem dados' && count > maxCount) { maxCount = count; bestSource = src; } });
+                document.getElementById('kpi-source').innerText = bestSource.toUpperCase();
+                
+                if(Object.keys(sources).length === 0) sources = {'Sem dados': 1};
+                
+                const ctx = document.getElementById('sourceChart');
+                if(myChart) myChart.destroy();
+                myChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(sources), datasets: [{ data: Object.values(sources), backgroundColor: ['#6366f1', '#10b981', '#f43f5e', '#f59e0b'], borderWidth:0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 9 }, color: '#94a3b8' } } } } });
+
+                document.getElementById('kpi-unique').innerText = globalViews;
+                document.getElementById('kpi-sales').innerText = clicks;
+                const retentionRate = globalViews > 0 ? ((quizCount / globalViews) * 100).toFixed(0) : 0;
+                document.getElementById('kpi-retention').innerText = retentionRate + "%";
+
+                const cv = globalViews > 0 ? ((clicks/globalViews)*100).toFixed(1) : 0;
+                document.getElementById('funnel-container').innerHTML = `
+                    <div class="funnel-step active"><div class="flex justify-between items-end"><div><p class="text-[10px] font-bold text-slate-500">VISITAS</p><p class="text-xl font-black text-white">${globalViews}</p></div></div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:100%"></div></div></div>
+                    <div class="funnel-step ${clicks > 0 ? 'active' : ''}" style="border-left-color: #10b981;"><div class="flex justify-between items-end"><div><p class="text-[10px] font-bold text-emerald-500">CHECKOUT</p><p class="text-xl font-black text-emerald-400">${clicks}</p></div><div class="text-right"><p class="text-xs font-bold text-emerald-400">${cv}%</p></div></div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${cv}%; background:#10b981"></div></div></div>
+                `;
+
                 let feedHTML = ""; 
-                filtered.slice(0,50).forEach(e => {
-                    let txt = e.type;
-                    if(e.type === 'cta_click') txt = "⚡ PIX CLICK";
-                    else if(e.type === 'offer_view') txt = "👁️ Page View";
-                    else if(e.type === 'quiz_answer') txt = `💬 Resposta: ${e.data?.answer}`;
-                    feedHTML += `<div class="feed-session"><div class="feed-header"><span class="text-[10px] text-slate-400">${txt}</span><span class="text-[9px] text-slate-600">${new Date(e.createdAt.seconds*1000).toLocaleTimeString()}</span></div></div>`;
+                Object.values(sessions).sort((a,b) => b.time - a.time).slice(0,50).forEach(s => {
+                    let originText = s.source + (s.campaign && s.campaign!=='none' ? ` • ${s.campaign}` : '');
+                    let details = s.events.map(e => {
+                        let txt = e.type;
+                        if(e.type === 'cta_click') txt = "💰 Checkout";
+                        else if(e.type === 'quiz_answer') txt = `💬 Quiz: ${e.data?.answer}`;
+                        else if(e.type === 'offer_view') txt = "👀 Visualizou";
+                        return `<div class="flex justify-between py-1 text-[10px] text-slate-400"><span>${txt}</span><span>${new Date(e.createdAt.seconds*1000).toLocaleTimeString()}</span></div>`;
+                    }).join('');
+                    if(details) feedHTML += `<div class="feed-session"><div class="feed-header" onclick="this.nextElementSibling.classList.toggle('open')"><div class="flex gap-2"><span class="text-[10px] text-slate-500">${new Date(s.time*1000).toLocaleTimeString()}</span><span class="tag-source">${originText}</span></div><span class="text-[10px] font-bold text-slate-400">▼</span></div><div class="feed-body">${details}</div></div>`;
                 });
                 feedDiv.innerHTML = feedHTML;
             });
         }
 
-        // --- LÓGICA DO VEREDITO (PADRÃO 6M) ---
         window.calcularVeredito = async () => {
             const vendas = parseInt(document.getElementById('manual-sales-input').value) || 0;
-            const visitas = counts.pv;
-            const pixClicks = counts.pc;
+            const precoTexto = document.getElementById('edit-price').value.replace(',', '.');
+            const preco = parseFloat(precoTexto) || 0;
+            const visitas = globalViews; 
 
             await updateDoc(doc(db,"offers",currentOfferId), { manualSales: vendas });
 
-            // CÁLCULOS CRITÉRIO PACO
-            const conversaoPagamento = visitas > 0 ? ((vendas / visitas) * 100).toFixed(2) : 0;
-            const pixClickRate = visitas > 0 ? ((pixClicks / visitas) * 100).toFixed(2) : 0;
+            const conversao = visitas > 0 ? ((vendas / visitas) * 100).toFixed(2) : 0;
+            const faturamento = (vendas * preco).toFixed(2);
 
-            document.getElementById('val-pay').innerText = vendas;
-            document.getElementById('rate-pay').innerText = conversaoPagamento + "%";
-            document.getElementById('calc-pix-rate').innerText = pixClickRate + "%";
-            document.getElementById('calc-conversion').innerText = conversaoPagamento + "%";
+            document.getElementById('calc-conversion').innerText = conversao + "%";
+            document.getElementById('calc-revenue').innerText = "R$ " + faturamento;
 
             const vereditoBox = document.getElementById('ai-verdict-text');
             const badge = document.getElementById('ai-verdict-badge');
             
             let novoStatus = 'testing';
 
-            // REGRAS DE OURO
-            if(visitas < 50) {
-                vereditoBox.innerText = "Tráfego insuficiente (Min: 50 PV).";
-                badge.innerText = "COLETANDO...";
+            if(visitas < 20) {
+                vereditoBox.innerText = "Dados insuficientes. Traga pelo menos 50 pessoas antes de julgar.";
+                badge.innerText = "COLETANDO DADOS";
                 badge.className = "absolute bottom-4 right-4 text-xs font-bold bg-slate-700 text-slate-400 px-3 py-1 rounded";
-            } else if (conversaoPagamento >= 2.0 && pixClickRate >= 5.0) {
-                vereditoBox.innerText = "ESCALA! ≥ 2% Vendas e ≥ 5% Pix Click. Oferta Validada.";
-                badge.innerText = "🟢 VALIDADA";
+            } else if (conversao >= 1.0) {
+                vereditoBox.innerText = `EXCELENTE! A cada 100 pessoas, ${conversao} compram. Isso é escala pura. Aumente o tráfego.`;
+                badge.innerText = "✅ APROVADA";
                 badge.className = "absolute bottom-4 right-4 text-xs font-bold bg-emerald-600 text-white px-3 py-1 rounded";
                 novoStatus = 'validated';
-            } else if (pixClickRate >= 2.0) { // Chegou no Paywall e clicou um pouco
-                vereditoBox.innerText = "EM AJUSTE. Pix Click existe, mas venda tá baixa. Melhore a oferta/preço.";
-                badge.innerText = "🟡 AJUSTAR";
+            } else if (conversao > 0.4) {
+                vereditoBox.innerText = "Tem potencial, mas precisa otimizar. Tente mudar a Headline ou o Preço.";
+                badge.innerText = "⚠️ OTIMIZAR";
                 badge.className = "absolute bottom-4 right-4 text-xs font-bold bg-amber-600 text-white px-3 py-1 rounded";
             } else {
-                vereditoBox.innerText = "MORTA. Pix Click < 2%. Ninguém quer. Mude tudo.";
-                badge.innerText = "🔴 MORTA";
+                vereditoBox.innerText = "A oferta não conectou. O público viu e não quis. Mude a oferta radicalmente.";
+                badge.innerText = "❌ REPROVADA";
                 badge.className = "absolute bottom-4 right-4 text-xs font-bold bg-red-600 text-white px-3 py-1 rounded";
                 novoStatus = 'rejected';
             }
 
-            if(visitas >= 50) {
+            if(visitas >= 20) {
                 await updateDoc(doc(db,"offers",currentOfferId), { status: novoStatus });
                 atualizarBadgeStatus(novoStatus);
             }
@@ -366,9 +367,9 @@
 
         function atualizarBadgeStatus(status) {
             const badge = document.getElementById('status-badge');
-            if(status === 'validated') { badge.innerText = "🟢 VALIDADA"; badge.className = "text-[10px] font-bold px-2 py-0.5 rounded uppercase status-validated"; }
-            else if(status === 'rejected') { badge.innerText = "🔴 MORTA"; badge.className = "text-[10px] font-bold px-2 py-0.5 rounded uppercase status-rejected"; }
-            else { badge.innerText = "🟡 EM AJUSTE"; badge.className = "text-[10px] font-bold px-2 py-0.5 rounded uppercase status-testing"; }
+            if(status === 'validated') { badge.innerText = "✅ APROVADA"; badge.className = "text-[10px] font-bold px-2 py-0.5 rounded uppercase status-validated"; }
+            else if(status === 'rejected') { badge.innerText = "❌ REPROVADA"; badge.className = "text-[10px] font-bold px-2 py-0.5 rounded uppercase status-rejected"; }
+            else { badge.innerText = "🟡 EM TESTE"; badge.className = "text-[10px] font-bold px-2 py-0.5 rounded uppercase status-testing"; }
         }
 
         window.toggleQuizField = () => {
@@ -377,29 +378,77 @@
             if(layout === 'quiz') field.classList.remove('hidden'); else field.classList.add('hidden');
         }
 
+        // --- LÓGICA DO CONSTRUTOR VISUAL DE QUIZ ---
         let quizData = [];
-        window.renderizarQuizVisual = (jsonString) => { try { quizData = jsonString ? JSON.parse(jsonString) : []; } catch(e) { quizData = []; } renderizarHTMLQuiz(); }
+
+        window.renderizarQuizVisual = (jsonString) => {
+            try { quizData = jsonString ? JSON.parse(jsonString) : []; } catch(e) { quizData = []; }
+            renderizarHTMLQuiz();
+        }
+
         function renderizarHTMLQuiz() {
-            const container = document.getElementById('quiz-builder-container'); container.innerHTML = "";
+            const container = document.getElementById('quiz-builder-container');
+            container.innerHTML = "";
             quizData.forEach((q, idx) => {
-                let answersHTML = q.a.map((ans, aIdx) => `<div class="flex gap-1 mb-1"><input type="text" value="${ans}" onchange="atualizarResposta(${idx}, ${aIdx}, this.value)" class="glass-input p-1 text-[10px] bg-slate-800"><button onclick="removerResposta(${idx}, ${aIdx})" class="text-red-500 font-bold px-2">x</button></div>`).join('');
-                container.innerHTML += `<div class="bg-slate-800 p-2 rounded border border-slate-600"><div class="flex justify-between mb-2"><input type="text" value="${q.t}" onchange="atualizarPergunta(${idx}, this.value)" class="glass-input p-1 text-xs font-bold text-white w-full"><button onclick="removerPergunta(${idx})" class="text-red-500 text-[10px] ml-2 font-bold">X</button></div><div class="pl-2 border-l border-slate-600">${answersHTML}<button onclick="adicionarResposta(${idx})" class="text-[9px] text-emerald-400 mt-1 hover:underline">+ Adicionar Resposta</button></div></div>`;
+                let answersHTML = q.a.map((ans, aIdx) => `
+                    <div class="flex gap-1 mb-1">
+                        <input type="text" value="${ans}" onchange="atualizarResposta(${idx}, ${aIdx}, this.value)" class="glass-input p-1 text-[10px] bg-slate-800" placeholder="Resposta">
+                        <button onclick="removerResposta(${idx}, ${aIdx})" class="text-red-500 font-bold px-2">x</button>
+                    </div>
+                `).join('');
+
+                container.innerHTML += `
+                    <div class="bg-slate-800 p-2 rounded border border-slate-600">
+                        <div class="flex justify-between mb-2">
+                            <input type="text" value="${q.t}" onchange="atualizarPergunta(${idx}, this.value)" class="glass-input p-1 text-xs font-bold text-white w-full" placeholder="Escreva a Pergunta">
+                            <button onclick="removerPergunta(${idx})" class="text-red-500 text-[10px] ml-2 font-bold">X</button>
+                        </div>
+                        <div class="pl-2 border-l border-slate-600">
+                            ${answersHTML}
+                            <button onclick="adicionarResposta(${idx})" class="text-[9px] text-emerald-400 mt-1 hover:underline">+ Adicionar Resposta</button>
+                        </div>
+                    </div>
+                `;
             });
             atualizarJSONOculto();
         }
+
         window.adicionarPergunta = () => { quizData.push({ t: "Nova Pergunta?", a: ["Sim", "Não"] }); renderizarHTMLQuiz(); }
         window.removerPergunta = (idx) => { quizData.splice(idx, 1); renderizarHTMLQuiz(); }
         window.atualizarPergunta = (idx, val) => { quizData[idx].t = val; atualizarJSONOculto(); }
-        window.adicionarResposta = (idx) => { quizData[idx].a.push("Opção"); renderizarHTMLQuiz(); }
+        window.adicionarResposta = (idx) => { quizData[idx].a.push("Nova Opção"); renderizarHTMLQuiz(); }
         window.removerResposta = (idx, aIdx) => { quizData[idx].a.splice(aIdx, 1); renderizarHTMLQuiz(); }
         window.atualizarResposta = (idx, aIdx, val) => { quizData[idx].a[aIdx] = val; atualizarJSONOculto(); }
-        function atualizarJSONOculto() { document.getElementById('edit-quizConfig').value = JSON.stringify(quizData); }
+        
+        function atualizarJSONOculto() {
+            document.getElementById('edit-quizConfig').value = JSON.stringify(quizData);
+        }
 
-        window.salvarOfertaAtual = async () => { await updateDoc(doc(db,"offers",currentOfferId), { headline:document.getElementById('edit-headline').value, bodyText: document.getElementById('edit-bodyText').value, price:document.getElementById('edit-price').value, layout:document.getElementById('edit-layout').value, videoUrl:document.getElementById('edit-video').value, checkoutUrl:document.getElementById('edit-checkout').value, ctaText: document.getElementById('edit-ctaText').value, quizConfig: document.getElementById('edit-quizConfig').value }); alert("Salvo!"); }
+        window.salvarOfertaAtual = async () => { 
+            await updateDoc(doc(db,"offers",currentOfferId), { 
+                headline:document.getElementById('edit-headline').value, 
+                bodyText: document.getElementById('edit-bodyText').value, 
+                price:document.getElementById('edit-price').value, 
+                layout:document.getElementById('edit-layout').value, 
+                videoUrl:document.getElementById('edit-video').value, 
+                checkoutUrl:document.getElementById('edit-checkout').value,
+                ctaText: document.getElementById('edit-ctaText').value,
+                quizConfig: document.getElementById('edit-quizConfig').value // Salva o JSON gerado
+            }); 
+            alert("Salvo!"); 
+        }
+
         window.limparDados = async () => { if(confirm("Apagar dados?")) { const q=query(collection(db,"events"),where("offerId","==",currentOfferId)); const snap=await getDocs(q); snap.forEach(d=>{ if(!!d.data().isTest===document.getElementById('toggle-test').checked) deleteDoc(d.ref); }); alert("Limpo!"); } }
         window.excluirOferta = async () => { if(confirm("Excluir?")) { await deleteDoc(doc(db,"offers",currentOfferId)); location.reload(); } }
-        window.gerarLinkCurto = async () => { const alias = document.getElementById('short-alias').value; if(!alias) return alert("Nome?"); const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')); const finalTarget = `${baseUrl}/index.html?id=${currentOfferId}&utm_source=${document.getElementById('utm-source').value}&utm_campaign=${document.getElementById('utm-campaign').value}`; await setDoc(doc(db,"short_links",alias), { target: finalTarget, clicks:0, offerId: currentOfferId }); alert("Criado!"); document.getElementById('final-link-display').innerText = `${baseUrl}/r.html?id=${alias}`; document.getElementById('short-result').classList.remove('hidden'); }
+        window.gerarLinkCurto = async () => { 
+            const alias = document.getElementById('short-alias').value; if(!alias) return alert("Digite um nome");
+            const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+            const finalTarget = `${baseUrl}/index.html?id=${currentOfferId}&utm_source=${document.getElementById('utm-source').value}&utm_campaign=${document.getElementById('utm-campaign').value}`;
+            await setDoc(doc(db,"short_links",alias), { target: finalTarget, clicks:0, offerId: currentOfferId }); 
+            alert("Criado!"); document.getElementById('final-link-display').innerText = `${baseUrl}/r.html?id=${alias}`; document.getElementById('short-result').classList.remove('hidden');
+        }
         window.copiarLinkCurto = () => { navigator.clipboard.writeText(document.getElementById('final-link-display').innerText); alert("Copiado"); }
+        window.copiarRelatorio = () => { const views = document.getElementById('kpi-unique').innerText; const clicks = document.getElementById('kpi-sales').innerText; navigator.clipboard.writeText(`📊 RELATÓRIO\nVisitas: ${views}\nCheckout: ${clicks}`).then(() => alert("Copiado!")); }
     </script>
 </body>
 </html>
