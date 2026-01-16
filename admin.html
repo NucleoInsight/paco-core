@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sniper PACO | Admin V42 (Calculadora ROI)</title>
+    <title>Sniper PACO | Admin V43 (Botão Editável)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -36,9 +36,6 @@
         .status-testing { border: 1px solid #f59e0b; color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
         .status-validated { border: 1px solid #10b981; color: #10b981; background: rgba(16, 185, 129, 0.1); }
         .status-rejected { border: 1px solid #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.1); }
-        
-        /* CALC BOX */
-        .calc-box { background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 78, 59, 0.2)); border: 1px solid rgba(16, 185, 129, 0.3); }
     </style>
 </head>
 <body class="p-4 md:p-8 min-h-screen">
@@ -81,7 +78,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="glass-panel p-6 border-emerald-500/30 bg-emerald-900/10">
                 <h3 class="text-xs font-bold text-emerald-400 mb-2 uppercase">💰 1. Registro de Vendas</h3>
-                <p class="text-[10px] text-slate-400 mb-3">Insira o total de vendas confirmadas na plataforma (Hotmart, Kiwify, etc).</p>
+                <p class="text-[10px] text-slate-400 mb-3">Insira o total de vendas confirmadas na plataforma.</p>
                 <div class="flex gap-2">
                     <input type="number" id="manual-sales-input" class="glass-input text-xl font-bold text-center text-white border-emerald-500/50" placeholder="0">
                     <button onclick="calcularVeredito()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 rounded-lg text-xs transition shadow-lg shadow-emerald-900/50">🤖 CALCULAR<br>VEREDITO</button>
@@ -139,6 +136,14 @@
                             <div class="w-1/2"><label>LAYOUT</label><select id="edit-layout" class="glass-input bg-slate-900"><option value="dark">🌑 Dark</option><option value="clean">⬜ Clean</option><option value="artigo">📰 Artigo</option><option value="vsl">🎥 VSL</option><option value="quiz">🧩 Quiz</option></select></div>
                             <div class="w-1/2"><label>PREÇO</label><input type="text" id="edit-price" class="glass-input text-center font-bold text-emerald-400"></div>
                         </div>
+                        
+                        <div class="flex gap-2">
+                            <div class="w-full">
+                                <label class="text-emerald-400 font-bold">TEXTO DO BOTÃO</label>
+                                <input type="text" id="edit-ctaText" class="glass-input border-emerald-500/50" placeholder="ex: COMPRAR AGORA">
+                            </div>
+                        </div>
+
                         <label>CHECKOUT URL</label><input type="text" id="edit-checkout" class="glass-input border-emerald-500/30">
                         <label>VÍDEO URL</label><input type="text" id="edit-video" class="glass-input">
                         <div class="pt-2"><button onclick="salvarOfertaAtual()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg text-xs">💾 SALVAR ALTERAÇÕES</button></div>
@@ -193,7 +198,7 @@
             carregarDadosDaOferta();
         }
 
-        window.criarNovaOferta = async () => { const headline = prompt("Headline:"); if(!headline) return; await addDoc(collection(db, "offers"), { headline: headline, status:'testing', manualSales:0, bodyText: "...", ctaText: "COMPRAR", price: "9,90", layout: "dark", videoUrl: "", checkoutUrl: "", createdAt: serverTimestamp() }); location.reload(); }
+        window.criarNovaOferta = async () => { const headline = prompt("Headline:"); if(!headline) return; await addDoc(collection(db, "offers"), { headline: headline, status:'testing', manualSales:0, bodyText: "...", ctaText: "COMPRAR AGORA", price: "9,90", layout: "dark", videoUrl: "", checkoutUrl: "", createdAt: serverTimestamp() }); location.reload(); }
 
         window.carregarDadosDaOferta = async () => {
             const select = document.getElementById('offer-selector');
@@ -211,7 +216,10 @@
                 document.getElementById('edit-video').value = d.videoUrl;
                 document.getElementById('edit-checkout').value = d.checkoutUrl;
                 
-                // --- CARREGA VENDAS MANUAIS SALVAS ---
+                // --- NOVO: Carrega o Texto do Botão ---
+                document.getElementById('edit-ctaText').value = d.ctaText || "COMPRAR AGORA";
+                
+                // Carrega Vendas Manuais
                 document.getElementById('manual-sales-input').value = d.manualSales || 0;
                 atualizarBadgeStatus(d.status || 'testing');
             }
@@ -285,55 +293,45 @@
             });
         }
 
-        // --- MÁGICA DA DECISÃO (Passo 7 Automatizado) ---
         window.calcularVeredito = async () => {
             const vendas = parseInt(document.getElementById('manual-sales-input').value) || 0;
             const precoTexto = document.getElementById('edit-price').value.replace(',', '.');
             const preco = parseFloat(precoTexto) || 0;
-            const visitas = globalViews; // Pega do contador automático
+            const visitas = globalViews; 
 
-            // 1. Salva o dado manual no banco
             await updateDoc(doc(db,"offers",currentOfferId), { manualSales: vendas });
 
-            // 2. Cálculos
             const conversao = visitas > 0 ? ((vendas / visitas) * 100).toFixed(2) : 0;
             const faturamento = (vendas * preco).toFixed(2);
 
-            // 3. Atualiza Display
             document.getElementById('calc-conversion').innerText = conversao + "%";
             document.getElementById('calc-revenue').innerText = "R$ " + faturamento;
 
-            // 4. LÓGICA DO ROBÔ (O Veredito)
             const vereditoBox = document.getElementById('ai-verdict-text');
             const badge = document.getElementById('ai-verdict-badge');
             
             let novoStatus = 'testing';
 
             if(visitas < 20) {
-                // Pouco tráfego
                 vereditoBox.innerText = "Dados insuficientes. Traga pelo menos 50 pessoas antes de julgar.";
                 badge.innerText = "COLETANDO DADOS";
                 badge.className = "absolute bottom-4 right-4 text-xs font-bold bg-slate-700 text-slate-400 px-3 py-1 rounded";
             } else if (conversao >= 1.0) {
-                // Sucesso (Acima de 1%)
                 vereditoBox.innerText = `EXCELENTE! A cada 100 pessoas, ${conversao} compram. Isso é escala pura. Aumente o tráfego.`;
                 badge.innerText = "✅ APROVADA";
                 badge.className = "absolute bottom-4 right-4 text-xs font-bold bg-emerald-600 text-white px-3 py-1 rounded";
                 novoStatus = 'validated';
             } else if (conversao > 0.4) {
-                // Morno (Entre 0.4% e 1%)
                 vereditoBox.innerText = "Tem potencial, mas precisa otimizar. Tente mudar a Headline ou o Preço.";
                 badge.innerText = "⚠️ OTIMIZAR";
                 badge.className = "absolute bottom-4 right-4 text-xs font-bold bg-amber-600 text-white px-3 py-1 rounded";
             } else {
-                // Fracasso (Abaixo de 0.4%)
                 vereditoBox.innerText = "A oferta não conectou. O público viu e não quis. Mude a oferta radicalmente.";
                 badge.innerText = "❌ REPROVADA";
                 badge.className = "absolute bottom-4 right-4 text-xs font-bold bg-red-600 text-white px-3 py-1 rounded";
                 novoStatus = 'rejected';
             }
 
-            // 5. Atualiza o Status no Banco
             if(visitas >= 20) {
                 await updateDoc(doc(db,"offers",currentOfferId), { status: novoStatus });
                 atualizarBadgeStatus(novoStatus);
@@ -347,7 +345,19 @@
             else { badge.innerText = "🟡 EM TESTE"; badge.className = "text-[10px] font-bold px-2 py-0.5 rounded uppercase status-testing"; }
         }
 
-        window.salvarOfertaAtual = async () => { await updateDoc(doc(db,"offers",currentOfferId), { headline:document.getElementById('edit-headline').value, price:document.getElementById('edit-price').value, layout:document.getElementById('edit-layout').value, videoUrl:document.getElementById('edit-video').value, checkoutUrl:document.getElementById('edit-checkout').value }); alert("Salvo!"); }
+        // --- ATUALIZADO: SALVA O ctaText AGORA ---
+        window.salvarOfertaAtual = async () => { 
+            await updateDoc(doc(db,"offers",currentOfferId), { 
+                headline:document.getElementById('edit-headline').value, 
+                price:document.getElementById('edit-price').value, 
+                layout:document.getElementById('edit-layout').value, 
+                videoUrl:document.getElementById('edit-video').value, 
+                checkoutUrl:document.getElementById('edit-checkout').value,
+                ctaText: document.getElementById('edit-ctaText').value // <--- CAMPO NOVO SALVO AQUI
+            }); 
+            alert("Salvo!"); 
+        }
+
         window.limparDados = async () => { if(confirm("Apagar dados?")) { const q=query(collection(db,"events"),where("offerId","==",currentOfferId)); const snap=await getDocs(q); snap.forEach(d=>{ if(!!d.data().isTest===document.getElementById('toggle-test').checked) deleteDoc(d.ref); }); alert("Limpo!"); } }
         window.excluirOferta = async () => { if(confirm("Excluir?")) { await deleteDoc(doc(db,"offers",currentOfferId)); location.reload(); } }
         window.gerarLinkCurto = async () => { 
