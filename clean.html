@@ -23,13 +23,14 @@
         
         .footer { margin-top: 40px; font-size: 12px; color: #999; text-align: center; border-top: 1px solid #eee; padding-top: 20px; }
         .hidden { display: none; }
-        #loading { text-align: center; margin-top: 50px; color: #666; }
+        #loading { text-align: center; margin-top: 50px; color: #666; font-weight: bold;}
     </style>
 </head>
 <body>
 
     <div class="header"><div class="logo-text">COMUNICADO</div></div>
-    <div id="loading">Carregando...</div>
+    
+    <div id="loading">Carregando informações...</div>
 
     <div id="app" class="container hidden">
         <h1 id="headline">...</h1>
@@ -49,30 +50,70 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // CONFIGURAÇÃO CORRETA PACO-CORE
         const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
+        // Lógica de Sessão e UTM (Vital para o Dashboard)
+        const urlParams = new URLSearchParams(window.location.search);
+        const offerId = urlParams.get('id');
+        const isTest = urlParams.get('mode') === 'test';
+        
+        let sessionId = sessionStorage.getItem('paco_sid');
+        if(!sessionId) { sessionId = 'u_' + Math.random().toString(36).substr(2, 9); sessionStorage.setItem('paco_sid', sessionId); }
+
+        let source = urlParams.get('utm_source');
+        if (!source) {
+            const ref = document.referrer;
+            if (ref.includes('instagram')) source = 'instagram';
+            else if (ref.includes('facebook')) source = 'facebook';
+            else if (ref.includes('youtube')) source = 'youtube';
+            else if (ref) source = new URL(ref).hostname;
+            else source = 'direto';
+        }
+
+        // Função de Rastreamento Unificada
+        async function track(name, data={}) {
+            if(!offerId) return;
+            try { 
+                await addDoc(collection(db, "events"), { 
+                    offerId, sessionId, type: name, isTest, 
+                    campaign: {source, campaign: urlParams.get('utm_campaign')||''}, 
+                    createdAt: serverTimestamp(), data 
+                }); 
+            } catch(e){}
+        }
+
         async function init() {
-            const params = new URLSearchParams(window.location.search); const offerId = params.get('id');
-            if (!offerId) return;
+            if (!offerId) { document.getElementById('loading').innerText = "Link inválido."; return; }
+            
             try {
                 const docSnap = await getDoc(doc(db, "offers", offerId));
                 if (docSnap.exists()) {
                     const data = docSnap.data();
+                    
                     document.getElementById('headline').innerText = data.headline;
                     document.getElementById('bodyText').innerText = data.bodyText;
                     document.getElementById('price').innerText = data.price;
-                    document.getElementById('buyBtn').innerText = data.ctaText;
+                    document.getElementById('buyBtn').innerText = data.ctaText || "GARANTIR AGORA";
                     
                     document.getElementById('loading').classList.add('hidden');
                     document.getElementById('app').classList.remove('hidden');
                     
-                    addDoc(collection(db, "metrics"), { offerId: offerId, type: "view_clean", timestamp: serverTimestamp() });
+                    // Rastreia visualização no Dashboard correto
+                    track('offer_view'); // Agora como 'offer_view' normal, ou se quiser diferenciar use 'view_clean'
 
-                    document.getElementById('buyBtn').onclick = async () => {
-                        await addDoc(collection(db, "events"), { offerId: offerId, type: "cta_click", createdAt: serverTimestamp() });
-                        alert("Redirecionando...");
+                    document.getElementById('buyBtn').onclick = () => {
+                        track('cta_click');
+                        const btn = document.getElementById('buyBtn');
+                        btn.innerText = "AGUARDE...";
+                        btn.style.opacity = "0.7";
+                        
+                        if(data.checkoutUrl) window.location.href = data.checkoutUrl;
+                        else alert("Link de Checkout não configurado.");
                     };
+                } else {
+                    document.getElementById('loading').innerText = "Oferta não encontrada.";
                 }
             } catch (e) { console.error(e); }
         }
