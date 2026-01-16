@@ -1,14 +1,5 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>...</title>
-    <style>body{background:#000;color:#0f0;display:flex;justify-content:center;align-items:center;height:100vh;font-family:monospace}</style>
-</head>
-<body>
-    <div id="msg">...</div>
-    <script type="module">
+
+<script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, getDoc, updateDoc, increment, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -17,19 +8,42 @@
 
         async function go() {
             const id = new URLSearchParams(window.location.search).get('id');
-            if(!id) return document.getElementById('msg').innerText = "Erro.";
+            if(!id) return document.getElementById('msg').innerText = "Erro: ID ausente.";
+            
             try {
                 const ref = doc(db, "short_links", id);
                 const snap = await getDoc(ref);
+                
                 if(snap.exists()) {
                     const d = snap.data();
-                    updateDoc(ref, { clicks: increment(1) });
-                    addDoc(collection(db, "events"), { offerId: d.offerId||'unknown', type: 'short_link_click', alias: id, campaign: {source:'encurtador'}, isTest:false, createdAt: serverTimestamp() });
+                    
+                    // 1. Array de promessas para salvar tudo em paralelo (mais rápido)
+                    const updates = [
+                        updateDoc(ref, { clicks: increment(1) }),
+                        addDoc(collection(db, "events"), { 
+                            offerId: d.offerId || 'unknown', 
+                            type: 'short_link_click', 
+                            alias: id, 
+                            campaign: { source: 'encurtador' }, 
+                            isTest: false, 
+                            createdAt: serverTimestamp() 
+                        })
+                    ];
+
+                    // 2. AWAIT: Espera o Firebase confirmar que salvou
+                    await Promise.all(updates);
+
+                    // 3. Só agora redireciona
                     window.location.href = d.target;
-                } else { document.getElementById('msg').innerText = "Não encontrado."; }
-            } catch(e) { document.getElementById('msg').innerText = "Erro."; }
+                } else { 
+                    document.getElementById('msg').innerText = "Link não encontrado."; 
+                }
+            } catch(e) { 
+                console.error(e);
+                document.getElementById('msg').innerText = "Erro no sistema."; 
+                // Opcional: Redirecionar para o Google em caso de erro fatal
+                // window.location.href = "https://google.com";
+            }
         }
         go();
     </script>
-</body>
-</html>
