@@ -26,11 +26,14 @@
         .cta-button:hover { background: #b30000; }
         
         .hidden { display: none; }
+        #loading { text-align: center; padding: 50px; font-family: sans-serif; color: #666; }
     </style>
 </head>
 <body>
 
     <div class="top-bar">NOTÍCIAS • ECONOMIA • ESTILO DE VIDA</div>
+
+    <div id="loading">Carregando notícia...</div>
 
     <div id="app" class="container hidden">
         <h1 id="headline">...</h1>
@@ -41,7 +44,7 @@
         </div>
 
         <div class="content">
-            <p id="bodyText">...</p>
+            <p id="bodyText" style="white-space: pre-wrap;">...</p>
         </div>
 
         <div class="offer-box">
@@ -57,30 +60,68 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // CONFIGURAÇÃO CORRETA DO PACO-CORE
         const firebaseConfig = { apiKey: "AIzaSyBcVJ34TlzOVRUZ0SDJcl8OqF4V7PxxbIg", authDomain: "paco-core.firebaseapp.com", projectId: "paco-core", storageBucket: "paco-core.firebasestorage.app", messagingSenderId: "88467987691", appId: "1:88467987691:web:85892f360253aa957c72ae" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
+        // Lógica de Sessão e UTM (Igual ao Index.html para funcionar no Painel)
+        const urlParams = new URLSearchParams(window.location.search);
+        const offerId = urlParams.get('id');
+        const isTest = urlParams.get('mode') === 'test';
+        let sessionId = sessionStorage.getItem('paco_sid');
+        if(!sessionId) { sessionId = 'u_' + Math.random().toString(36).substr(2, 9); sessionStorage.setItem('paco_sid', sessionId); }
+
+        let source = urlParams.get('utm_source');
+        if (!source) {
+            const ref = document.referrer;
+            if (ref.includes('instagram')) source = 'instagram';
+            else if (ref.includes('facebook')) source = 'facebook';
+            else if (ref.includes('youtube')) source = 'youtube';
+            else if (ref) source = new URL(ref).hostname;
+            else source = 'direto';
+        }
+
+        async function track(name, data={}) {
+            if(!offerId) return;
+            try { 
+                // Agora salva em 'events' para aparecer no Dashboard
+                await addDoc(collection(db, "events"), { 
+                    offerId, sessionId, type: name, isTest, 
+                    campaign: {source, campaign: urlParams.get('utm_campaign')||''}, 
+                    createdAt: serverTimestamp(), data 
+                }); 
+            } catch(e){}
+        }
+
         async function init() {
-            const params = new URLSearchParams(window.location.search); const offerId = params.get('id');
-            if (!offerId) return;
+            if (!offerId) { document.body.innerHTML = "<p style='text-align:center;padding:50px'>Link inválido ou incompleto.</p>"; return; }
+            
             try {
                 const docSnap = await getDoc(doc(db, "offers", offerId));
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    document.getElementById('headline').innerText = data.headline;
-                    // No artigo, talvez você queira escrever muito texto. O <p> aguenta, mas use quebras de linha.
-                    document.getElementById('bodyText').innerText = data.bodyText;
-                    document.getElementById('price').innerText = data.price;
-                    document.getElementById('buyBtn').innerText = data.ctaText;
                     
+                    document.getElementById('headline').innerText = data.headline;
+                    // white-space: pre-wrap no CSS permite quebras de linha do banco de dados
+                    document.getElementById('bodyText').innerText = data.bodyText; 
+                    document.getElementById('price').innerText = data.price;
+                    document.getElementById('buyBtn').innerText = data.ctaText || "QUERO APROVEITAR";
+                    
+                    document.getElementById('loading').classList.add('hidden');
                     document.getElementById('app').classList.remove('hidden');
                     
-                    addDoc(collection(db, "metrics"), { offerId: offerId, type: "view_article", timestamp: serverTimestamp() });
+                    // Rastreia a visualização corretamente
+                    track('offer_view');
 
-                    document.getElementById('buyBtn').onclick = async () => {
-                        await addDoc(collection(db, "events"), { offerId: offerId, type: "cta_click", createdAt: serverTimestamp() });
-                        alert("Indo para o checkout...");
+                    document.getElementById('buyBtn').onclick = () => {
+                        track('cta_click');
+                        const btn = document.getElementById('buyBtn');
+                        btn.innerText = "AGUARDE...";
+                        if(data.checkoutUrl) window.location.href = data.checkoutUrl;
+                        else alert("Link de Checkout não configurado no Painel.");
                     };
+                } else {
+                    document.getElementById('loading').innerText = "Oferta não encontrada.";
                 }
             } catch (e) { console.error(e); }
         }
